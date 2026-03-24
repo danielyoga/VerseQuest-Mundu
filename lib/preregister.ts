@@ -1,5 +1,5 @@
 import registry from "@/data/preregistered-users.json";
-import { id } from "@/lib/i18n-id";
+import { messages, type Locale } from "@/lib/i18n";
 
 type Registry = Record<string, string>;
 
@@ -23,18 +23,20 @@ export function normalizePhone(input: string): string {
 
 /** Look up preregistered user by phone only; name comes from the registry. */
 export function validatePreregistration(
-  phoneInput: string
+  phoneInput: string,
+  locale: Locale
 ): { ok: true; canonicalPhone: string; name: string } | { ok: false; error: string } {
+  const m = messages[locale];
   const phone = normalizePhone(phoneInput);
   if (!phone || phone.length < 10) {
-    return { ok: false, error: id.errPhoneInvalid };
+    return { ok: false, error: m.errPhoneInvalid };
   }
 
   const registeredName = R[phone];
   if (!registeredName) {
     return {
       ok: false,
-      error: id.errPhoneNotInvited,
+      error: m.errPhoneNotInvited,
     };
   }
 

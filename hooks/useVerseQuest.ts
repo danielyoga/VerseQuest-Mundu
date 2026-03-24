@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
+import { messages } from "@/lib/i18n";
 import { toLocalDateString } from "@/lib/date-utils";
-import { id, streakMessageId } from "@/lib/i18n-id";
 import {
   computeStreakAfterSubmit,
   getDisplayStreak,
@@ -12,11 +13,17 @@ import {
 } from "@/lib/streak";
 import { validatePreregistration } from "@/lib/preregister";
 import type { StoredState, VerseSubmission } from "@/types";
+import { CURRENT_SCHEMA_VERSION } from "@/types";
 
-const STORAGE_KEY = "versequest_v1";
+/**
+ * App data key — stable across deployments. Do not rename or repurpose; new versions
+ * only add fields / migrations. Language lives under LOCALE_STORAGE_KEY (separate).
+ */
+export const APP_DATA_STORAGE_KEY = "versequest_v1";
 
 function emptyState(): StoredState {
   return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     profile: { name: "", phone: "" },
     streak_count: 0,
     last_submitted_at: null,
@@ -32,6 +39,7 @@ function parseStored(raw: string): StoredState | null {
     return {
       ...emptyState(),
       ...parsed,
+      schemaVersion: parsed.schemaVersion ?? 1,
       profile: {
         name: parsed.profile.name,
         phone: parsed.profile.phone,
@@ -48,7 +56,7 @@ function parseStored(raw: string): StoredState | null {
 function loadState(): StoredState {
   if (typeof window === "undefined") return emptyState();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
     if (!raw) return emptyState();
     return parseStored(raw) ?? emptyState();
   } catch {
@@ -58,14 +66,19 @@ function loadState(): StoredState {
 
 function saveState(s: StoredState) {
   try {
-    const payload = JSON.stringify(s);
-    localStorage.setItem(STORAGE_KEY, payload);
+    const toSave: StoredState = {
+      ...s,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+    };
+    const payload = JSON.stringify(toSave);
+    localStorage.setItem(APP_DATA_STORAGE_KEY, payload);
   } catch (e) {
-    console.warn("VerseQuest: gagal menyimpan ke localStorage", e);
+    console.warn("VerseQuest: failed to save app data to localStorage", e);
   }
 }
 
 export function useVerseQuest() {
+  const { locale } = useLocale();
   const [state, setState] = useState<StoredState>(emptyState);
   const [hydrated, setHydrated] = useState(false);
 
@@ -76,10 +89,10 @@ export function useVerseQuest() {
     setHydrated(true);
   }, []);
 
-  /** Sinkron antar tab / jendela: perbarui state jika kunci localStorage berubah di tempat lain */
+  /** Sync when another tab updates app data (same origin). */
   useEffect(() => {
     function onStorage(e: StorageEvent) {
-      if (e.key !== STORAGE_KEY || e.newValue == null) return;
+      if (e.key !== APP_DATA_STORAGE_KEY || e.newValue == null) return;
       const next = parseStored(e.newValue);
       if (next) setState(next);
     }
@@ -89,7 +102,7 @@ export function useVerseQuest() {
 
   const registerProfile = useCallback(
     (phoneInput: string): { ok: boolean; error?: string } => {
-      const v = validatePreregistration(phoneInput);
+      const v = validatePreregistration(phoneInput, locale);
       if (!v.ok) return { ok: false, error: v.error };
       setState((prev) => {
         const next = {
@@ -101,7 +114,7 @@ export function useVerseQuest() {
       });
       return { ok: true };
     },
-    []
+    [locale]
   );
 
   const displayStreak = useMemo(() => getDisplayStreak(state), [state]);
@@ -120,29 +133,20 @@ export function useVerseQuest() {
     [displayStreak]
   );
 
-  const streakMessage = useMemo(
-    () =>
-      streakMessageId(
-        displayStreak,
-        state.profile.name || "Anda",
-        !submittedToday
-      ),
-    [displayStreak, state.profile.name, submittedToday]
-  );
-
   const submitVerse = useCallback(
     (payload: Omit<VerseSubmission, "submitted_at">): { ok: boolean; error?: string } => {
       void payload;
+      const m = messages[locale];
       const todayStr = toLocalDateString(new Date());
       const yesterdayStr = toLocalDateString(new Date(Date.now() - 86400000));
       let err: string | undefined;
       setState((prev) => {
         if (!prev.profile.name || !prev.profile.phone) {
-          err = id.errSubmitSignIn;
+          err = m.errSubmitSignIn;
           return prev;
         }
         if (hasSubmittedToday(prev.last_submitted_at)) {
-          err = id.errSubmitAlreadyToday;
+          err = m.errSubmitAlreadyToday;
           return prev;
         }
         const newStreak = computeStreakAfterSubmit(prev, todayStr, yesterdayStr);
@@ -162,7 +166,7 @@ export function useVerseQuest() {
       if (err) return { ok: false, error: err };
       return { ok: true };
     },
-    []
+    [locale]
   );
 
   return {
@@ -172,7 +176,6 @@ export function useVerseQuest() {
     submittedToday,
     weekDots,
     moodEmoji,
-    streakMessage,
     registerProfile,
     submitVerse,
   };

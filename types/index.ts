@@ -13,9 +13,14 @@ export interface StoredProfile {
 }
 
 export interface StoredState {
+  /** Bump only when migrating stored shape; deploys must not clear this key. */
+  schemaVersion?: number;
   profile: StoredProfile;
   streak_count: number;
   last_submitted_at: string | null;
   xp_total: number;
   submission_dates: string[];
 }
+
+/** Current persisted app data format — keep stable across deployments. */
+export const CURRENT_SCHEMA_VERSION = 1;
