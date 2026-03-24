@@ -18,6 +18,12 @@ import { messages } from "@/lib/i18n";
  */
 const DROPDOWNS_DISABLED = true;
 
+/**
+ * When false, book/chapter/verse block is not rendered (state, memos, and effects stay active).
+ * Set to true to show the fields again.
+ */
+const SHOW_BOOK_CHAPTER_VERSE_UI = false;
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -128,18 +134,17 @@ export function VerseModal({
 
   return (
     <div
-      className="absolute inset-0 z-[100] flex items-end justify-center rounded-[var(--vq-radius-xl)] bg-black/50"
+      className="absolute inset-0 z-[100] flex items-center justify-center rounded-[var(--vq-radius-xl)] bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="verse-modal-title"
       onClick={onClose}
     >
       <div
-        className="w-full animate-vq-slide-up rounded-t-[24px] bg-[var(--vq-bg)] pb-6"
+        className="flex max-h-[min(85vh,560px)] w-full max-w-[min(100%,390px)] flex-col overflow-hidden rounded-[24px] bg-[var(--vq-bg)] shadow-xl animate-vq-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mt-3 h-1 w-9 rounded-full bg-[var(--vq-border-2)]" />
-        <div className="flex items-center justify-between border-b border-[var(--vq-border)] px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-[var(--vq-border)] px-5 py-4">
           <div>
             <h2 id="verse-modal-title" className="text-lg font-medium text-[var(--vq-text)]">
               {m.modalVerseTitle}
@@ -155,92 +160,96 @@ export function VerseModal({
             ✕
           </button>
         </div>
-        <div className="max-h-[min(70vh,520px)] overflow-y-auto px-5 pt-4">
-          <label className="mb-3 block">
-            <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
-              {m.labelBook}
-            </span>
-            {scheduled && readingConstraint ? (
-              <div
-                className={`w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] font-medium text-[var(--vq-text)] ${
-                  DROPDOWNS_DISABLED ? "pointer-events-none opacity-80" : ""
-                }`}
-              >
-                {bookDisplayName(readingConstraint.book, locale)}
-              </div>
-            ) : (
-              <select
-                className="vq-select w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={DROPDOWNS_DISABLED}
-                value={book}
-                onChange={(e) => {
-                  setBook(e.target.value);
-                  setChapter("");
-                  setVerse("");
-                }}
-              >
-                <option value="">{m.bookPlaceholder}</option>
-                <optgroup label={m.ot}>
-                  {BIBLE_BOOKS.oldTestament.map((b) => (
-                    <option key={b.name} value={b.name}>
-                      {bookDisplayName(b.name, locale)}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label={m.nt}>
-                  {BIBLE_BOOKS.newTestament.map((b) => (
-                    <option key={b.name} value={b.name}>
-                      {bookDisplayName(b.name, locale)}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
-            )}
-          </label>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4">
+          {SHOW_BOOK_CHAPTER_VERSE_UI && (
+            <>
+              <label className="mb-3 block">
+                <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+                  {m.labelBook}
+                </span>
+                {scheduled && readingConstraint ? (
+                  <div
+                    className={`w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] font-medium text-[var(--vq-text)] ${
+                      DROPDOWNS_DISABLED ? "pointer-events-none opacity-80" : ""
+                    }`}
+                  >
+                    {bookDisplayName(readingConstraint.book, locale)}
+                  </div>
+                ) : (
+                  <select
+                    className="vq-select w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={DROPDOWNS_DISABLED}
+                    value={book}
+                    onChange={(e) => {
+                      setBook(e.target.value);
+                      setChapter("");
+                      setVerse("");
+                    }}
+                  >
+                    <option value="">{m.bookPlaceholder}</option>
+                    <optgroup label={m.ot}>
+                      {BIBLE_BOOKS.oldTestament.map((b) => (
+                        <option key={b.name} value={b.name}>
+                          {bookDisplayName(b.name, locale)}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={m.nt}>
+                      {BIBLE_BOOKS.newTestament.map((b) => (
+                        <option key={b.name} value={b.name}>
+                          {bookDisplayName(b.name, locale)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                )}
+              </label>
 
-          <div className="mb-3.5 flex gap-2.5">
-            <label className="flex-1">
-              <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
-                {m.labelChapter}
-              </span>
-              <select
-                className="vq-select min-h-[48px] w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={DROPDOWNS_DISABLED || !book}
-                value={chapter}
-                onChange={(e) => {
-                  setChapter(e.target.value);
-                  setVerse("");
-                }}
-              >
-                <option value="">{m.dash}</option>
-                {book &&
-                  chapterOptions.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className="flex-1">
-              <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
-                {m.labelVerse}
-              </span>
-              <select
-                className="vq-select min-h-[48px] w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={DROPDOWNS_DISABLED || !chapter}
-                value={verse}
-                onChange={(e) => setVerse(e.target.value)}
-              >
-                <option value="">{m.dash}</option>
-                {chapter &&
-                  verseCountList.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-              </select>
-            </label>
-          </div>
+              <div className="mb-3.5 flex gap-2.5">
+                <label className="flex-1">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+                    {m.labelChapter}
+                  </span>
+                  <select
+                    className="vq-select min-h-[48px] w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={DROPDOWNS_DISABLED || !book}
+                    value={chapter}
+                    onChange={(e) => {
+                      setChapter(e.target.value);
+                      setVerse("");
+                    }}
+                  >
+                    <option value="">{m.dash}</option>
+                    {book &&
+                      chapterOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label className="flex-1">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+                    {m.labelVerse}
+                  </span>
+                  <select
+                    className="vq-select min-h-[48px] w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)] disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={DROPDOWNS_DISABLED || !chapter}
+                    value={verse}
+                    onChange={(e) => setVerse(e.target.value)}
+                  >
+                    <option value="">{m.dash}</option>
+                    {chapter &&
+                      verseCountList.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </div>
+            </>
+          )}
 
           <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
             {m.labelVerseText}

@@ -407,7 +407,7 @@ export function VerseQuestApp() {
                               {m.scheduleChapterHeading(row.chapter)}
                             </p>
                           )}
-                          <div className="mb-2.5 flex items-start gap-2 last:mb-0">
+                          <div className="mb-2.5 flex items-center gap-2 last:mb-0">
                             <button
                               type="button"
                               onClick={() =>
