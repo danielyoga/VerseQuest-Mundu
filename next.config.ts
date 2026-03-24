@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
    * on your LAN (e.g. http://192.168.247.77:3000). Add more IPs here if your machine
    * gets a different address. Restart `npm run dev` after changing this.
    */
-  allowedDevOrigins: ["192.168.247.77"],
 };
 
 export default nextConfig;
