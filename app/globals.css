@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --vq-canvas: #f4f4f5;
+  --vq-bg: #ffffff;
+  --vq-bg-2: #fafafa;
+  --vq-text: #171717;
+  --vq-muted: #737373;
+  --vq-muted-2: #a3a3a3;
+  --vq-border: rgba(0, 0, 0, 0.08);
+  --vq-border-2: #e5e5e5;
+  --vq-radius-xl: 1rem;
+  --vq-radius-lg: 0.75rem;
+  --vq-radius-md: 0.5rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--vq-canvas);
+  color: var(--vq-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes vq-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes vq-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vq-bounce-in {
+  0% {
+    transform: scale(0.5);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@utility animate-vq-slide-up {
+  animation: vq-slide-up 0.3s ease;
+}
+
+@utility animate-vq-fade-in {
+  animation: vq-fade-in 0.3s ease;
+}
+
+@utility animate-vq-bounce-in {
+  animation: vq-bounce-in 0.6s ease;
+}
+
+.vq-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
