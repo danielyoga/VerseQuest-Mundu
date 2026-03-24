@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   title: "VerseQuest — Rangkaian baca Alkitab harian",
   description:
     "Kirim ayat harian Anda dan jaga rangkaian hari membaca Firman Tuhan.",
+};
+
+/** Fit layout to device width; discourage pinch-zoom (accessibility tradeoff for kiosk-style UI). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

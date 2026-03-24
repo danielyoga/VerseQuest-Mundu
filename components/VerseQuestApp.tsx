@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useVerseQuest } from "@/hooks/useVerseQuest";
 import { VerseModal } from "@/components/VerseModal";
@@ -52,8 +53,22 @@ export function VerseQuestApp() {
   >("idle");
   const [scheduleVerseSelectedKey, setScheduleVerseSelectedKey] = useState<string | null>(null);
   const [scheduleVerseCopiedKey, setScheduleVerseCopiedKey] = useState<string | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
 
   const progress = submittedToday ? 100 : 0;
+
+  useLayoutEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!successOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [successOpen]);
   const taskDone = submittedToday;
 
   const displayName = state.profile.name || (locale === "id" ? "Anda" : "there");
@@ -200,7 +215,7 @@ export function VerseQuestApp() {
                   setPhoneDraft(e.target.value.replace(/\D/g, ""));
                 }}
                 placeholder="81234567890"
-                className="min-h-[48px] min-w-0 flex-1 rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-[15px] text-[var(--vq-text)]"
+                className="min-h-[48px] min-w-0 flex-1 rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-base text-[var(--vq-text)]"
               />
             </div>
             <p className="mt-1.5 text-[11px] leading-snug text-[var(--vq-muted-2)]">
@@ -455,27 +470,33 @@ export function VerseQuestApp() {
           onSubmit={handleSubmitVerse}
         />
 
-        {successOpen && (
-          <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center rounded-[var(--vq-radius-xl)] bg-black/60 p-10 text-center animate-vq-fade-in">
-            <div className="w-full max-w-[320px] rounded-3xl bg-[var(--vq-bg)] px-7 py-8 shadow-xl">
-              <div className="mb-4 text-[56px] animate-vq-bounce-in">🎉</div>
-              <h3 className="mb-2 text-[22px] font-medium text-[var(--vq-text)]">{m.successTitle}</h3>
-              <p className="mb-5 text-sm leading-relaxed text-[var(--vq-muted)]">
-                {m.successBody(displayName)}
-              </p>
-              <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-[#534AB7] px-5 py-2 text-sm font-medium text-white">
-                <span>⭐</span> {m.successXp}
+        {successOpen &&
+          portalReady &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/60 p-6 text-center animate-vq-fade-in"
+              style={{ minHeight: "100dvh" }}
+            >
+              <div className="w-full max-w-[320px] rounded-3xl bg-[var(--vq-bg)] px-7 py-8 shadow-xl">
+                <div className="mb-4 text-[56px] animate-vq-bounce-in">🎉</div>
+                <h3 className="mb-2 text-[22px] font-medium text-[var(--vq-text)]">{m.successTitle}</h3>
+                <p className="mb-5 text-sm leading-relaxed text-[var(--vq-muted)]">
+                  {m.successBody(displayName)}
+                </p>
+                <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-[#534AB7] px-5 py-2 text-sm font-medium text-white">
+                  <span>⭐</span> {m.successXp}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSuccessOpen(false)}
+                  className="w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-3.5 text-base font-medium text-white hover:bg-[#3C3489]"
+                >
+                  {m.successCta}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSuccessOpen(false)}
-                className="w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-3.5 text-base font-medium text-white hover:bg-[#3C3489]"
-              >
-                {m.successCta}
-              </button>
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale } from "@/contexts/LocaleContext";
 import { BIBLE_BOOKS, getChapterCount, getVerseCountForChapter } from "@/lib/bible-data";
 import { bookDisplayName } from "@/lib/book-names-id";
@@ -49,8 +50,22 @@ export function VerseModal({
   const [chapter, setChapter] = useState("");
   const [verse, setVerse] = useState("");
   const [text, setText] = useState("");
+  const [portalReady, setPortalReady] = useState(false);
 
   const scheduled = Boolean(readingConstraint);
+
+  useLayoutEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   const chapterOptions = useMemo(() => {
     if (!book) return [];
@@ -132,9 +147,10 @@ export function VerseModal({
 
   const modalSub = scheduled ? m.modalVerseSubtitleScheduled : m.modalVerseSubtitle;
 
-  return (
+  const overlay = (
     <div
-      className="absolute inset-0 z-[100] flex items-center justify-center rounded-[var(--vq-radius-xl)] bg-black/50 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+      style={{ minHeight: "100dvh" }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="verse-modal-title"
@@ -255,7 +271,7 @@ export function VerseModal({
             {m.labelVerseText}
           </span>
           <textarea
-            className="mb-3 min-h-[120px] w-full resize-none rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 pb-3 text-[14px] leading-relaxed text-[var(--vq-text)]"
+            className="mb-3 min-h-[120px] w-full resize-none rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 pb-3 text-base leading-relaxed text-[var(--vq-text)]"
             placeholder={m.versePlaceholder}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -280,4 +296,7 @@ export function VerseModal({
       </div>
     </div>
   );
+
+  if (!portalReady) return null;
+  return createPortal(overlay, document.body);
 }
