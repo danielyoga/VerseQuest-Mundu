@@ -3,14 +3,14 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "@/contexts/LocaleContext";
-import { BIBLE_BOOKS, getChapterCount, getVerseCountForChapter } from "@/lib/bible-data";
-import { bookDisplayName } from "@/lib/book-names-id";
+import { BIBLE_BOOKS, getChapterCount, getVerseCountForChapter } from "@/lib/bible/data";
+import { bookDisplayName } from "@/lib/bible/book-names-id";
 import {
   getAllowedVersesInChapter,
   isSelectionInConstraint,
   listChaptersInRange,
   type ReadingConstraint,
-} from "@/lib/bible-schedule";
+} from "@/lib/bible/schedule";
 import { messages } from "@/lib/i18n";
 
 /**

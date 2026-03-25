@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import { toLocalDateString } from "@/lib/date-utils";
@@ -10,8 +10,8 @@ import {
   getMoodEmoji,
   getWeekDots,
   hasSubmittedToday,
-} from "@/lib/streak";
-import { validatePreregistration } from "@/lib/preregister";
+} from "@/lib/streak/streak";
+import type { StreakSyncMergedPayload } from "@/lib/streak/sync-merge";
 import type { StoredState, VerseSubmission } from "@/types";
 import { CURRENT_SCHEMA_VERSION } from "@/types";
 
@@ -81,6 +81,46 @@ export function useVerseQuest() {
   const { locale } = useLocale();
   const [state, setState] = useState<StoredState>(emptyState);
   const [hydrated, setHydrated] = useState(false);
+  /** Drop stale sync responses when a newer sync was started (submit vs initial load). */
+  const streakSyncGenRef = useRef(0);
+
+  /** Merge local streak fields with Google Sheet (union dates, no deletions). */
+  const syncStreakWithSheet = useCallback(async (snapshot: StoredState) => {
+    if (!snapshot.profile.phone) return;
+    const gen = ++streakSyncGenRef.current;
+    try {
+      const res = await fetch("/api/streak-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: snapshot.profile.phone,
+          name: snapshot.profile.name,
+          submission_dates: snapshot.submission_dates,
+          xp_total: snapshot.xp_total,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        merged?: StreakSyncMergedPayload;
+      };
+      if (!data.ok || !data.merged) return;
+      if (gen !== streakSyncGenRef.current) return;
+      const m = data.merged;
+      setState((prev) => {
+        const next: StoredState = {
+          ...prev,
+          submission_dates: m.submission_dates,
+          streak_count: m.streak_count,
+          last_submitted_at: m.last_submitted_at,
+          xp_total: m.xp_total,
+        };
+        saveState(next);
+        return next;
+      });
+    } catch {
+      // Offline or server error — local cache remains authoritative until next sync.
+    }
+  }, []);
 
   useEffect(() => {
     // Client-only: read persisted streak from localStorage after mount (SSR-safe).
@@ -100,14 +140,33 @@ export function useVerseQuest() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  /** After login or on load: two-way merge with sheet. */
+  useEffect(() => {
+    if (!hydrated || !state.profile.phone) return;
+    void syncStreakWithSheet(loadState());
+  }, [hydrated, state.profile.phone, syncStreakWithSheet]);
+
   const registerProfile = useCallback(
-    (phoneInput: string): { ok: boolean; error?: string } => {
-      const v = validatePreregistration(phoneInput, locale);
-      if (!v.ok) return { ok: false, error: v.error };
+    async (phoneInput: string): Promise<{ ok: boolean; error?: string }> => {
+      const month = new Date().getMonth() + 1;
+      let data: { ok?: boolean; error?: string; name?: string; canonicalPhone?: string };
+      try {
+        const res = await fetch("/api/preregister-lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: phoneInput, month, locale }),
+        });
+        data = (await res.json()) as typeof data;
+      } catch {
+        return { ok: false, error: messages[locale].loginErrorGeneric };
+      }
+      if (!data.ok || !data.name || !data.canonicalPhone) {
+        return { ok: false, error: data.error ?? messages[locale].loginErrorGeneric };
+      }
       setState((prev) => {
         const next = {
           ...prev,
-          profile: { name: v.name, phone: v.canonicalPhone },
+          profile: { name: data.name!, phone: data.canonicalPhone! },
         };
         saveState(next);
         return next;
@@ -161,12 +220,13 @@ export function useVerseQuest() {
           submission_dates,
         };
         saveState(next);
+        void syncStreakWithSheet(next);
         return next;
       });
       if (err) return { ok: false, error: err };
       return { ok: true };
     },
-    [locale]
+    [locale, syncStreakWithSheet]
   );
 
   return {

@@ -1,4 +1,4 @@
-import { toLocalDateString } from "./date-utils";
+import { toLocalDateString } from "@/lib/date-utils";
 import type { StoredState } from "@/types";
 
 export type WeekDotState = "done" | "today" | "missed" | "future";

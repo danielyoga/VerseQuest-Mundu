@@ -6,11 +6,15 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  adjustFontFallback: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
@@ -19,12 +23,11 @@ export const metadata: Metadata = {
     "Kirim ayat harian Anda dan jaga rangkaian hari membaca Firman Tuhan.",
 };
 
-/** Fit layout to device width; discourage pinch-zoom (accessibility tradeoff for kiosk-style UI). */
+/** Allow pinch-zoom up to 5× (Lighthouse / WCAG); initial scale still 1 for app-like layout. */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
   viewportFit: "cover",
 };
 

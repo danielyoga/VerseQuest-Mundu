@@ -5,3 +5,22 @@ export function toLocalDateString(d: Date): string {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+
+/**
+ * Monday–Sunday local dates (7 entries), same week logic as streak week dots (ISO week, Monday start).
+ */
+export function getLocalWeekDateStrings(anchor: Date = new Date()): string[] {
+  const d = new Date(anchor);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + mondayOffset);
+  const out: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const x = new Date(monday);
+    x.setDate(monday.getDate() + i);
+    out.push(toLocalDateString(x));
+  }
+  return out;
+}

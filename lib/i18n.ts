@@ -73,7 +73,9 @@ export const messages = {
     langAria: "Language",
 
     scheduleHeading: "📅 Today’s reading",
-    scheduleNoPlan: "No reading plan for this date in the schedule file.",
+    scheduleNoPlan: "No reading plan for this date in the schedule.",
+    scheduleVersesPending:
+      "This date is on the schedule, but verse text has not been filled in the sheet yet (run the populate script).",
     scheduleLoadingPassage: "Loading text…",
     schedulePassageError: "Could not load Bible text. Try again later.",
     scheduleTranslationNote: "Indonesian · Terjemahan Baru (TB) — SABDA / alkitab.mobi",
@@ -103,7 +105,8 @@ export const messages = {
 
     statusAppName: "VerseQuest",
 
-    subtitleDone: "Alhamdulillah, misi hari ini telah selesai. Sampai jumpa besok!",
+    subtitleDone:
+      "Syukur kepada Tuhan, misi hari ini telah selesai. Sampai jumpa besok!",
     subtitlePending: "Ayat harian Anda menanti untuk dikirim.",
 
     streakLabel: "🔥 Rangkaian hari",
@@ -140,7 +143,7 @@ export const messages = {
 
     successTitle: "Ayat berhasil dikirim!",
     successBody: (name: string) =>
-      `Alhamdulillah, ${name}! Rangkaian hari Anda terjaga. Terus membaca, terus bertumbuh.`,
+      `Puji Tuhan, ${name}! Rangkaian hari Anda terjaga. Terus membaca, terus bertumbuh.`,
     successXp: "+10 XP hari ini",
     successCta: "Semangat terus!",
 
@@ -153,7 +156,9 @@ export const messages = {
     langAria: "Bahasa",
 
     scheduleHeading: "📅 Bacaan hari ini",
-    scheduleNoPlan: "Belum ada jadwal bacaan untuk tanggal ini di berkas jadwal.",
+    scheduleNoPlan: "Belum ada jadwal bacaan untuk tanggal ini.",
+    scheduleVersesPending:
+      "Tanggal ini ada di jadwal, tetapi teks ayat di sheet masih kosong (jalankan skrip pengisian).",
     scheduleLoadingPassage: "Memuat teks…",
     schedulePassageError: "Teks Alkitab tidak dapat dimuat. Coba lagi nanti.",
     scheduleTranslationNote: "Bahasa Indonesia · Terjemahan Baru (TB) — SABDA / alkitab.mobi",

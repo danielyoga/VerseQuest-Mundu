@@ -12,8 +12,22 @@ import {
   messages,
   streakMessage,
 } from "@/lib/i18n";
-import { bookDisplayName } from "@/lib/book-names-id";
-import { constraintFromEntry, getScheduleForDate } from "@/lib/bible-schedule";
+import { bookDisplayName } from "@/lib/bible/book-names-id";
+import {
+  constraintFromEntry,
+  type ScheduleEntry,
+} from "@/lib/bible/schedule";
+import { toLocalDateString } from "@/lib/date-utils";
+import {
+  clearScheduleWindowCache,
+  isUsableCachedScheduleDay,
+  readScheduleWindowCache,
+  writeScheduleWindowCache,
+} from "@/lib/schedule/window-cache";
+import type {
+  ScheduleWindowDay,
+  ScheduleWindowResponse,
+} from "@/lib/schedule/window-types";
 
 type PassageVerse = { chapter: number; verse: number; text: string };
 
@@ -47,10 +61,12 @@ export function VerseQuestApp() {
   const [verseOpen, setVerseOpen] = useState(false);
   const [verseModalKey, setVerseModalKey] = useState(0);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [todaySchedule, setTodaySchedule] = useState<ScheduleEntry | null>(null);
   const [schedulePassage, setSchedulePassage] = useState<PassageVerse[] | null>(null);
   const [schedulePassageStatus, setSchedulePassageStatus] = useState<
-    "idle" | "loading" | "ok" | "error"
-  >("idle");
+    "idle" | "loading" | "ok" | "error" | "no_plan" | "verses_pending"
+  >("loading");
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
   const [scheduleVerseSelectedKey, setScheduleVerseSelectedKey] = useState<string | null>(null);
   const [scheduleVerseCopiedKey, setScheduleVerseCopiedKey] = useState<string | null>(null);
   const [portalReady, setPortalReady] = useState(false);
@@ -93,40 +109,89 @@ export function VerseQuestApp() {
     [locale, displayStreak, state.profile.name, submittedToday]
   );
 
-  const { todaySchedule, readingConstraint } = useMemo(() => {
-    const e = getScheduleForDate(new Date());
-    return {
-      todaySchedule: e,
-      readingConstraint: e ? constraintFromEntry(e) : null,
-    };
-  }, []);
+  const readingConstraint = useMemo(
+    () => (todaySchedule ? constraintFromEntry(todaySchedule) : null),
+    [todaySchedule]
+  );
 
-  useEffect(() => {
-    if (!todaySchedule) {
-      setSchedulePassage(null);
-      setSchedulePassageStatus("idle");
+  useLayoutEffect(() => {
+    const d = new Date();
+    const month = d.getMonth() + 1;
+    const date = d.getDate();
+    const ymd = toLocalDateString(d);
+
+    function applyScheduleWindowDay(day: ScheduleWindowDay | undefined) {
+      if (!day) {
+        setSchedulePassageStatus("error");
+        return;
+      }
+      if (!day.ok) {
+        if (day.reason === "no_row") {
+          setTodaySchedule(null);
+          setSchedulePassage(null);
+          setSchedulePassageStatus("no_plan");
+        } else if (day.book != null && day.reading != null) {
+          setTodaySchedule({
+            month: day.month,
+            date: day.date,
+            book: day.book,
+            reading: day.reading,
+          });
+          setSchedulePassage(null);
+          setSchedulePassageStatus(
+            day.reason === "verses_empty" || day.reason === "verses_invalid"
+              ? "verses_pending"
+              : "error"
+          );
+        } else {
+          setSchedulePassageStatus("error");
+        }
+        return;
+      }
+      setTodaySchedule({
+        month: day.month,
+        date: day.date,
+        book: day.book,
+        reading: day.reading,
+      });
+      setSchedulePassage(day.verses);
+      setSchedulePassageStatus("ok");
+    }
+
+    const cached = readScheduleWindowCache(ymd);
+    const todayEntry = cached?.days?.find(
+      (x) => x.month === month && x.date === date
+    );
+
+    if (isUsableCachedScheduleDay(todayEntry)) {
+      applyScheduleWindowDay(todayEntry);
       return;
     }
+
+    if (cached?.days?.length) {
+      clearScheduleWindowCache();
+    }
+
     const ac = new AbortController();
     setSchedulePassageStatus("loading");
     setSchedulePassage(null);
+    setTodaySchedule(null);
 
-    const q = new URLSearchParams({
-      book: todaySchedule.book,
-      reading: todaySchedule.reading,
-    });
-
-    fetch(`/api/bible-passage?${q.toString()}`, { signal: ac.signal })
+    fetch(`/api/schedule-window?from=${encodeURIComponent(ymd)}&days=4`, {
+      cache: "no-store",
+      signal: ac.signal,
+    })
       .then(async (res) => {
         if (!res.ok) throw new Error("bad_response");
-        const data = (await res.json()) as { verses: PassageVerse[] };
-        return data.verses;
+        return res.json() as Promise<ScheduleWindowResponse>;
       })
-      .then((verses) => {
-        if (!ac.signal.aborted) {
-          setSchedulePassage(verses);
-          setSchedulePassageStatus("ok");
-        }
+      .then((data) => {
+        if (ac.signal.aborted) return;
+        writeScheduleWindowCache(ymd, data);
+        const todayEntry = data.days?.find(
+          (x) => x.month === month && x.date === date
+        );
+        applyScheduleWindowDay(todayEntry);
       })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -134,7 +199,7 @@ export function VerseQuestApp() {
       });
 
     return () => ac.abort();
-  }, [todaySchedule]);
+  }, []);
 
   useEffect(() => {
     setScheduleVerseSelectedKey(null);
@@ -229,18 +294,27 @@ export function VerseQuestApp() {
           )}
           <button
             type="button"
-            disabled={phoneDraft.replace(/\D/g, "").length < 9}
+            disabled={
+              registerSubmitting || phoneDraft.replace(/\D/g, "").length < 9
+            }
             onClick={() => {
-              const r = registerProfile(phoneDraft);
-              if (!r.ok) {
-                setRegisterError(r.error ?? m.loginErrorGeneric);
-                return;
-              }
-              setRegisterError(null);
+              void (async () => {
+                setRegisterSubmitting(true);
+                try {
+                  const r = await registerProfile(phoneDraft);
+                  if (!r.ok) {
+                    setRegisterError(r.error ?? m.loginErrorGeneric);
+                    return;
+                  }
+                  setRegisterError(null);
+                } finally {
+                  setRegisterSubmitting(false);
+                }
+              })();
             }}
             className="mt-6 w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] disabled:cursor-not-allowed disabled:bg-[var(--vq-bg-2)] disabled:text-[var(--vq-muted-2)]"
           >
-            {m.loginContinue}
+            {registerSubmitting ? m.loading : m.loginContinue}
           </button>
         </div>
       </div>
@@ -254,7 +328,7 @@ export function VerseQuestApp() {
         <div className="flex items-center justify-between gap-2 px-3 pb-1.5 pt-3 text-xs font-medium text-[var(--vq-muted)] sm:px-5">
           <span className="min-w-0 flex-1 capitalize leading-snug">{headerDate}</span>
           <LangToggle />
-          <span className="shrink-0 opacity-70">{m.statusAppName}</span>
+          <span className="shrink-0 text-[var(--vq-muted)]">{m.statusAppName}</span>
         </div>
 
         {/* Header */}
@@ -284,22 +358,22 @@ export function VerseQuestApp() {
         </section>
 
         {/* Streak */}
-        <section className="relative mx-5 mb-4 overflow-hidden rounded-[20px] bg-[#534AB7] px-5 py-5 text-white">
+        <section className="relative mx-5 mb-4 overflow-hidden rounded-[20px] bg-[var(--vq-brand)] px-5 py-5 text-[var(--vq-on-brand)]">
           <div className="pointer-events-none absolute -right-8 -top-8 h-[120px] w-[120px] rounded-full bg-white/[0.06]" />
           <div className="pointer-events-none absolute bottom-[-20px] right-10 h-20 w-20 rounded-full bg-white/[0.05]" />
           <div className="relative flex items-start justify-between">
             <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide opacity-75">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[var(--vq-on-brand-muted)]">
                 {m.streakLabel}
               </p>
               <p className="text-5xl font-medium leading-none">{displayStreak}</p>
-              <p className="mt-1 text-sm opacity-80">{m.streakUnit}</p>
+              <p className="mt-1 text-sm text-[var(--vq-on-brand-muted)]">{m.streakUnit}</p>
             </div>
             <span className="text-5xl leading-none" aria-hidden>
               {moodEmoji}
             </span>
           </div>
-          <p className="relative mt-3.5 border-t border-white/20 pt-3.5 text-[13px] leading-snug opacity-85">
+          <p className="relative mt-3.5 border-t border-white/25 pt-3.5 text-[13px] leading-snug text-[var(--vq-on-brand-subtle)]">
             {streakText}
           </p>
           <div className="relative mt-3.5 flex gap-1.5">
@@ -307,17 +381,19 @@ export function VerseQuestApp() {
               const kind = weekDots[i];
               const dotClass =
                 kind === "done"
-                  ? "bg-white/90 text-[#534AB7] font-medium"
+                  ? "bg-white text-[var(--vq-brand)] font-medium"
                   : kind === "today"
                     ? "bg-[#FAC775] text-[#412402] font-medium"
                     : kind === "missed"
-                      ? "bg-white/[0.15] text-white/40"
-                      : "bg-white/[0.08] text-white/25";
+                      ? "bg-white/25 text-[var(--vq-on-brand)]"
+                      : "bg-white/20 text-[var(--vq-on-brand-muted)]";
               const inner =
                 kind === "done" ? "✓" : kind === "today" ? "!" : "·";
               return (
                 <div key={label} className="flex flex-1 flex-col items-center gap-1.5">
-                  <span className="text-[10px] uppercase opacity-65">{label}</span>
+                  <span className="text-[10px] font-medium uppercase text-[var(--vq-on-brand-muted)]">
+                    {label}
+                  </span>
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-xs ${dotClass}`}
                   >
@@ -392,7 +468,17 @@ export function VerseQuestApp() {
 
           <div className="mt-4 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
             <p className="mb-2 text-[13px] font-medium text-[var(--vq-text)]">{m.scheduleHeading}</p>
-            {todaySchedule ? (
+            {schedulePassageStatus === "loading" && (
+              <p className="text-sm text-[var(--vq-muted)]">{m.scheduleLoadingPassage}</p>
+            )}
+            {schedulePassageStatus === "no_plan" && (
+              <p className="text-sm leading-snug text-[var(--vq-muted)]">{m.scheduleNoPlan}</p>
+            )}
+            {schedulePassageStatus === "error" && (
+              <p className="text-sm text-red-700">{m.schedulePassageError}</p>
+            )}
+            {todaySchedule &&
+              (schedulePassageStatus === "ok" || schedulePassageStatus === "verses_pending") && (
               <div>
                 <div className="space-y-1">
                   <p className="text-[15px] font-semibold text-[var(--vq-text)]">
@@ -401,11 +487,8 @@ export function VerseQuestApp() {
                   <p className="text-sm leading-snug text-[var(--vq-muted)]">{todaySchedule.reading}</p>
                 </div>
 
-                {schedulePassageStatus === "loading" && (
-                  <p className="mt-3 text-sm text-[var(--vq-muted)]">{m.scheduleLoadingPassage}</p>
-                )}
-                {schedulePassageStatus === "error" && (
-                  <p className="mt-3 text-sm text-red-700">{m.schedulePassageError}</p>
+                {schedulePassageStatus === "verses_pending" && (
+                  <p className="mt-3 text-sm leading-snug text-amber-800">{m.scheduleVersesPending}</p>
                 )}
                 {schedulePassageStatus === "ok" && schedulePassage && schedulePassage.length > 0 && (
                   <div className="mt-3 max-h-[min(50vh,360px)] overflow-y-auto border-t border-[var(--vq-border)] pt-3">
@@ -456,8 +539,6 @@ export function VerseQuestApp() {
                   </div>
                 )}
               </div>
-            ) : (
-              <p className="text-sm leading-snug text-[var(--vq-muted)]">{m.scheduleNoPlan}</p>
             )}
           </div>
         </div>

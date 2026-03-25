@@ -1,5 +1,4 @@
-import scheduleRaw from "@/data/bible-verse-schedule.json";
-import { getVerseCountForChapter } from "@/lib/bible-data";
+import { getVerseCountForChapter } from "./data";
 
 export type ScheduleEntry = {
   month?: number;
@@ -7,8 +6,6 @@ export type ScheduleEntry = {
   book: string;
   reading: string;
 };
-
-const SCHEDULE: ScheduleEntry[] = scheduleRaw as ScheduleEntry[];
 
 /** Parsed range: start and end chapter/verse (inclusive). */
 export type ReadingConstraint = {
@@ -24,7 +21,9 @@ export type ReadingConstraint = {
  * Whitespace around "-" is ignored.
  */
 export function parseReadingRange(reading: string): Omit<ReadingConstraint, "book"> {
-  const s = reading.replace(/\s/g, "");
+  const s = reading
+    .replace(/\s/g, "")
+    .replace(/[–—−]/g, "-");
   const two = s.match(/^(\d+):(\d+)-(\d+):(\d+)$/);
   if (two) {
     return {
@@ -45,17 +44,6 @@ export function parseReadingRange(reading: string): Omit<ReadingConstraint, "boo
     };
   }
   throw new Error(`Invalid reading range: ${reading}`);
-}
-
-export function getScheduleForDate(d: Date): ScheduleEntry | null {
-  const day = d.getDate();
-  const month = d.getMonth() + 1;
-  return (
-    SCHEDULE.find(
-      (e) =>
-        e.date === day && (e.month === undefined || e.month === month)
-    ) ?? null
-  );
 }
 
 export function constraintFromEntry(entry: ScheduleEntry): ReadingConstraint {

@@ -5,13 +5,20 @@
   --vq-bg: #ffffff;
   --vq-bg-2: #fafafa;
   --vq-text: #171717;
-  --vq-muted: #737373;
-  --vq-muted-2: #a3a3a3;
-  --vq-border: rgba(0, 0, 0, 0.08);
+  /* ~7:1 on white — body / UI chrome */
+  --vq-muted: #525252;
+  /* ~4.5:1 on white — secondary / hints */
+  --vq-muted-2: #6b7280;
+  --vq-border: rgba(0, 0, 0, 0.12);
   --vq-border-2: #e5e5e5;
   --vq-radius-xl: 1rem;
   --vq-radius-lg: 0.75rem;
   --vq-radius-md: 0.5rem;
+  /* Text on --vq-brand (#534AB7) — solid colors, no opacity (WCAG contrast) */
+  --vq-brand: #534ab7;
+  --vq-on-brand: #ffffff;
+  --vq-on-brand-muted: #e8e4ff;
+  --vq-on-brand-subtle: #ddd8fc;
 }
 
 @theme inline {

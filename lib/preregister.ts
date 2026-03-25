@@ -1,10 +1,3 @@
-import registry from "@/data/preregistered-users.json";
-import { messages, type Locale } from "@/lib/i18n";
-
-type Registry = Record<string, string>;
-
-const R = registry as Registry;
-
 /** Normalize Indonesian numbers for lookup (0xxxxxxxxxx, +62, 62, 8xx…). */
 export function normalizePhone(input: string): string {
   const digits = input.replace(/\D/g, "");
@@ -19,26 +12,4 @@ export function normalizePhone(input: string): string {
     return `0${digits}`;
   }
   return digits;
-}
-
-/** Look up preregistered user by phone only; name comes from the registry. */
-export function validatePreregistration(
-  phoneInput: string,
-  locale: Locale
-): { ok: true; canonicalPhone: string; name: string } | { ok: false; error: string } {
-  const m = messages[locale];
-  const phone = normalizePhone(phoneInput);
-  if (!phone || phone.length < 10) {
-    return { ok: false, error: m.errPhoneInvalid };
-  }
-
-  const registeredName = R[phone];
-  if (!registeredName) {
-    return {
-      ok: false,
-      error: m.errPhoneNotInvited,
-    };
-  }
-
-  return { ok: true, canonicalPhone: phone, name: registeredName.trim() };
 }

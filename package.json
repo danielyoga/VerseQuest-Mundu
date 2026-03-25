@@ -6,14 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "preview": "next build && next start",
     "lint": "eslint",
-    "generate:bible-json": "node scripts/generate-bible-verse-counts.mjs"
+    "generate:bible-json": "node scripts/generate-bible-verse-counts.mjs",
+    "gsheet:try": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/gsheet-try.ts",
+    "gsheet:populate-schedule": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts",
+    "gsheet:monthly": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts"
   },
   "dependencies": {
+    "googleapis": "^171.4.0",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
+  "browserslist": [
+    "Chrome >= 100",
+    "Edge >= 100",
+    "Firefox >= 100",
+    "Safari >= 16",
+    "iOS >= 16"
+  ],
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -22,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
