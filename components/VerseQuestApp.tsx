@@ -624,6 +624,7 @@ export function VerseQuestApp() {
           open={verseOpen}
           onClose={() => setVerseOpen(false)}
           readingConstraint={readingConstraint}
+          schedulePassage={schedulePassageStatus === "ok" ? schedulePassage : null}
           onSubmit={handleSubmitVerse}
         />
 
