@@ -5,7 +5,10 @@ import { createPortal } from "react-dom";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useVerseQuest } from "@/hooks/useVerseQuest";
 import { VerseModal } from "@/components/VerseModal";
+import { FirmanPollModal } from "@/components/FirmanPollModal";
 import { LangToggle } from "@/components/LangToggle";
+import { useFirmanPoll } from "@/hooks/useFirmanPoll";
+import { getFirmanPollConfig } from "@/lib/firman-poll-config";
 import {
   formatHeaderDate,
   greetingLine,
@@ -70,8 +73,21 @@ export function VerseQuestApp() {
   const [scheduleVerseSelectedKey, setScheduleVerseSelectedKey] = useState<string | null>(null);
   const [scheduleVerseCopiedKey, setScheduleVerseCopiedKey] = useState<string | null>(null);
   const [portalReady, setPortalReady] = useState(false);
+  const [firmanOpen, setFirmanOpen] = useState(false);
+  const [firmanModalKey, setFirmanModalKey] = useState(0);
 
-  const progress = submittedToday ? 100 : 0;
+  const firmanConfig = useMemo(() => getFirmanPollConfig(), []);
+  const {
+    hydrated: firmanHydrated,
+    doneForToday: firmanDone,
+    savedAnswers: firmanAnswers,
+    submit: submitFirmanPoll,
+  } = useFirmanPoll();
+
+  const totalQuests = firmanConfig ? 2 : 1;
+  const doneQuests =
+    (submittedToday ? 1 : 0) + (firmanConfig && firmanDone ? 1 : 0);
+  const progress = totalQuests ? (doneQuests / totalQuests) * 100 : 0;
 
   useLayoutEffect(() => {
     setPortalReady(true);
@@ -240,7 +256,7 @@ export function VerseQuestApp() {
     window.setTimeout(() => setSuccessOpen(true), 200);
   }
 
-  if (!hydrated || !localeReady) {
+  if (!hydrated || !localeReady || !firmanHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--vq-canvas)] text-[var(--vq-muted)]">
         {m.loading}
@@ -324,11 +340,10 @@ export function VerseQuestApp() {
   return (
     <div className="min-h-screen bg-[var(--vq-canvas)] py-6">
       <div className="relative mx-auto flex min-h-[780px] max-w-[390px] flex-col overflow-hidden rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)]">
-        {/* Top bar: date | language | app name */}
+        {/* Top bar: date | language */}
         <div className="flex items-center justify-between gap-2 px-3 pb-1.5 pt-3 text-xs font-medium text-[var(--vq-muted)] sm:px-5">
           <span className="min-w-0 flex-1 capitalize leading-snug">{headerDate}</span>
           <LangToggle />
-          <span className="shrink-0 text-[var(--vq-muted)]">{m.statusAppName}</span>
         </div>
 
         {/* Header */}
@@ -390,7 +405,7 @@ export function VerseQuestApp() {
               const inner =
                 kind === "done" ? "✓" : kind === "today" ? "!" : "·";
               return (
-                <div key={label} className="flex flex-1 flex-col items-center gap-1.5">
+                <div key={`${label}-${i}`} className="flex flex-1 flex-col items-center gap-1.5">
                   <span className="text-[10px] font-medium uppercase text-[var(--vq-on-brand-muted)]">
                     {label}
                   </span>
@@ -408,7 +423,7 @@ export function VerseQuestApp() {
         {/* Progress */}
         <div className="mb-2 flex justify-between px-5 text-xs text-[var(--vq-muted)]">
           <span>{m.progressToday}</span>
-          <span>{m.progressTasks(taskDone ? 1 : 0, 1)}</span>
+          <span>{m.progressTasks(doneQuests, totalQuests)}</span>
         </div>
         <div className="mx-5 mb-4 h-2 overflow-hidden rounded-lg bg-[var(--vq-bg-2)]">
           <div
@@ -421,52 +436,113 @@ export function VerseQuestApp() {
           {m.questToday}
         </p>
 
-        {/* Task */}
-        <div className="mx-5 mb-3 flex items-center gap-3.5 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
-          <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
-              taskDone ? "bg-[#EAF3DE]" : "bg-[#FAEEDA]"
-            }`}
-          >
-            {taskDone ? "✅" : "📖"}
+        {/* Daily verse — its own card; submit CTA lives inside */}
+        <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
+          <div className="flex gap-3.5 items-center">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
+                taskDone ? "bg-[#EAF3DE]" : "bg-[#FAEEDA]"
+              }`}
+            >
+              {taskDone ? "✅" : "📖"}
+            </div>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-medium text-[var(--vq-text)]">{m.taskTitle}</p>
+                <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
+                  {taskDone ? m.taskDescDone : m.taskDescPending}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 self-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                  taskDone ? "bg-[#EAF3DE] text-[#27500A]" : "bg-[#FAEEDA] text-[#633806]"
+                }`}
+              >
+                {taskDone ? m.badgeDone : m.badgePending}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-medium text-[var(--vq-text)]">{m.taskTitle}</p>
-            <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
-              {taskDone ? m.taskDescDone : m.taskDescPending}
-            </p>
+          <div className="mt-4">
+            <button
+              type="button"
+              disabled={taskDone}
+              onClick={handleOpenSubmit}
+              className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium transition active:scale-[0.98] ${
+                taskDone
+                  ? "cursor-default bg-[#3B6D11] text-white"
+                  : "bg-[#534AB7] text-white hover:bg-[#3C3489]"
+              }`}
+            >
+              {taskDone ? (
+                m.ctaDone
+              ) : (
+                <>
+                  <span>✨</span> {m.ctaSubmit}
+                </>
+              )}
+            </button>
           </div>
-          <span
-            className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
-              taskDone ? "bg-[#EAF3DE] text-[#27500A]" : "bg-[#FAEEDA] text-[#633806]"
-            }`}
-          >
-            {taskDone ? m.badgeDone : m.badgePending}
-          </span>
         </div>
 
-        {/* CTA */}
-        <div className="px-5 pb-6">
-          <button
-            type="button"
-            disabled={taskDone}
-            onClick={handleOpenSubmit}
-            className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium transition active:scale-[0.98] ${
-              taskDone
-                ? "cursor-default bg-[#3B6D11] text-white"
-                : "bg-[#534AB7] text-white hover:bg-[#3C3489]"
-            }`}
-          >
-            {taskDone ? (
-              m.ctaDone
-            ) : (
-              <>
-                <span>✨</span> {m.ctaSubmit}
-              </>
-            )}
-          </button>
+        {/* Firman reflection — separate card; checklist saved locally */}
+        <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
+          <div className="flex gap-3.5 items-center">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
+                firmanDone ? "bg-[#EAF3DE]" : "bg-[#FAEEDA]"
+              }`}
+            >
+              {firmanDone ? "✅" : "🙏"}
+            </div>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-medium leading-snug text-[var(--vq-text)]">
+                  {m.task2Title}
+                </p>
+                <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
+                  {!firmanConfig
+                    ? m.firmanPollConfigMissing
+                    : firmanDone
+                      ? m.task2DescDone
+                      : m.task2DescPending}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 self-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                  !firmanConfig
+                    ? "bg-[var(--vq-bg)] text-[var(--vq-muted-2)]"
+                    : firmanDone
+                      ? "bg-[#EAF3DE] text-[#27500A]"
+                      : "bg-[#FAEEDA] text-[#633806]"
+                }`}
+              >
+                {!firmanConfig ? "—" : firmanDone ? m.badgeDone : m.badgePending}
+              </span>
+            </div>
+          </div>
+          {firmanConfig && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setFirmanModalKey((k) => k + 1);
+                  setFirmanOpen(true);
+                }}
+                className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium transition active:scale-[0.98] ${
+                  firmanDone
+                    ? "cursor-default bg-[#3B6D11] text-white"
+                    : "bg-[#534AB7] text-white hover:bg-[#3C3489]"
+                }`}
+              >
+                {firmanDone ? m.firmanPollCtaDone : m.firmanPollCta}
+              </button>
+            </div>
+          )}
+        </div>
 
-          <div className="mt-4 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
+        {/* Reading schedule */}
+        <div className="px-5 pb-6">
+          <div className="rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
             <p className="mb-2 text-[13px] font-medium text-[var(--vq-text)]">{m.scheduleHeading}</p>
             {schedulePassageStatus === "loading" && (
               <p className="text-sm text-[var(--vq-muted)]">{m.scheduleLoadingPassage}</p>
@@ -499,7 +575,7 @@ export function VerseQuestApp() {
                       const rowKey = scheduleVerseKey(row);
                       const selected = scheduleVerseSelectedKey === rowKey;
                       return (
-                        <div key={rowKey}>
+                        <div key={`${rowKey}-${i}`}>
                           {(i === 0 || schedulePassage[i - 1].chapter !== row.chapter) && (
                             <p className="mb-1.5 mt-2 first:mt-0 text-xs font-semibold text-[var(--vq-muted)]">
                               {m.scheduleChapterHeading(row.chapter)}
@@ -544,12 +620,26 @@ export function VerseQuestApp() {
         </div>
 
         <VerseModal
-          key={verseModalKey}
+          key={`verse-${verseModalKey}`}
           open={verseOpen}
           onClose={() => setVerseOpen(false)}
           readingConstraint={readingConstraint}
           onSubmit={handleSubmitVerse}
         />
+
+        {firmanConfig && (
+          <FirmanPollModal
+            key={`firman-${firmanModalKey}`}
+            open={firmanOpen}
+            onClose={() => setFirmanOpen(false)}
+            config={firmanConfig}
+            initialAnswers={firmanAnswers}
+            onSubmit={(answers) => {
+              submitFirmanPoll(answers);
+              setFirmanOpen(false);
+            }}
+          />
+        )}
 
         {successOpen &&
           portalReady &&
