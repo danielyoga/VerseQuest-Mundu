@@ -20,8 +20,6 @@ export const messages = {
     errSubmitSignIn: "Please sign in first.",
     errSubmitAlreadyToday: "You have already submitted a verse today.",
     errSubmitGeneric: "Could not submit.",
-    errVerseBodyMismatch:
-      "This text doesn’t match today’s verse in Terjemahan Baru (TB). Copy from the reading below or paste the verse text exactly.",
 
     statusAppName: "VerseQuest",
 
@@ -115,8 +113,6 @@ export const messages = {
     errSubmitSignIn: "Silakan masuk terlebih dahulu.",
     errSubmitAlreadyToday: "Anda sudah mengirim ayat hari ini.",
     errSubmitGeneric: "Tidak dapat mengirim.",
-    errVerseBodyMismatch:
-      "Teks ini tidak cocok dengan ayat jadwal hari ini (Terjemahan Baru). Salin dari bacaan di bawah atau tempel teks ayat persis seperti di sana.",
 
     statusAppName: "VerseQuest",
 

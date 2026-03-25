@@ -1,6 +1,6 @@
 {
-  "name": "node-domexception-stub",
-  "version": "1.0.0",
+  "name": "node-domexception",
+  "version": "2.0.0",
   "private": true,
   "description": "Replaces deprecated node-domexception; use globalThis.DOMException (Node 18+).",
   "main": "index.js"

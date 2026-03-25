@@ -11,7 +11,6 @@ import {
   listChaptersInRange,
   type ReadingConstraint,
 } from "@/lib/bible/schedule";
-import { verseTextMatchesExpected } from "@/lib/bible/verse-text-match";
 import { messages } from "@/lib/i18n";
 
 /**
@@ -26,14 +25,10 @@ const DROPDOWNS_DISABLED = true;
  */
 const SHOW_BOOK_CHAPTER_VERSE_UI = false;
 
-export type SchedulePassageRow = { chapter: number; verse: number; text: string };
-
 type Props = {
   open: boolean;
   onClose: () => void;
   readingConstraint: ReadingConstraint | null;
-  /** When set (schedule loaded), pasted text must match TB for the selected verse. */
-  schedulePassage?: SchedulePassageRow[] | null;
   onSubmit: (data: {
     book: string;
     chapter: number;
@@ -46,7 +41,6 @@ export function VerseModal({
   open,
   onClose,
   readingConstraint,
-  schedulePassage = null,
   onSubmit,
 }: Props) {
   const { locale } = useLocale();
@@ -92,21 +86,6 @@ export function VerseModal({
     return Array.from({ length: maxV }, (_, i) => i + 1);
   }, [book, chapter, readingConstraint]);
 
-  const expectedVerseText = useMemo(() => {
-    if (!schedulePassage?.length || !book || !chapter || !verse) return null;
-    const ch = Number(chapter);
-    const v = Number(verse);
-    const row = schedulePassage.find((r) => r.chapter === ch && r.verse === v);
-    return row?.text ?? null;
-  }, [schedulePassage, book, chapter, verse]);
-
-  const verseBodyOk = useMemo(() => {
-    if (!expectedVerseText) return true;
-    const trimmed = text.trim();
-    if (trimmed.length <= 5) return true;
-    return verseTextMatchesExpected(trimmed, expectedVerseText, book, Number(chapter), Number(verse));
-  }, [expectedVerseText, text, book, chapter, verse]);
-
   const canSubmit = useMemo(() => {
     if (!book || !chapter || !verse || text.trim().length <= 5) return false;
     const ch = Number(chapter);
@@ -114,8 +93,8 @@ export function VerseModal({
     if (readingConstraint) {
       if (!isSelectionInConstraint(book, ch, v, readingConstraint)) return false;
     }
-    return verseBodyOk;
-  }, [book, chapter, verse, text, readingConstraint, verseBodyOk]);
+    return true;
+  }, [book, chapter, verse, text, readingConstraint]);
 
   useEffect(() => {
     if (!open) return;
@@ -293,18 +272,11 @@ export function VerseModal({
           </span>
           <div className="mb-3">
             <textarea
-              className={`min-h-[120px] w-full resize-none rounded-[var(--vq-radius-md)] border bg-[var(--vq-bg-2)] px-3.5 py-3 pb-3 text-base leading-relaxed text-[var(--vq-text)] ${
-                expectedVerseText && text.trim().length > 5 && !verseBodyOk
-                  ? "border-amber-500/80"
-                  : "border-[var(--vq-border-2)]"
-              }`}
+              className="min-h-[120px] w-full resize-none rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 pb-3 text-base leading-relaxed text-[var(--vq-text)]"
               placeholder={m.versePlaceholder}
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
-            {expectedVerseText && text.trim().length > 5 && !verseBodyOk && (
-              <p className="mt-2 text-[13px] leading-snug text-amber-800">{m.errVerseBodyMismatch}</p>
-            )}
           </div>
           <button
             type="button"

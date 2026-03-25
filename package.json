@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "googleapis": "^171.4.0",
+    "node-domexception": "file:./vendor/node-domexception-stub",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -38,6 +39,6 @@
     "typescript": "^5"
   },
   "overrides": {
-    "node-domexception": "file:./vendor/node-domexception-stub"
+    "node-domexception": "$node-domexception"
   }
 }
