@@ -9,6 +9,7 @@ import {
   readSubmissionDatesFromMonthlySheets,
   upsertMergedMarksForPhone,
 } from "@/lib/google-sheets/streak-sheet";
+import { syncCommunitySheetAfterVerseSubmit } from "@/lib/google-sheets/verse-community-sheet";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,26 @@ export async function POST(req: NextRequest) {
       ? body.xp_total
       : Number.parseInt(String(body.xp_total ?? "0"), 10) || 0;
 
+  /** Used only for Community_Verses tab — streak month tabs stay `v` marks only. */
+  let verseToday: { ymd: string; book: string; chapter: number; verse: number } | null =
+    null;
+  const vt = body.verse_today;
+  if (vt && typeof vt === "object") {
+    const o = vt as Record<string, unknown>;
+    const ymd = String(o.date ?? o.dateYmd ?? "").trim().slice(0, 10);
+    const book = String(o.book ?? "").trim();
+    const chapter = Number(o.chapter);
+    const verse = Number(o.verse);
+    if (
+      /^\d{4}-\d{2}-\d{2}$/.test(ymd) &&
+      book &&
+      Number.isFinite(chapter) &&
+      Number.isFinite(verse)
+    ) {
+      verseToday = { ymd, book, chapter, verse };
+    }
+  }
+
   try {
     const remoteDates = await readSubmissionDatesFromMonthlySheets(
       phone,
@@ -42,6 +63,13 @@ export async function POST(req: NextRequest) {
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
     await upsertMergedMarksForPhone(phone, name || "—", merged);
+    if (verseToday) {
+      await syncCommunitySheetAfterVerseSubmit({
+        book: verseToday.book,
+        chapter: verseToday.chapter,
+        verse: verseToday.verse,
+      });
+    }
     const mergedState = buildMergedLocalState(prevXp, merged);
     return NextResponse.json({ ok: true, merged: mergedState });
   } catch (e) {

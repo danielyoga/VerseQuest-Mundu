@@ -35,7 +35,25 @@ export const messages = {
     questToday: "Today’s quest",
     taskTitle: "Submit your daily verse",
     taskDescPending: "Choose a verse that speaks to you today",
+    taskVerseHowTo:
+      "Tap a verse in Today’s reading below, then tap Submit on the verse you chose.",
+    taskVerseNoReading:
+      "Today’s reading text isn’t available yet. Refresh the page or try again later.",
     taskDescDone: "Completed today — well done!",
+    taskGratitudeTitle: "Three things you’re grateful for",
+    taskGratitudeDescPending: "Write three gratitudes for today.",
+    taskGratitudeDescDone: "Saved for today.",
+    gratitudeModalTitle: "🙏 Today’s gratitude",
+    gratitudeModalSubtitle: "Name three things you’re thankful for right now.",
+    gratitudeModalHint: "All three count toward completing this quest",
+    gratitudeField1: "1",
+    gratitudeField2: "2",
+    gratitudeField3: "3",
+    gratitudePlaceholder: "A person, moment, gift, or small joy…",
+    gratitudeSubmit: "Save gratitudes",
+    gratitudeCta: "Write three gratitudes",
+    gratitudeCtaDone: "✓ Saved — tap to update",
+
     task2Title: "Have I lived out God’s Word today?",
     task2DescPending: "Use the checklist.",
     task2DescDone: "Today’s reflection saved.",
@@ -79,9 +97,32 @@ export const messages = {
 
     profileTitle: "Profile",
 
+    navBarAria: "Main navigation",
+    navHome: "Home",
+    navHomeAria: "Home — daily quest",
+    navCommunity: "Community",
+    navCommunityAria: "Verses shared today",
+    navCommunityBadgeHint: "unique passages",
+    communityTitle: "Verses today",
+    communitySubtitle:
+      "Passages others chose that also appear in today’s reading. Verse text comes from your schedule.",
+    /** Shown when nothing matches today’s Bible schedule or no community data. */
+    communityEmptyExact: "no verse shared currently",
+    communityLoading: "Loading…",
+
     langShortEn: "EN",
     langShortId: "ID",
     langAria: "Language",
+
+    settingsAria: "Settings",
+    settingsTitle: "Settings",
+    settingsLanguageSection: "Language",
+    settingsDisplayOrderSection: "Home screen order",
+    settingsDisplayOrderHint:
+      "Choose whether daily quests or today’s Bible reading appears first.",
+    displayOrderMissionsFirst: "Missions first",
+    displayOrderReadingFirst: "Bible reading first",
+    settingsDone: "Done",
 
     scheduleHeading: "📅 Today’s reading",
     scheduleNoPlan: "No reading plan for this date in the schedule.",
@@ -89,11 +130,12 @@ export const messages = {
       "This date is on the schedule, but verse text has not been filled in the sheet yet (run the populate script).",
     scheduleLoadingPassage: "Loading text…",
     schedulePassageError: "Could not load Bible text. Try again later.",
-    scheduleTranslationNote: "Indonesian · Terjemahan Baru (TB) — SABDA / alkitab.mobi",
+    scheduleTranslationNote: "Bahasa Indonesia · Terjemahan Baru (TB)",
     scheduleChapterHeading: (n: number) => `Chapter ${n}`,
     scheduleCopyVerse: "Copy",
     scheduleVerseCopied: "Copied!",
     scheduleVerseCopyAria: "Copy this verse to clipboard",
+    scheduleVerseSubmitAria: "Submit this verse for today",
     modalVerseSubtitleScheduled: "Choose a verse from today’s scheduled passage.",
   },
   id: {
@@ -129,7 +171,25 @@ export const messages = {
     questToday: "Misi hari ini",
     taskTitle: "Kirim ayat harian Anda",
     taskDescPending: "Pilih ayat yang menyentuh hati Anda hari ini",
+    taskVerseHowTo:
+      "Ketuk ayat di Bacaan hari ini di bawah, lalu ketuk Kirim pada ayat yang Anda pilih.",
+    taskVerseNoReading:
+      "Teks bacaan hari ini belum tersedia. Muat ulang halaman atau coba lagi nanti.",
     taskDescDone: "Selesai hari ini — syukur, pekerjaan yang baik!",
+    taskGratitudeTitle: "Tiga hal yang disyukuri hari ini",
+    taskGratitudeDescPending: "Tuliskan tiga hal syukur untuk hari ini.",
+    taskGratitudeDescDone: "Tersimpan untuk hari ini.",
+    gratitudeModalTitle: "🙏 Syukur hari ini",
+    gratitudeModalSubtitle: "Sebutkan tiga hal yang Anda syukuri saat ini.",
+    gratitudeModalHint: "Ketiga hal ini diperlukan untuk menyelesaikan misi",
+    gratitudeField1: "1",
+    gratitudeField2: "2",
+    gratitudeField3: "3",
+    gratitudePlaceholder: "Orang, momen, berkat, atau sukacita kecil…",
+    gratitudeSubmit: "Simpan Ucapan Syukur",
+    gratitudeCta: "Tulis",
+    gratitudeCtaDone: "✓ Tersimpan — ketuk untuk ubah",
+
     task2Title: "Apakah saya sudah melakukan Firman hari ini?",
     task2DescPending: "Gunakan checklist.",
     task2DescDone: "Renungan hari ini tersimpan.",
@@ -173,9 +233,31 @@ export const messages = {
 
     profileTitle: "Profil",
 
+    navBarAria: "Navigasi utama",
+    navHome: "Beranda",
+    navHomeAria: "Beranda — misi harian",
+    navCommunity: "Komunitas",
+    navCommunityAria: "Ayat yang dibagikan hari ini",
+    navCommunityBadgeHint: "ayat unik",
+    communityTitle: "Ayat hari ini",
+    communitySubtitle:
+      "Ayat yang dipilih orang lain dan masuk dalam bacaan hari ini. Teks ayat dari jadwal Anda.",
+    communityEmptyExact: "Belum ada ayat yang dibagikan saat ini.",
+    communityLoading: "Memuat…",
+
     langShortEn: "EN",
     langShortId: "ID",
     langAria: "Bahasa",
+
+    settingsAria: "Pengaturan",
+    settingsTitle: "Pengaturan",
+    settingsLanguageSection: "Bahasa",
+    settingsDisplayOrderSection: "Urutan layar utama",
+    settingsDisplayOrderHint:
+      "Pilih apakah misi harian atau bacaan Alkitab hari ini ditampilkan lebih dulu.",
+    displayOrderMissionsFirst: "Misi dulu",
+    displayOrderReadingFirst: "Bacaan Alkitab dulu",
+    settingsDone: "Selesai",
 
     scheduleHeading: "📅 Bacaan hari ini",
     scheduleNoPlan: "Belum ada jadwal bacaan untuk tanggal ini.",
@@ -183,11 +265,12 @@ export const messages = {
       "Tanggal ini ada di jadwal, tetapi teks ayat di sheet masih kosong (jalankan skrip pengisian).",
     scheduleLoadingPassage: "Memuat teks…",
     schedulePassageError: "Teks Alkitab tidak dapat dimuat. Coba lagi nanti.",
-    scheduleTranslationNote: "Bahasa Indonesia · Terjemahan Baru (TB) — SABDA / alkitab.mobi",
+    scheduleTranslationNote: "Bahasa Indonesia · Terjemahan Baru (TB)",
     scheduleChapterHeading: (n: number) => `Pasal ${n}`,
     scheduleCopyVerse: "Salin",
     scheduleVerseCopied: "Disalin!",
     scheduleVerseCopyAria: "Salin ayat ini ke papan klip",
+    scheduleVerseSubmitAria: "Kirim ayat ini untuk hari ini",
     modalVerseSubtitleScheduled: "Pilih ayat dari bagian yang dijadwalkan hari ini.",
   },
 } as const;

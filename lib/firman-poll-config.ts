@@ -37,7 +37,14 @@ function parseQuestions(raw: unknown): FirmanPollQuestionDef[] | null {
   }
   if (out.length < 1 || out.length > 12) return null;
   const ids = new Set(out.map((q) => q.id));
-  if (ids.size !== out.length) return null;
+  if (ids.size !== out.length) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[firman-poll] NEXT_PUBLIC_FIRMAN_POLL_QUESTIONS: each question needs a unique `id` (duplicate ids were rejected)."
+      );
+    }
+    return null;
+  }
   return out;
 }
 

@@ -84,43 +84,61 @@ export function useVerseQuest() {
   /** Drop stale sync responses when a newer sync was started (submit vs initial load). */
   const streakSyncGenRef = useRef(0);
 
-  /** Merge local streak fields with Google Sheet (union dates, no deletions). */
-  const syncStreakWithSheet = useCallback(async (snapshot: StoredState) => {
-    if (!snapshot.profile.phone) return;
-    const gen = ++streakSyncGenRef.current;
-    try {
-      const res = await fetch("/api/streak-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+  /** Merge local streak fields with Google Sheet (union dates, no deletions). Optional verse marks month tab + community sheet. */
+  const syncStreakWithSheet = useCallback(
+    async (
+      snapshot: StoredState,
+      verseToday?: { book: string; chapter: number; verse: number; dateYmd: string }
+    ) => {
+      if (!snapshot.profile.phone) return;
+      const gen = ++streakSyncGenRef.current;
+      try {
+        const body: Record<string, unknown> = {
           phone: snapshot.profile.phone,
           name: snapshot.profile.name,
           submission_dates: snapshot.submission_dates,
           xp_total: snapshot.xp_total,
-        }),
-      });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        merged?: StreakSyncMergedPayload;
-      };
-      if (!data.ok || !data.merged) return;
-      if (gen !== streakSyncGenRef.current) return;
-      const m = data.merged;
-      setState((prev) => {
-        const next: StoredState = {
-          ...prev,
-          submission_dates: m.submission_dates,
-          streak_count: m.streak_count,
-          last_submitted_at: m.last_submitted_at,
-          xp_total: m.xp_total,
         };
-        saveState(next);
-        return next;
-      });
-    } catch {
-      // Offline or server error — local cache remains authoritative until next sync.
-    }
-  }, []);
+        if (verseToday) {
+          body.verse_today = {
+            book: verseToday.book,
+            chapter: verseToday.chapter,
+            verse: verseToday.verse,
+            date: verseToday.dateYmd,
+          };
+        }
+        const res = await fetch("/api/streak-sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          merged?: StreakSyncMergedPayload;
+        };
+        if (!data.ok || !data.merged) return;
+        if (gen !== streakSyncGenRef.current) return;
+        const m = data.merged;
+        setState((prev) => {
+          const next: StoredState = {
+            ...prev,
+            submission_dates: m.submission_dates,
+            streak_count: m.streak_count,
+            last_submitted_at: m.last_submitted_at,
+            xp_total: m.xp_total,
+          };
+          saveState(next);
+          return next;
+        });
+        if (verseToday && typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("versequest-community-refresh"));
+        }
+      } catch {
+        // Offline or server error — local cache remains authoritative until next sync.
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     // Client-only: read persisted streak from localStorage after mount (SSR-safe).
@@ -194,7 +212,6 @@ export function useVerseQuest() {
 
   const submitVerse = useCallback(
     (payload: Omit<VerseSubmission, "submitted_at">): { ok: boolean; error?: string } => {
-      void payload;
       const m = messages[locale];
       const todayStr = toLocalDateString(new Date());
       const yesterdayStr = toLocalDateString(new Date(Date.now() - 86400000));
@@ -220,7 +237,16 @@ export function useVerseQuest() {
           submission_dates,
         };
         saveState(next);
-        void syncStreakWithSheet(next);
+        const verseToday =
+          payload.book && Number.isFinite(payload.chapter) && Number.isFinite(payload.verse)
+            ? {
+                book: payload.book,
+                chapter: payload.chapter,
+                verse: payload.verse,
+                dateYmd: todayStr,
+              }
+            : undefined;
+        void syncStreakWithSheet(next, verseToday);
         return next;
       });
       if (err) return { ok: false, error: err };

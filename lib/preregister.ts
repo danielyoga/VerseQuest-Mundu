@@ -13,3 +13,14 @@ export function normalizePhone(input: string): string {
   }
   return digits;
 }
+
+/**
+ * Digits for the "+62 | …" field: canonical local form without the leading 0
+ * (matches placeholder 81234567890). Run after blur or when fixing pasted input.
+ */
+export function normalizePhoneDraftForDisplay(input: string): string {
+  const n = normalizePhone(input);
+  if (!n) return "";
+  if (n.startsWith("0") && n.length >= 10) return n.slice(1);
+  return n.replace(/\D/g, "");
+}
