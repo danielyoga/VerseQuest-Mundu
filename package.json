@@ -14,9 +14,10 @@
     "gsheet:monthly": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "googleapis": "^171.4.0",
-    "node-domexception": "file:./vendor/node-domexception-stub",
     "next": "16.2.1",
+    "node-domexception": "file:./vendor/node-domexception-stub",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
