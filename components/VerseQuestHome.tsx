@@ -1,7 +1,8 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AppSettingsButton } from "@/components/AppSettingsButton";
 import { FirmanPollModal } from "@/components/FirmanPollModal";
 import { GratitudeModal } from "@/components/GratitudeModal";
@@ -15,6 +16,7 @@ import {
   messages,
   streakMessage,
 } from "@/lib/i18n";
+import { getTodayString } from "@/lib/sheetName";
 import type { WeekDotState } from "@/lib/streak/streak";
 import type { StoredState } from "@/types";
 import type { VerseSubmission } from "@/types";
@@ -63,12 +65,28 @@ export function VerseQuestHome({
     setScheduleVerseSelectedKey,
   } = useTodayScheduleWindow();
 
+  const router = useRouter();
   const [successOpen, setSuccessOpen] = useState(false);
   const [firmanOpen, setFirmanOpen] = useState(false);
   const [firmanModalKey, setFirmanModalKey] = useState(0);
   const [gratitudeOpen, setGratitudeOpen] = useState(false);
   const [gratitudeModalKey, setGratitudeModalKey] = useState(0);
   const verseSubmitLock = useRef(false);
+
+  // Devotion task state
+  const devotionKey = `versequest_devotion_${getTodayString()}`;
+  const [devotionAvailable, setDevotionAvailable] = useState<boolean | null>(null);
+  const [devotionRead, setDevotionRead] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setDevotionRead(localStorage.getItem(devotionKey) === "read");
+    }
+    void fetch("/api/devotion/today", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { devotion?: string | null }) => setDevotionAvailable(!!d.devotion))
+      .catch(() => setDevotionAvailable(false));
+  }, [devotionKey]);
 
   const taskDone = submittedToday;
   const displayName = state.profile.name || (locale === "id" ? "Anda" : "there");
@@ -94,9 +112,10 @@ export function VerseQuestHome({
     [locale, displayStreak, state.profile.name, submittedToday]
   );
 
-  const totalQuests = 2 + (firmanConfig ? 1 : 0);
+  const totalQuests = 3 + (firmanConfig ? 1 : 0);
   const doneQuests =
     (submittedToday ? 1 : 0) +
+    (devotionRead ? 1 : 0) +
     (gratitudeQuest.doneForToday ? 1 : 0) +
     (firmanConfig && firmanPoll.doneForToday ? 1 : 0);
   const progress = totalQuests ? (doneQuests / totalQuests) * 100 : 0;
@@ -187,6 +206,40 @@ export function VerseQuestHome({
         </div>
       </div>
 
+      {/* Devotion task card */}
+      <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
+        <div className="flex gap-3.5 items-center">
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
+              devotionAvailable ? "bg-[#FEF3C7]" : "bg-[var(--vq-bg)]"
+            }`}
+          >
+            📖
+          </div>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-medium text-[var(--vq-text)]">{m.devotionTaskTitle}</p>
+              <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
+                {devotionRead
+                  ? m.devotionTaskDoneDesc
+                  : devotionAvailable
+                    ? m.devotionTaskAvailableDesc
+                    : m.devotionTaskUnavailableDesc}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => router.push("/devotional")}
+            className="flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98]"
+          >
+            {m.devotionTaskReadCta}
+          </button>
+        </div>
+      </div>
+
       <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
         <div className="flex gap-3.5 items-center">
           <div
@@ -200,44 +253,40 @@ export function VerseQuestHome({
             <div className="min-w-0 flex-1">
               <p className="text-[15px] font-medium leading-snug text-[var(--vq-text)]">{m.task2Title}</p>
               <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
-                {!firmanConfig
-                  ? m.firmanPollConfigMissing
-                  : firmanPoll.doneForToday
-                    ? m.task2DescDone
+                {firmanPoll.doneForToday
+                  ? m.task2DescDone
+                  : firmanPoll.doneYesterday
+                    ? m.task2DescYesterday
                     : m.task2DescPending}
               </p>
             </div>
             <span
               className={`shrink-0 self-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                !firmanConfig
-                  ? "bg-[var(--vq-bg)] text-[var(--vq-muted-2)]"
-                  : firmanPoll.doneForToday
-                    ? "bg-[#EAF3DE] text-[#27500A]"
-                    : "bg-[#FAEEDA] text-[#633806]"
+                firmanPoll.doneForToday
+                  ? "bg-[#EAF3DE] text-[#27500A]"
+                  : "bg-[#FAEEDA] text-[#633806]"
               }`}
             >
-              {!firmanConfig ? "—" : firmanPoll.doneForToday ? m.badgeDone : m.badgePending}
+              {firmanPoll.doneForToday ? m.badgeDone : m.badgePending}
             </span>
           </div>
         </div>
-        {firmanConfig && (
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setFirmanModalKey((k) => k + 1);
-                setFirmanOpen(true);
-              }}
-              className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium transition active:scale-[0.98] ${
-                firmanPoll.doneForToday
-                  ? "cursor-default bg-[#3B6D11] text-white"
-                  : "bg-[#534AB7] text-white hover:bg-[#3C3489]"
-              }`}
-            >
-              {firmanPoll.doneForToday ? m.firmanPollCtaDone : m.firmanPollCta}
-            </button>
-          </div>
-        )}
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => {
+              setFirmanModalKey((k) => k + 1);
+              setFirmanOpen(true);
+            }}
+            className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium transition active:scale-[0.98] ${
+              firmanPoll.doneForToday
+                ? "cursor-default bg-[#3B6D11] text-white"
+                : "bg-[#534AB7] text-white hover:bg-[#3C3489]"
+            }`}
+          >
+            {firmanPoll.doneForToday ? m.firmanPollCtaDone : m.firmanPollCta}
+          </button>
+        </div>
       </div>
 
       <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
@@ -491,19 +540,17 @@ export function VerseQuestHome({
           }}
         />
 
-        {firmanConfig && (
-          <FirmanPollModal
-            key={`firman-${firmanModalKey}`}
-            open={firmanOpen}
-            onClose={() => setFirmanOpen(false)}
-            config={firmanConfig}
-            initialAnswers={firmanPoll.savedAnswers}
-            onSubmit={(answers) => {
-              firmanPoll.submit(answers);
-              setFirmanOpen(false);
-            }}
-          />
-        )}
+        <FirmanPollModal
+          key={`firman-${firmanModalKey}`}
+          open={firmanOpen}
+          onClose={() => setFirmanOpen(false)}
+          config={firmanConfig ?? { questions: [] }}
+          initialAnswers={firmanPoll.savedAnswers}
+          onSubmit={(answers) => {
+            firmanPoll.submit(answers);
+            setFirmanOpen(false);
+          }}
+        />
 
         {successOpen &&
           portalReady &&

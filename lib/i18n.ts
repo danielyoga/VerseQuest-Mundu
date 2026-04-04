@@ -1,4 +1,4 @@
-export type Locale = "en" | "id";
+﻿export type Locale = "en" | "id";
 
 /** Persisted separately from app data — changing this key would only affect language preference. */
 export const LOCALE_STORAGE_KEY = "versequest_locale";
@@ -57,6 +57,7 @@ export const messages = {
     task2Title: "Have I lived out God’s Word today?",
     task2DescPending: "Use the checklist.",
     task2DescDone: "Today’s reflection saved.",
+    task2DescYesterday: "No reflection today yet u{2014} showing yesterday’s.",
     firmanModalTitleDefault: "🙏 Live out God’s Word",
     firmanModalSubtitleDefault: "Check each item that is true for you today.",
     firmanModalCheckAllHint: "Check what is true for you today — save anytime",
@@ -137,6 +138,42 @@ export const messages = {
     scheduleVerseCopyAria: "Copy this verse to clipboard",
     scheduleVerseSubmitAria: "Submit this verse for today",
     modalVerseSubtitleScheduled: "Choose a verse from today’s scheduled passage.",
+
+    loginRantingLabel: "Ranting",
+
+    devotionNavTitle: "Daily Devotion",
+    devotionLoadingText: "Loading devotion",
+    devotionUnavailable: "Today's devotion is not available yet. Check back later.",
+    devotionReflectionTitle: "Today's Reflection",
+    devotionMarkRead: "Mark as Read",
+    devotionBackAria: "Go back",
+
+    devotionTaskTitle: "Read Today's Devotion",
+    devotionTaskDoneDesc: "Read today",
+    devotionTaskAvailableDesc: "Today's devotion is available",
+    devotionTaskUnavailableDesc: "Devotion not available yet",
+    devotionTaskBadgeDone: "Done",
+    devotionTaskBadgeUnread: "Unread",
+    devotionTaskBadgeNone: "Not Yet",
+    devotionTaskReadCta: "Read Now",
+
+    adminDevotionTitle: "Edit Devotion & Reflection",
+    adminDevotionSection: "Daily Devotion",
+    adminDevotionTitleLabel: "Devotion Title",
+    adminDevotionTitlePlaceholder: "Today's devotion title...",
+    adminDevotionPlaceholder: "Write today's devotion...",
+    adminDevotionMinLength: "Minimum 50 characters",
+    adminReflectionSection: "Reflection Points",
+    adminReflectionPlaceholder: (n: number) => `Reflection ${n}`,
+    adminReflectionDeleteAria: "Delete",
+    adminReflectionAdd: "+ Add Reflection",
+    adminSaving: "Saving",
+    adminSaved: "Saved!",
+    adminSaveFailed: "Failed to save.",
+    adminSaveError: "Could not connect.",
+    adminSaveButton: "Save",
+    adminUpdateButton: "Update",
+    adminBackAria: "Go back",
   },
   id: {
     loading: "Memuat…",
@@ -193,6 +230,7 @@ export const messages = {
     task2Title: "Apakah saya sudah melakukan Firman hari ini?",
     task2DescPending: "Gunakan checklist.",
     task2DescDone: "Renungan hari ini tersimpan.",
+    task2DescYesterday: "Belum ada refleksi hari ini \u2014 menampilkan kemarin.",
     firmanModalTitleDefault: "🙏 Melakukan Firman",
     firmanModalSubtitleDefault: "Centang setiap pernyataan yang benar untuk Anda hari ini.",
     firmanModalCheckAllHint: "Centang yang sesuai hari ini — simpan kapan saja",
@@ -272,6 +310,42 @@ export const messages = {
     scheduleVerseCopyAria: "Salin ayat ini ke papan klip",
     scheduleVerseSubmitAria: "Kirim ayat ini untuk hari ini",
     modalVerseSubtitleScheduled: "Pilih ayat dari bagian yang dijadwalkan hari ini.",
+
+    loginRantingLabel: "Ranting",
+
+    devotionNavTitle: "Renungan Harian",
+    devotionLoadingText: "Memuat renungan",
+    devotionUnavailable: "Renungan hari ini belum tersedia. Cek lagi nanti.",
+    devotionReflectionTitle: "Refleksi Hari Ini",
+    devotionMarkRead: "Tandai Sudah Dibaca",
+    devotionBackAria: "Kembali",
+
+    devotionTaskTitle: "Baca Renungan Hari Ini",
+    devotionTaskDoneDesc: "Sudah dibaca hari ini",
+    devotionTaskAvailableDesc: "Renungan hari ini sudah tersedia",
+    devotionTaskUnavailableDesc: "Renungan belum tersedia",
+    devotionTaskBadgeDone: "Selesai",
+    devotionTaskBadgeUnread: "Belum Dibaca",
+    devotionTaskBadgeNone: "Belum Ada",
+    devotionTaskReadCta: "Baca Sekarang",
+
+    adminDevotionTitle: "Edit Renungan & Refleksi",
+    adminDevotionSection: "Renungan Harian",
+    adminDevotionTitleLabel: "Judul Renungan",
+    adminDevotionTitlePlaceholder: "Judul renungan hari ini...",
+    adminDevotionPlaceholder: "Tulis renungan hari ini...",
+    adminDevotionMinLength: "Minimal 50 karakter",
+    adminReflectionSection: "Poin Refleksi",
+    adminReflectionPlaceholder: (n: number) => `Refleksi ${n}`,
+    adminReflectionDeleteAria: "Hapus",
+    adminReflectionAdd: "+ Tambah Refleksi",
+    adminSaving: "Menyimpan",
+    adminSaved: "Tersimpan!",
+    adminSaveFailed: "Gagal menyimpan.",
+    adminSaveError: "Tidak dapat terhubung.",
+    adminSaveButton: "Simpan",
+    adminUpdateButton: "Perbarui",
+    adminBackAria: "Kembali",
   },
 } as const;
 

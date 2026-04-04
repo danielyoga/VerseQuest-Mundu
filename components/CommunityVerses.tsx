@@ -3,92 +3,28 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { bookDisplayName } from "@/lib/bible/book-names-id";
-import {
-  filterRefsInTodaySchedule,
-  type CommunityRefInput,
-  type VerseRef,
-} from "@/lib/community/filter-schedule";
-import { toLocalDateString } from "@/lib/date-utils";
 import { messages } from "@/lib/i18n";
-import type { ScheduleVerseRow, ScheduleWindowResponse } from "@/lib/schedule/window-types";
-
-type DisplayItem = {
-  ref: VerseRef;
-  text: string;
-};
+import type { CommunityFullItem } from "@/app/api/verse-community-full/route";
 
 export function CommunityVerses() {
   const { locale } = useLocale();
   const m = messages[locale];
-  const [items, setItems] = useState<DisplayItem[] | null>(null);
+  const [items, setItems] = useState<CommunityFullItem[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
     function load() {
-      void (async () => {
-        try {
-          const ymd = toLocalDateString(new Date());
-          const schedRes = await fetch(
-            `/api/schedule-window?from=${encodeURIComponent(ymd)}&days=4`,
-            { cache: "no-store" }
-          );
-          const sched = (await schedRes.json()) as ScheduleWindowResponse;
-          if (cancelled) return;
-
-          const d = new Date();
-          const month = d.getMonth() + 1;
-          const date = d.getDate();
-          const todayEntry = sched.days?.find(
-            (x) => x.month === month && x.date === date
-          );
-
-          /** Tight Sheets range: header row + at most one row per verse in today’s passage. */
-          let communityUrl = "/api/verse-community";
-          if (
-            todayEntry &&
-            todayEntry.ok &&
-            todayEntry.verses.length > 0
-          ) {
-            const maxRows = 1 + todayEntry.verses.length;
-            communityUrl = `/api/verse-community?maxRows=${maxRows}`;
-          }
-
-          const commRes = await fetch(communityUrl, { cache: "no-store" });
-          const comm = (await commRes.json()) as { verses?: CommunityRefInput[] };
-          if (cancelled) return;
-
-          const refs = Array.isArray(comm.verses) ? comm.verses : [];
-
-          let scheduleBook: string | null = null;
-          let passage: ScheduleVerseRow[] | null = null;
-          if (todayEntry && todayEntry.ok) {
-            scheduleBook = todayEntry.book;
-            passage = todayEntry.verses;
-          }
-
-          const filtered = filterRefsInTodaySchedule(refs, scheduleBook, passage);
-          const display: DisplayItem[] = [];
-          if (scheduleBook && passage) {
-            for (const ref of filtered) {
-              const row = passage.find(
-                (p) => p.chapter === ref.chapter && p.verse === ref.verse
-              );
-              if (row) {
-                display.push({ ref, text: row.text });
-              }
-            }
-          }
-
-          setItems(display);
-        } catch {
-          if (!cancelled) setItems([]);
-        }
-      })();
+      void fetch("/api/verse-community-full", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d: { items?: CommunityFullItem[] }) => {
+          if (!cancelled) setItems(Array.isArray(d.items) ? d.items : []);
+        })
+        .catch(() => { if (!cancelled) setItems([]); });
     }
+
     load();
-    function onRefresh() {
-      load();
-    }
+    function onRefresh() { load(); }
     window.addEventListener("versequest-community-refresh", onRefresh);
     return () => {
       cancelled = true;
@@ -115,15 +51,19 @@ export function CommunityVerses() {
         ) : (
           <ul className="space-y-3">
             {items.map((item) => {
-              const label = `${bookDisplayName(item.ref.book, locale)} ${item.ref.chapter}:${item.ref.verse}`;
-              const key = `${item.ref.book}-${item.ref.chapter}-${item.ref.verse}`;
+              const label = item.book
+                ? `${bookDisplayName(item.book, locale)} ${item.chapter}:${item.verse}`
+                : `${item.chapter}:${item.verse}`;
+              const key = `${item.book}-${item.chapter}-${item.verse}`;
               return (
                 <li
                   key={key}
                   className="rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 shadow-sm"
                 >
                   <p className="text-[15px] font-semibold text-[#534AB7]">{label}</p>
-                  <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.text}</p>
+                  {item.text ? (
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.text}</p>
+                  ) : null}
                 </li>
               );
             })}

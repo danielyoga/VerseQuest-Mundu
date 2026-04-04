@@ -6,6 +6,11 @@ import { isAnyAdmin } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
+/**
+ * POST /api/auth/login
+ * Same contract as /api/preregister-lookup — kept as a dedicated auth endpoint
+ * so client code can target a semantically clear URL.
+ */
 export async function POST(req: NextRequest) {
   let body: { phone?: string; month?: number; locale?: Locale; ranting?: string };
   try {
@@ -28,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: m.errPhoneInvalid });
   }
 
-  // Admin phones bypass the sheet lookup — they are always allowed in.
+  // Admin phones bypass the sheet lookup.
   if (isAnyAdmin(phone)) {
     return NextResponse.json({ ok: true, canonicalPhone: phone, name: "Admin" });
   }
@@ -38,11 +43,7 @@ export async function POST(req: NextRequest) {
     if (!name) {
       return NextResponse.json({ ok: false, error: m.errPhoneNotInvited });
     }
-    return NextResponse.json({
-      ok: true,
-      canonicalPhone: phone,
-      name: name.trim(),
-    });
+    return NextResponse.json({ ok: true, canonicalPhone: phone, name: name.trim() });
   } catch {
     return NextResponse.json({ ok: false, error: m.loginErrorGeneric }, { status: 502 });
   }

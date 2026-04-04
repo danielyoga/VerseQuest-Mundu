@@ -43,6 +43,7 @@ function parseStored(raw: string): StoredState | null {
       profile: {
         name: parsed.profile.name,
         phone: parsed.profile.phone,
+        ...(parsed.profile.ranting ? { ranting: parsed.profile.ranting } : {}),
       },
       submission_dates: Array.isArray(parsed.submission_dates)
         ? parsed.submission_dates
@@ -165,14 +166,14 @@ export function useVerseQuest() {
   }, [hydrated, state.profile.phone, syncStreakWithSheet]);
 
   const registerProfile = useCallback(
-    async (phoneInput: string): Promise<{ ok: boolean; error?: string }> => {
+    async (phoneInput: string, ranting?: string): Promise<{ ok: boolean; error?: string }> => {
       const month = new Date().getMonth() + 1;
       let data: { ok?: boolean; error?: string; name?: string; canonicalPhone?: string };
       try {
         const res = await fetch("/api/preregister-lookup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: phoneInput, month, locale }),
+          body: JSON.stringify({ phone: phoneInput, month, locale, ranting }),
         });
         data = (await res.json()) as typeof data;
       } catch {
@@ -184,11 +185,19 @@ export function useVerseQuest() {
       setState((prev) => {
         const next = {
           ...prev,
-          profile: { name: data.name!, phone: data.canonicalPhone! },
+          profile: {
+            name: data.name!,
+            phone: data.canonicalPhone!,
+            ...(ranting ? { ranting } : {}),
+          },
         };
         saveState(next);
         return next;
       });
+      // Notify BottomNav (same tab) that the profile was written
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("versequest-profile-updated"));
+      }
       return { ok: true };
     },
     [locale]

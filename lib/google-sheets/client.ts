@@ -21,7 +21,7 @@ function resolveKeyFilePath(): string | undefined {
   if (!explicit) return undefined;
   return path.isAbsolute(explicit)
     ? explicit
-    : path.resolve(process.cwd(), explicit);
+    : path.resolve(/* turbopackIgnore: true */ process.cwd(), explicit);
 }
 
 /** Full read/write access to spreadsheets. */

@@ -10,6 +10,8 @@ export interface StoredProfile {
   name: string;
   /** Normalized local format e.g. 081234567890 */
   phone: string;
+  /** Ranting prefix (e.g. "A", "B"). Only present when ranting mode is active. */
+  ranting?: string;
 }
 
 export interface StoredState {

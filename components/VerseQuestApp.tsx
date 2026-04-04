@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState, useEffect } from "react";
 import { PhoneRegistrationScreen } from "@/components/PhoneRegistrationScreen";
 import { VerseQuestHome } from "@/components/VerseQuestHome";
 import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
@@ -8,8 +8,10 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useFirmanPoll } from "@/hooks/useFirmanPoll";
 import { useGratitudeQuest } from "@/hooks/useGratitudeQuest";
 import { useVerseQuest } from "@/hooks/useVerseQuest";
-import { getFirmanPollConfig } from "@/lib/firman-poll-config";
+import type { FirmanPollConfig } from "@/lib/firman-poll-config";
 import { messages } from "@/lib/i18n";
+import { getRantingList } from "@/lib/constants";
+import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 
 /**
  * Root shell: hydration gates, phone gate, then delegates the main experience to {@link VerseQuestHome}.
@@ -30,7 +32,30 @@ export function VerseQuestApp() {
     submitVerse,
   } = useVerseQuest();
 
-  const firmanConfig = useMemo(() => getFirmanPollConfig(), []);
+  // Build firmanConfig from today's reflection questions in the sheet
+  const [firmanConfig, setFirmanConfig] = useState<FirmanPollConfig | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/devotion/today", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { reflection?: string[] }) => {
+        const items = d.reflection ?? [];
+        if (items.length === 0) {
+          setFirmanConfig(null);
+          return;
+        }
+        const config: FirmanPollConfig = {
+          questions: items.map((text, i) => ({
+            id: `r${i}`,
+            text,
+            textId: text,
+          })),
+        };
+        setFirmanConfig(config);
+      })
+      .catch(() => setFirmanConfig(null));
+  }, []);
+
   const firmanPoll = useFirmanPoll();
   const gratitudeQuest = useGratitudeQuest();
 
@@ -55,7 +80,32 @@ export function VerseQuestApp() {
     );
   }
 
-  if (!state.profile.name || !state.profile.phone) {
+  // If ranting mode is active but the stored profile has no ranting, the session
+  // pre-dates ranting support. Clear it and force the user to log in again so they
+  // can pick their ranting from the dropdown.
+  const rantingRequired = getRantingList().length > 0;
+  const profileMissingRanting =
+    rantingRequired &&
+    !!state.profile.name &&
+    !!state.profile.phone &&
+    !state.profile.ranting;
+
+  if (profileMissingRanting) {
+    // Clear only the profile fields — preserve streak/xp so they aren't lost.
+    // On re-login registerProfile will write the new profile including ranting.
+    try {
+      const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        parsed.profile = { name: "", phone: "" };
+        localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(parsed));
+      }
+    } catch {
+      localStorage.removeItem(APP_DATA_STORAGE_KEY);
+    }
+  }
+
+  if (!state.profile.name || !state.profile.phone || profileMissingRanting) {
     return <PhoneRegistrationScreen registerProfile={registerProfile} />;
   }
 

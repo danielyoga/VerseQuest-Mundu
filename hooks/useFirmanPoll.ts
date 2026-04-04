@@ -7,16 +7,24 @@ import {
   setFirmanPollForDay,
 } from "@/lib/firman-poll-storage";
 
+function yesterdayYmd(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toLocalDateString(d);
+}
+
 export function useFirmanPoll() {
   const [hydrated, setHydrated] = useState(false);
   const [doneForToday, setDoneForToday] = useState(false);
   const [savedAnswers, setSavedAnswers] = useState<Record<string, boolean>>({});
+  const [doneYesterday, setDoneYesterday] = useState(false);
 
   const refresh = useCallback(() => {
     const ymd = toLocalDateString(new Date());
     const row = getFirmanPollForDay(ymd);
     setDoneForToday(Boolean(row));
     setSavedAnswers(row?.answers ?? {});
+    setDoneYesterday(Boolean(getFirmanPollForDay(yesterdayYmd())));
   }, []);
 
   useEffect(() => {
@@ -39,5 +47,5 @@ export function useFirmanPoll() {
     setSavedAnswers(answers);
   }
 
-  return { hydrated, doneForToday, savedAnswers, submit, refresh };
+  return { hydrated, doneForToday, doneYesterday, savedAnswers, submit, refresh };
 }

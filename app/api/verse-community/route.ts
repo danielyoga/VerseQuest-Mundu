@@ -1,20 +1,15 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCommunityVersesPayload } from "@/lib/google-sheets/verse-community-sheet";
 
 export const runtime = "nodejs";
 
 /**
- * Chapter+verse refs + unique count (single Sheets read; book comes from today’s schedule on the client).
- * Optional `maxRows` = total rows to read including header (e.g. 1 + today’s passage verse count).
+ * Returns all chapter+verse refs from Today_Community_Verses sheet + unique count.
+ * The sheet is admin-managed (pre-curated for today's schedule), not a user submission log.
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const raw = req.nextUrl.searchParams.get("maxRows");
-    const n =
-      raw != null && raw !== "" ? Number.parseInt(raw, 10) : Number.NaN;
-    const { verses, count } = await getCommunityVersesPayload(
-      Number.isFinite(n) ? n : undefined
-    );
+    const { verses, count } = await getCommunityVersesPayload();
     return NextResponse.json({ ok: true, verses, count });
   } catch (e) {
     console.error("verse-community:", e);

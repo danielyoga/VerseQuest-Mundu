@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import AddToHomeScreenBanner from "@/components/ui/AddToHomeScreenBanner";
 
 export default function MainLayout({
   children,
@@ -14,6 +15,7 @@ export default function MainLayout({
       >
         {children}
       </main>
+      <AddToHomeScreenBanner />
       <BottomNav />
     </div>
   );

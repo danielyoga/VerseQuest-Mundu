@@ -5,16 +5,47 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
+import { isAnyAdmin } from "@/lib/constants";
+import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 
 export function BottomNav() {
   const pathname = usePathname();
   const { locale } = useLocale();
   const m = messages[locale];
   const [communityCount, setCommunityCount] = useState<number | null>(null);
+  const [adminPhone, setAdminPhone] = useState<string | null>(null);
 
-  /** No fixed interval: event after submit, tab visible again, and route changes keep the badge fresh without polling. */
+  // Read phone from stored profile to determine admin status
+  function readAdminPhone() {
+    try {
+      const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
+      const parsed = raw ? (JSON.parse(raw) as { profile?: { phone?: string } }) : null;
+      setAdminPhone(parsed?.profile?.phone ?? null);
+    } catch {
+      setAdminPhone(null);
+    }
+  }
+
+  useEffect(() => {
+    readAdminPhone();
+    // Re-read whenever another tab or the login flow writes to the key
+    function onStorage(e: StorageEvent) {
+      if (e.key === APP_DATA_STORAGE_KEY) readAdminPhone();
+    }
+    window.addEventListener("storage", onStorage);
+    // Also re-read on custom event fired after login in same tab
+    window.addEventListener("versequest-profile-updated", readAdminPhone);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("versequest-profile-updated", readAdminPhone);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  const showAdmin = adminPhone ? isAnyAdmin(adminPhone) : false;
+
   const loadCount = useCallback(() => {
-    /** Same payload as the community page (verses + count) — one Sheets read instead of a separate count route. */
     void fetch("/api/verse-community", { cache: "no-store" })
       .then((r) => r.json())
       .then((d: { count?: number }) =>
@@ -44,6 +75,7 @@ export function BottomNav() {
 
   const isHome = pathname === "/";
   const isCommunity = pathname === "/community";
+  const isAdmin = pathname.startsWith("/admin");
   const badge =
     communityCount != null && communityCount > 0
       ? communityCount > 99
@@ -56,6 +88,8 @@ export function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--vq-border)] bg-[var(--vq-bg)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
       aria-label={m.navBarAria}
     >
+
+      {/* Main nav row */}
       <div className="mx-auto flex max-w-[390px]">
         <Link
           href="/"
@@ -65,20 +99,17 @@ export function BottomNav() {
           aria-current={isHome ? "page" : undefined}
           aria-label={m.navHomeAria}
         >
-          <span className="text-xl leading-none" aria-hidden>
-            🏠
-          </span>
+          <span className="text-xl leading-none" aria-hidden>🏠</span>
           {m.navHome}
         </Link>
+
         <Link
           href="/community"
           className={`relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
             isCommunity ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
           }`}
           aria-current={isCommunity ? "page" : undefined}
-          aria-label={
-            badge ? `${m.navCommunityAria} (${badge} ${m.navCommunityBadgeHint})` : m.navCommunityAria
-          }
+          aria-label={badge ? `${m.navCommunityAria} (${badge} ${m.navCommunityBadgeHint})` : m.navCommunityAria}
         >
           <span className="relative text-xl leading-none" aria-hidden>
             👥
@@ -90,6 +121,20 @@ export function BottomNav() {
           </span>
           {m.navCommunity}
         </Link>
+
+        {showAdmin && (
+          <Link
+            href="/admin/devotion"
+            className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
+              isAdmin ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
+            }`}
+            aria-current={isAdmin ? "page" : undefined}
+            aria-label="Admin"
+          >
+            <span className="text-xl leading-none" aria-hidden>⚙️</span>
+            Admin
+          </Link>
+        )}
       </div>
     </nav>
   );

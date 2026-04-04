@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   title: "VerseQuest — Rangkaian baca Alkitab harian",
   description:
     "Kirim ayat harian Anda dan jaga rangkaian hari membaca Firman Tuhan.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "VerseQuest",
+  },
 };
 
 /** Allow pinch-zoom up to 5× (Lighthouse / WCAG); initial scale still 1 for app-like layout. */
