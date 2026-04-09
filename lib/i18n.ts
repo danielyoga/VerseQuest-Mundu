@@ -65,7 +65,7 @@ export const messages = {
     firmanPollCta: "Open reflection checklist",
     firmanPollCtaDone: "✓ Reflection saved — tap to update",
     firmanPollConfigMissing:
-      "Add NEXT_PUBLIC_FIRMAN_POLL_QUESTIONS to your environment (JSON array of questions).",
+      "There is no polling yet for today.",
     badgePending: "Pending",
     badgeDone: "Done",
 
@@ -238,7 +238,7 @@ export const messages = {
     firmanPollCta: "Buka daftar renungan",
     firmanPollCtaDone: "✓ Renungan tersimpan — ketuk untuk ubah",
     firmanPollConfigMissing:
-      "Tambahkan NEXT_PUBLIC_FIRMAN_POLL_QUESTIONS di environment (JSON array pertanyaan).",
+      "Belum ada polling untuk hari ini",
     badgePending: "Menunggu",
     badgeDone: "Selesai",
 

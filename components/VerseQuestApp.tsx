@@ -32,13 +32,15 @@ export function VerseQuestApp() {
     submitVerse,
   } = useVerseQuest();
 
-  // Build firmanConfig from today's reflection questions in the sheet
+  // Single fetch for today's devotion — both devotionAvailable and firmanConfig come from this.
   const [firmanConfig, setFirmanConfig] = useState<FirmanPollConfig | null>(null);
+  const [devotionAvailable, setDevotionAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    void fetch("/api/devotion/today", { cache: "no-store" })
+    void fetch("/api/devotion/today")
       .then((r) => r.json())
-      .then((d: { reflection?: string[] }) => {
+      .then((d: { devotion?: string | null; reflection?: string[] }) => {
+        setDevotionAvailable(!!d.devotion);
         const items = d.reflection ?? [];
         if (items.length === 0) {
           setFirmanConfig(null);
@@ -53,7 +55,10 @@ export function VerseQuestApp() {
         };
         setFirmanConfig(config);
       })
-      .catch(() => setFirmanConfig(null));
+      .catch(() => {
+        setDevotionAvailable(false);
+        setFirmanConfig(null);
+      });
   }, []);
 
   const firmanPoll = useFirmanPoll();
@@ -121,6 +126,7 @@ export function VerseQuestApp() {
       firmanPoll={firmanPoll}
       gratitudeQuest={gratitudeQuest}
       portalReady={portalReady}
+      devotionAvailable={devotionAvailable}
     />
   );
 }

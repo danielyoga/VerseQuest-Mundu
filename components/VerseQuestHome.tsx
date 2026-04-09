@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppSettingsButton } from "@/components/AppSettingsButton";
 import { FirmanPollModal } from "@/components/FirmanPollModal";
@@ -40,6 +40,8 @@ type VerseQuestHomeProps = {
   firmanPoll: ReturnType<typeof import("@/hooks/useFirmanPoll").useFirmanPoll>;
   gratitudeQuest: ReturnType<typeof import("@/hooks/useGratitudeQuest").useGratitudeQuest>;
   portalReady: boolean;
+  /** Whether today's devotion content exists in the sheet (resolved by parent). */
+  devotionAvailable: boolean | null;
 };
 
 export function VerseQuestHome({
@@ -53,6 +55,7 @@ export function VerseQuestHome({
   firmanPoll,
   gratitudeQuest,
   portalReady,
+  devotionAvailable,
 }: VerseQuestHomeProps) {
   const { locale } = useLocale();
   const { displayOrder } = useDisplayOrder();
@@ -75,17 +78,10 @@ export function VerseQuestHome({
 
   // Devotion task state
   const devotionKey = `versequest_devotion_${getTodayString()}`;
-  const [devotionAvailable, setDevotionAvailable] = useState<boolean | null>(null);
   const [devotionRead, setDevotionRead] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setDevotionRead(localStorage.getItem(devotionKey) === "read");
-    }
-    void fetch("/api/devotion/today", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d: { devotion?: string | null }) => setDevotionAvailable(!!d.devotion))
-      .catch(() => setDevotionAvailable(false));
+    setDevotionRead(localStorage.getItem(devotionKey) === "read");
   }, [devotionKey]);
 
   const taskDone = submittedToday;

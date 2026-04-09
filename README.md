@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Bible Verse Schedule (monthly script)
+
+The **`bible verse schedule`** tab in Google Sheets has columns such as Date, Book, Reading Selection, and **Verses**. To fetch passage text and fill the **Verses** column for the app (`/api/schedule-today`), run:
+
+```bash
+npm run gsheet:monthly
+```
+
+By default this targets the **current calendar month**. To run for a **specific month** (1–12), pass `--month` after `--` (required so npm forwards the flag to the script):
+
+```bash
+npm run gsheet:monthly -- --month 5
+```
+
+The example above fills rows for **May** (month `5`). Use `--force` to overwrite cells that already have Verses: `npm run gsheet:monthly -- --month 5 --force`.
+
+Requires Google Sheets credentials (see `scripts/populate-schedule-verses.ts` and `package.json` `gsheet:monthly` for env setup).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
