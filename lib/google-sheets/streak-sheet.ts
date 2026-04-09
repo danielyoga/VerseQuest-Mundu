@@ -43,7 +43,8 @@ function isMarkedCell(cell: string): boolean {
  */
 export async function readSubmissionDatesFromMonthlySheets(
   canonicalPhone: string,
-  _localDatesHint: string[]
+  _localDatesHint: string[],
+  ranting?: string
 ): Promise<string[]> {
   const weekList = getLocalWeekDateStrings();
   const byMonth = new Map<number, { ymd: string; day: number }[]>();
@@ -62,7 +63,7 @@ export async function readSubmissionDatesFromMonthlySheets(
   const out = new Set<string>();
 
   for (const [month, entries] of byMonth) {
-    const tabTitle = await resolveMonthTabTitle(month);
+    const tabTitle = await resolveMonthTabTitle(month, ranting);
     if (!tabTitle) continue;
 
     const tab = escapeSheetTitleForRange(tabTitle);
@@ -232,14 +233,15 @@ async function upsertMonthRow(
 export async function upsertMergedMarksForPhone(
   canonicalPhone: string,
   displayName: string,
-  mergedDates: string[]
+  mergedDates: string[],
+  ranting?: string
 ): Promise<void> {
   const groups = groupMergedDatesByYearMonth(mergedDates);
   for (const [ym, days] of groups) {
     const [yStr, mStr] = ym.split("-");
     const month = parseInt(mStr, 10);
     void yStr;
-    const tabTitle = await resolveMonthTabTitle(month);
+    const tabTitle = await resolveMonthTabTitle(month, ranting);
     if (!tabTitle) continue;
     await upsertMonthRow(tabTitle, canonicalPhone, displayName, days);
   }

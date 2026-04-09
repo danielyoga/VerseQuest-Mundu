@@ -34,8 +34,10 @@ function emptyState(): StoredState {
 
 function parseStored(raw: string): StoredState | null {
   try {
-    const parsed = JSON.parse(raw) as StoredState;
+    const parsed = JSON.parse(raw) as StoredState & { profile: { ranting_name?: string } };
     if (!parsed.profile?.name || !parsed.profile?.phone) return null;
+    // Migrate legacy `ranting_name` field → `ranting` if present.
+    const ranting = parsed.profile.ranting ?? parsed.profile.ranting_name;
     return {
       ...emptyState(),
       ...parsed,
@@ -43,7 +45,7 @@ function parseStored(raw: string): StoredState | null {
       profile: {
         name: parsed.profile.name,
         phone: parsed.profile.phone,
-        ...(parsed.profile.ranting ? { ranting: parsed.profile.ranting } : {}),
+        ...(ranting ? { ranting } : {}),
       },
       submission_dates: Array.isArray(parsed.submission_dates)
         ? parsed.submission_dates
@@ -97,6 +99,7 @@ export function useVerseQuest() {
         const body: Record<string, unknown> = {
           phone: snapshot.profile.phone,
           name: snapshot.profile.name,
+          ranting: snapshot.profile.ranting,
           submission_dates: snapshot.submission_dates,
           xp_total: snapshot.xp_total,
         };
@@ -264,6 +267,21 @@ export function useVerseQuest() {
     [locale, syncStreakWithSheet]
   );
 
+  /**
+   * Wipes only the profile fields from both React state and localStorage.
+   * Streak, XP, and submission dates are preserved so re-login can sync them.
+   */
+  const clearProfile = useCallback(() => {
+    setState((prev) => {
+      const next: StoredState = {
+        ...prev,
+        profile: { name: "", phone: "" },
+      };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
   return {
     hydrated,
     state,
@@ -272,6 +290,7 @@ export function useVerseQuest() {
     weekDots,
     moodEmoji,
     registerProfile,
+    clearProfile,
     submitVerse,
   };
 }

@@ -25,6 +25,10 @@ export async function POST(req: NextRequest) {
   }
 
   const name = String(body.name ?? "").trim();
+  const ranting =
+    typeof body.ranting === "string" && body.ranting.trim()
+      ? body.ranting.trim()
+      : undefined;
   const submission_dates = Array.isArray(body.submission_dates)
     ? body.submission_dates.map((x) => String(x ?? ""))
     : [];
@@ -37,10 +41,11 @@ export async function POST(req: NextRequest) {
   try {
     const remoteDates = await readSubmissionDatesFromMonthlySheets(
       phone,
-      localDates
+      localDates,
+      ranting
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
-    await upsertMergedMarksForPhone(phone, name || "—", merged);
+    await upsertMergedMarksForPhone(phone, name || "—", merged, ranting);
     const mergedState = buildMergedLocalState(prevXp, merged);
     return NextResponse.json({ ok: true, merged: mergedState });
   } catch (e) {

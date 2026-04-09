@@ -11,7 +11,6 @@ import { useVerseQuest } from "@/hooks/useVerseQuest";
 import type { FirmanPollConfig } from "@/lib/firman-poll-config";
 import { messages } from "@/lib/i18n";
 import { getRantingList } from "@/lib/constants";
-import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 
 /**
  * Root shell: hydration gates, phone gate, then delegates the main experience to {@link VerseQuestHome}.
@@ -29,6 +28,7 @@ export function VerseQuestApp() {
     weekDots,
     moodEmoji,
     registerProfile,
+    clearProfile,
     submitVerse,
   } = useVerseQuest();
 
@@ -70,6 +70,21 @@ export function VerseQuestApp() {
     setPortalReady(true);
   }, []);
 
+  const rantingList = getRantingList();
+  const rantingRequired = rantingList.length > 0;
+
+  const profileMissingRanting =
+    hydrated &&
+    rantingRequired &&
+    !!state.profile.name &&
+    !!state.profile.phone &&
+    !state.profile.ranting;
+
+  useEffect(() => {
+    if (!profileMissingRanting) return;
+    clearProfile();
+  }, [profileMissingRanting, clearProfile]);
+
   const waitingForShell =
     !hydrated ||
     !localeReady ||
@@ -83,31 +98,6 @@ export function VerseQuestApp() {
         {m.loading}
       </div>
     );
-  }
-
-  // If ranting mode is active but the stored profile has no ranting, the session
-  // pre-dates ranting support. Clear it and force the user to log in again so they
-  // can pick their ranting from the dropdown.
-  const rantingRequired = getRantingList().length > 0;
-  const profileMissingRanting =
-    rantingRequired &&
-    !!state.profile.name &&
-    !!state.profile.phone &&
-    !state.profile.ranting;
-
-  if (profileMissingRanting) {
-    // Clear only the profile fields — preserve streak/xp so they aren't lost.
-    // On re-login registerProfile will write the new profile including ranting.
-    try {
-      const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Record<string, unknown>;
-        parsed.profile = { name: "", phone: "" };
-        localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(parsed));
-      }
-    } catch {
-      localStorage.removeItem(APP_DATA_STORAGE_KEY);
-    }
   }
 
   if (!state.profile.name || !state.profile.phone || profileMissingRanting) {
