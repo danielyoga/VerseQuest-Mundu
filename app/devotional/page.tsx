@@ -76,7 +76,7 @@ export default function DevotionalPage() {
             {devotionTitle && (
               <p className="mb-3 text-xl font-bold text-[var(--vq-text)]">{devotionTitle}</p>
             )}
-            <p className="break-words leading-[1.8] text-[15px] text-[var(--vq-text)]">
+            <p className="whitespace-pre-wrap break-words leading-[1.8] text-[15px] text-[var(--vq-text)]">
               {devotion}
             </p>
           </div>
