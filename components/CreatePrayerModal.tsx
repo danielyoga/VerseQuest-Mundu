@@ -79,7 +79,7 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
       onSuccess();
       onClose();
     } catch {
-      setError(m.prayerModalNetworkError);
+      setError(m.prayerWallErrNetwork);
     } finally {
       setSaving(false);
     }
@@ -114,12 +114,12 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
             id="prayer-modal-title"
             className="text-[17px] font-semibold text-[var(--vq-text)]"
           >
-            {m.prayerModalTitle}
+            {m.prayerWallModalTitle}
           </h2>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--vq-muted)] hover:bg-[var(--vq-canvas)]"
-            aria-label={m.prayerModalClose}
+            aria-label={m.modalClose}
           >
             ✕
           </button>
@@ -133,13 +133,13 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
               htmlFor="prayer-text"
               className="mb-1.5 block text-sm font-medium text-[var(--vq-text)]"
             >
-              {m.prayerModalFieldLabel} <span className="text-red-500">*</span>
+              {m.prayerWallLabel} <span className="text-red-500">*</span>
             </label>
             <textarea
               id="prayer-text"
               value={prayerText}
               onChange={(e) => setPrayerText(e.target.value)}
-              placeholder={m.prayerModalPlaceholder}
+              placeholder={m.prayerWallPlaceholder}
               maxLength={500}
               rows={5}
               className="w-full resize-none rounded-xl border border-[var(--vq-border)] bg-[var(--vq-canvas)] px-3 py-2.5 text-[14px] text-[var(--vq-text)] placeholder:text-[var(--vq-muted)] focus:outline-none focus:ring-2 focus:ring-[#534AB7]/40"
@@ -153,19 +153,20 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
           <div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-[var(--vq-text)]">
-                {m.prayerModalShowName}
+                {m.prayerWallShowName}
               </span>
               <button
+                type="button"
                 role="switch"
                 aria-checked={showName}
                 onClick={() => setShowName((v) => !v)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative h-6 w-11 shrink-0 overflow-hidden rounded-full transition-colors ${
                   showName ? "bg-[#534AB7]" : "bg-[var(--vq-border)]"
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                    showName ? "translate-x-6" : "translate-x-1"
+                  className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                    showName ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -174,9 +175,7 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
               <p className="mt-1 text-sm text-[var(--vq-muted)]">{profile.name}</p>
             )}
             <p className="mt-2 text-xs text-[var(--vq-muted)]">
-              {showName ? m.prayerModalShowNameHint : (
-                <>{m.prayerModalAnonHint}</>
-              )}
+              {showName ? m.prayerWallShowNameHint : m.prayerWallAnonHint}
             </p>
           </div>
 
@@ -196,7 +195,7 @@ export function CreatePrayerModal({ isOpen, onClose, onSuccess }: Props) {
             className="w-full rounded-xl py-3 text-[15px] font-semibold text-white transition-opacity disabled:opacity-40"
             style={{ background: "#534AB7" }}
           >
-            {saving ? m.prayerModalSubmitting : m.prayerModalSubmit}
+            {saving ? m.prayerWallSubmitting : m.prayerWallSubmit}
           </button>
         </div>
       </div>

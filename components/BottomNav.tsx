@@ -46,17 +46,17 @@ export function BottomNav() {
   const showAdmin = adminPhone ? isAnyAdmin(adminPhone) : false;
 
   const loadCount = useCallback(() => {
-    void fetch("/api/community-verses", { cache: "no-store" })
+    void fetch("/api/verse-community-count")
       .then((r) => r.json())
-      .then((d: { verses?: unknown[] }) =>
-        setCommunityCount(Array.isArray(d.verses) ? d.verses.length : 0)
+      .then((d: { count?: number }) =>
+        setCommunityCount(typeof d.count === "number" ? d.count : 0)
       )
       .catch(() => setCommunityCount(0));
   }, []);
 
   useEffect(() => {
     loadCount();
-  }, [loadCount, pathname]);
+  }, [loadCount]);
 
   useEffect(() => {
     function onRefresh() {

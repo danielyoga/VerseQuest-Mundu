@@ -4,6 +4,10 @@ import {
   getSpreadsheetId,
 } from "./client";
 
+const CACHE_TTL_MS = 60_000;
+let cachedVerses: { data: CommunityVerseItem[]; expiresAt: number } | null = null;
+let inflight: Promise<CommunityVerseItem[]> | null = null;
+
 export function getCommunityVerseTabTitle(): string {
   return process.env.VERSEQUEST_COMMUNITY_VERSE_TAB ?? "Today_Community_Verse";
 }
@@ -43,33 +47,51 @@ export type CommunityVerseItem = {
   verse_text: string;
 };
 
+export function invalidateCommunityVersesCache(): void {
+  cachedVerses = null;
+  inflight = null;
+}
+
 export async function readCommunityVersesDeduped(): Promise<CommunityVerseItem[]> {
-  const sheets = await getSheetsClient();
-  const tab = escapeSheetTitleForRange(getCommunityVerseTabTitle());
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: getSpreadsheetId(),
-    range: `${tab}!A:E`,
-  });
+  if (cachedVerses && Date.now() < cachedVerses.expiresAt) {
+    return cachedVerses.data;
+  }
+  if (inflight) return inflight;
 
-  const rows = (res.data.values ?? []) as string[][];
-  const today = getTodayString();
-  const dataRows = rows
-    .slice(1)
-    .filter((r) => r.length >= 5 && String(r[0] ?? "").startsWith(today));
+  inflight = (async () => {
+    const sheets = await getSheetsClient();
+    const tab = escapeSheetTitleForRange(getCommunityVerseTabTitle());
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: getSpreadsheetId(),
+      range: `${tab}!A:E`,
+    });
 
-  const seen = new Set<string>();
-  const unique = [...dataRows].reverse().filter((row) => {
-    const key = `${row[1]}_${row[2]}_${row[3]}_${row[0]}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    const rows = (res.data.values ?? []) as string[][];
+    const today = getTodayString();
+    const dataRows = rows
+      .slice(1)
+      .filter((r) => r.length >= 5 && String(r[0] ?? "").startsWith(today));
 
-  return unique.slice(0, 50).map((row) => ({
-    submitted_at: row[0] ?? "",
-    book: row[1] ?? "",
-    chapter: row[2] ?? "",
-    verse: row[3] ?? "",
-    verse_text: row[4] ?? "",
-  }));
+    const seen = new Set<string>();
+    const unique = [...dataRows].reverse().filter((row) => {
+      const key = `${row[1]}_${row[2]}_${row[3]}_${row[0]}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const data = unique.slice(0, 50).map((row) => ({
+      submitted_at: row[0] ?? "",
+      book: row[1] ?? "",
+      chapter: row[2] ?? "",
+      verse: row[3] ?? "",
+      verse_text: row[4] ?? "",
+    }));
+
+    cachedVerses = { data, expiresAt: Date.now() + CACHE_TTL_MS };
+    inflight = null;
+    return data;
+  })();
+  inflight.catch(() => { inflight = null; });
+  return inflight;
 }

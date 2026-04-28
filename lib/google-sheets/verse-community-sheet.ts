@@ -50,6 +50,13 @@ type ParsedRow = {
   raw: string[];
 };
 
+const VERSE_CACHE_TTL_MS = 60_000;
+let versePayloadCache: { data: { verses: CommunityVerseRef[]; count: number }; expiresAt: number } | null = null;
+
+export function invalidateVerseCommunityCache(): void {
+  versePayloadCache = null;
+}
+
 /** Serialize writes so concurrent requests cannot double-append the same ref. */
 let communityWriteChain: Promise<void> = Promise.resolve();
 
@@ -188,8 +195,13 @@ export async function getCommunityVersesPayload(maxRows?: number): Promise<{
   verses: CommunityVerseRef[];
   count: number;
 }> {
+  const isDefaultRead = maxRows == null || !Number.isFinite(maxRows);
+  if (isDefaultRead && versePayloadCache && Date.now() < versePayloadCache.expiresAt) {
+    return versePayloadCache.data;
+  }
+
   const parsed = await readCommunitySheetRows(
-    maxRows == null || !Number.isFinite(maxRows)
+    isDefaultRead
       ? { readRows: MAX_COMMUNITY_READ_ROWS }
       : { readRows: clampReadRows(maxRows) }
   );
@@ -208,7 +220,11 @@ export async function getCommunityVersesPayload(maxRows?: number): Promise<{
     out.push(p.ref);
   }
   out.sort(compareChapterVerse);
-  return { verses: out, count: out.length };
+  const result = { verses: out, count: out.length };
+  if (isDefaultRead) {
+    versePayloadCache = { data: result, expiresAt: Date.now() + VERSE_CACHE_TTL_MS };
+  }
+  return result;
 }
 
 /** Unique passage count for today — full read. */

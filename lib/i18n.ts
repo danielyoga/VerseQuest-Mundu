@@ -200,6 +200,13 @@ export const messages = {
     prayerWallErrTooLong: "Maksimal 500 karakter",
     prayerWallErrGeneric: "Terjadi kesalahan",
     prayerWallErrNetwork: "Tidak dapat terhubung. Periksa koneksi internet.",
+    prayerWallSubtitle: "Share your prayer request. All members can pray for each other.",
+    prayerWallAddAria: "Add prayer",
+    prayerWallJustNow: "Just now",
+    prayerWallMinutesAgo: (n: number) => `${n} min ago`,
+    prayerWallHoursAgo: (n: number) => `${n} hr ago`,
+    prayerWallYesterday: "Yesterday",
+    prayerWallDaysAgo: (n: number) => `${n} days ago`,
   },
   id: {
     loading: "Memuat…",
@@ -398,6 +405,13 @@ export const messages = {
     prayerWallErrTooLong: "Maksimal 500 karakter",
     prayerWallErrGeneric: "Terjadi kesalahan",
     prayerWallErrNetwork: "Tidak dapat terhubung. Periksa koneksi internet.",
+    prayerWallSubtitle: "Bagikan permintaan doa kamu. Semua anggota dapat saling mendoakan.",
+    prayerWallAddAria: "Tambah doa",
+    prayerWallJustNow: "Baru saja",
+    prayerWallMinutesAgo: (n: number) => `${n} menit lalu`,
+    prayerWallHoursAgo: (n: number) => `${n} jam lalu`,
+    prayerWallYesterday: "Kemarin",
+    prayerWallDaysAgo: (n: number) => `${n} hari lalu`,
   },
 } as const;
 

@@ -55,15 +55,24 @@ export function CommunityVerses() {
                 ? `${bookDisplayName(item.book, locale)} ${item.chapter}:${item.verse}`
                 : `${item.chapter}:${item.verse}`;
               const key = `${item.book}-${item.chapter}-${item.verse}-${item.submitted_at}`;
+              const dateLabel = item.submitted_at
+                ? new Date(item.submitted_at + "T00:00:00").toLocaleDateString(
+                    locale === "id" ? "id-ID" : "en-US",
+                    { day: "2-digit", month: "long", year: "numeric" }
+                  )
+                : null;
               return (
                 <li
                   key={key}
                   className="rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 shadow-sm"
                 >
-                  <p className="text-[15px] font-semibold text-[#534AB7]">{label}</p>
+                  <p className="text-[15px] font-semibold text-[#534AB7]">📖 {label}</p>
                   {item.verse_text ? (
                     <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.verse_text}</p>
                   ) : null}
+                  {dateLabel && (
+                    <p className="mt-2 text-[12px] text-[var(--vq-muted)]">{dateLabel}</p>
+                  )}
                 </li>
               );
             })}

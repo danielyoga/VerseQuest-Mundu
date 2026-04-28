@@ -163,10 +163,11 @@ export function useVerseQuest() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  /** After login or on load: two-way merge with sheet. */
+  /** After login or on load: two-way merge with sheet. Deferred 2s to avoid blocking LCP. */
   useEffect(() => {
     if (!hydrated || !state.profile.phone) return;
-    void syncStreakWithSheet(loadState());
+    const id = setTimeout(() => { void syncStreakWithSheet(loadState()); }, 2000);
+    return () => clearTimeout(id);
   }, [hydrated, state.profile.phone, syncStreakWithSheet]);
 
   const registerProfile = useCallback(
