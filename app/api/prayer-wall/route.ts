@@ -19,15 +19,17 @@ export type Prayer = {
 let prayerCache: { data: Prayer[]; expiresAt: number } | null = null;
 const PRAYER_CACHE_TTL_MS = 60_000;
 
-export async function GET() {
+export async function GET(request: Request) {
   const t0 = Date.now();
+  const bust = new URL(request.url).searchParams.has("bust");
   try {
-    if (prayerCache && Date.now() < prayerCache.expiresAt) {
+    if (!bust && prayerCache && Date.now() < prayerCache.expiresAt) {
       console.log(`[prayer-wall] GET ${Date.now() - t0}ms (cache hit) count=${prayerCache.data.length}`);
       return NextResponse.json({ prayers: prayerCache.data }, {
         headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" },
       });
     }
+    if (bust) console.log("[prayer-wall] GET cache bypassed (bust)");
 
     const sheets = await getSheetsClient();
     const res = await sheets.spreadsheets.values.get({
@@ -56,9 +58,13 @@ export async function GET() {
       .reverse();
 
     prayerCache = { data: prayers, expiresAt: Date.now() + PRAYER_CACHE_TTL_MS };
-    console.log(`[prayer-wall] GET ${Date.now() - t0}ms (sheets) count=${prayers.length}`);
+    console.log(`[prayer-wall] GET ${Date.now() - t0}ms (sheets) count=${prayers.length} bust=${bust}`);
     return NextResponse.json({ prayers }, {
-      headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" },
+      headers: {
+        "Cache-Control": bust
+          ? "no-store"
+          : "public, max-age=30, stale-while-revalidate=60",
+      },
     });
   } catch (err) {
     console.error("[prayer-wall] GET error", err);

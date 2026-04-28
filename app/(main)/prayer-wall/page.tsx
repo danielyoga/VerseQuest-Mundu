@@ -59,10 +59,11 @@ export default function PrayerWallPage() {
     } catch {}
   }, []);
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback((bust = false) => {
     setLoading(true);
-    console.log("[prayer-wall] refetch start, userName=", userName);
-    void fetch("/api/prayer-wall", { cache: "no-store" })
+    const url = bust ? "/api/prayer-wall?bust=1" : "/api/prayer-wall";
+    console.log(`[prayer-wall] refetch start url="${url}" userName=`, userName);
+    void fetch(url, { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { prayers?: Prayer[] }) => {
         const all = (data.prayers ?? []).filter((p) => !p.answered);
@@ -110,7 +111,7 @@ export default function PrayerWallPage() {
       const data = (await res.json()) as { error?: string };
       if (res.ok) {
         console.log(`[prayer-wall] markAnswered success rowIndex=${prayer.rowIndex}`);
-        refetch();
+        refetch(true);
       } else {
         console.warn(`[prayer-wall] markAnswered failed rowIndex=${prayer.rowIndex} error="${data.error}"`);
       }
@@ -258,7 +259,7 @@ export default function PrayerWallPage() {
       <CreatePrayerModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSuccess={refetch}
+        onSuccess={() => refetch(true)}
       />
     </div>
   );
