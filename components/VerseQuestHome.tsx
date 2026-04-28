@@ -14,8 +14,8 @@ import {
   formatHeaderDate,
   greetingLine,
   messages,
-  streakMessage,
 } from "@/lib/i18n";
+import { computeLossStreakFromLastSubmit, getMoodMessage } from "@/lib/moodEmoji";
 import { getTodayString } from "@/lib/sheetName";
 import type { WeekDotState } from "@/lib/streak/streak";
 import type { StoredState } from "@/types";
@@ -97,16 +97,10 @@ export function VerseQuestHome({
     [locale, displayName]
   );
 
-  const streakText = useMemo(
-    () =>
-      streakMessage(
-        locale,
-        displayStreak,
-        state.profile.name || (locale === "id" ? "Anda" : "friend"),
-        !submittedToday
-      ),
-    [locale, displayStreak, state.profile.name, submittedToday]
-  );
+  const streakText = useMemo(() => {
+    const lossStreak = computeLossStreakFromLastSubmit(state.last_submitted_at, getTodayString());
+    return getMoodMessage(displayStreak, lossStreak);
+  }, [displayStreak, state.last_submitted_at]);
 
   const totalQuests = 3 + (firmanConfig ? 1 : 0);
   const doneQuests =

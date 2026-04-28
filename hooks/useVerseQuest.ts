@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import { toLocalDateString } from "@/lib/date-utils";
+import { computeLossStreakFromLastSubmit, getMoodEmoji } from "@/lib/moodEmoji";
 import {
   computeStreakAfterSubmit,
   getDisplayStreak,
-  getMoodEmoji,
   getWeekDots,
   hasSubmittedToday,
 } from "@/lib/streak/streak";
+import { getTodayString } from "@/lib/sheetName";
 import type { StreakSyncMergedPayload } from "@/lib/streak/sync-merge";
 import type { StoredState, VerseSubmission } from "@/types";
 import { CURRENT_SCHEMA_VERSION } from "@/types";
@@ -219,10 +220,10 @@ export function useVerseQuest() {
     [state.submission_dates]
   );
 
-  const moodEmoji = useMemo(
-    () => getMoodEmoji(displayStreak),
-    [displayStreak]
-  );
+  const moodEmoji = useMemo(() => {
+    const lossStreak = computeLossStreakFromLastSubmit(state.last_submitted_at, getTodayString());
+    return getMoodEmoji(displayStreak, lossStreak);
+  }, [displayStreak, state.last_submitted_at]);
 
   const submitVerse = useCallback(
     (payload: Omit<VerseSubmission, "submitted_at">): { ok: boolean; error?: string } => {

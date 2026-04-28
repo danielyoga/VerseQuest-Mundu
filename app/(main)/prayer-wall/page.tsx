@@ -153,7 +153,6 @@ export default function PrayerWallPage() {
 
                   {/* Username + ranting */}
                   <div className="mb-2 flex items-center gap-1.5 pr-20">
-                    <span className="text-base leading-none">🙏</span>
                     <span className="text-[14px] font-semibold text-[#534AB7]">
                       {prayer.username}
                     </span>
@@ -208,31 +207,33 @@ export default function PrayerWallPage() {
         )}
       </div>
 
-      <button
-        onClick={() => setModalOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: 80,
-          right: 20,
-          width: 52,
-          height: 52,
-          borderRadius: "50%",
-          background: "#534AB7",
-          color: "#ffffff",
-          fontSize: 28,
-          fontWeight: 300,
-          border: "none",
-          cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(83,74,183,0.4)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 50,
-        }}
-        aria-label={m.prayerWallAddAria}
-      >
-        +
-      </button>
+      {userName && (
+        <button
+          onClick={() => setModalOpen(true)}
+          style={{
+            position: "fixed",
+            bottom: 80,
+            right: 20,
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            background: "#534AB7",
+            color: "#ffffff",
+            fontSize: 28,
+            fontWeight: 300,
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(83,74,183,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+          }}
+          aria-label={m.prayerWallAddAria}
+        >
+          +
+        </button>
+      )}
 
       <CreatePrayerModal
         isOpen={modalOpen}

@@ -19,13 +19,6 @@ export function hasSubmittedToday(lastSubmittedAt: string | null): boolean {
   return lastSubmittedAt.slice(0, 10) === toLocalDateString(new Date());
 }
 
-export function getMoodEmoji(streak: number): string {
-  if (streak === 0) return "😢";
-  if (streak <= 5) return "😊";
-  if (streak <= 14) return "😄";
-  return "🤩";
-}
-
 /** Mon–Sun dots for the current week */
 export function getWeekDots(submissionDates: string[], now: Date = new Date()): WeekDotState[] {
   const todayStr = toLocalDateString(now);
