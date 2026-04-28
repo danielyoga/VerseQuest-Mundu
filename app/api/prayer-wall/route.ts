@@ -124,25 +124,36 @@ export async function PATCH(request: Request) {
   }
 
   const { rowIndex, username } = body;
+  console.log(`[prayer-wall] PATCH received rowIndex=${rowIndex} username="${username}"`);
+
   if (!rowIndex || !username) {
+    console.warn(`[prayer-wall] PATCH rejected: missing fields rowIndex=${rowIndex} username="${username}"`);
     return NextResponse.json({ error: "Data tidak lengkap." }, { status: 400 });
   }
 
   try {
     const sheets = await getSheetsClient();
 
+    const range = `Prayer_Wall!B${rowIndex}:F${rowIndex}`;
+    console.log(`[prayer-wall] PATCH reading sheet range="${range}"`);
     const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
-      range: `Prayer_Wall!B${rowIndex}:F${rowIndex}`,
+      range,
     });
 
     const row = readRes.data.values?.[0] as string[] | undefined;
+    console.log(`[prayer-wall] PATCH sheet row=`, JSON.stringify(row ?? null));
+
     if (!row) {
+      console.warn(`[prayer-wall] PATCH row not found rowIndex=${rowIndex}`);
       return NextResponse.json({ error: "Doa tidak ditemukan." }, { status: 404 });
     }
 
     const ownerUsername = row[0];
+    console.log(`[prayer-wall] PATCH ownership check ownerUsername="${ownerUsername}" requestUsername="${username}" match=${ownerUsername === username}`);
+
     if (ownerUsername !== username) {
+      console.warn(`[prayer-wall] PATCH forbidden: ownerUsername="${ownerUsername}" !== requestUsername="${username}"`);
       return NextResponse.json(
         { error: "Hanya pembuat doa yang dapat menandai sebagai terjawab." },
         { status: 403 }
@@ -157,7 +168,7 @@ export async function PATCH(request: Request) {
     });
 
     prayerCache = null;
-    console.log(`[prayer-wall] PATCH rowIndex=${rowIndex} username=${username}`);
+    console.log(`[prayer-wall] PATCH success rowIndex=${rowIndex} username="${username}"`);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[prayer-wall] PATCH error", err);
