@@ -16,21 +16,9 @@ export type Prayer = {
   answered: boolean;
 };
 
-let prayerCache: { data: Prayer[]; expiresAt: number } | null = null;
-const PRAYER_CACHE_TTL_MS = 60_000;
-
-export async function GET(request: Request) {
+export async function GET() {
   const t0 = Date.now();
-  const bust = new URL(request.url).searchParams.has("bust");
   try {
-    if (!bust && prayerCache && Date.now() < prayerCache.expiresAt) {
-      console.log(`[prayer-wall] GET ${Date.now() - t0}ms (cache hit) count=${prayerCache.data.length}`);
-      return NextResponse.json({ prayers: prayerCache.data }, {
-        headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" },
-      });
-    }
-    if (bust) console.log("[prayer-wall] GET cache bypassed (bust)");
-
     const sheets = await getSheetsClient();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
@@ -57,14 +45,9 @@ export async function GET(request: Request) {
       })
       .reverse();
 
-    prayerCache = { data: prayers, expiresAt: Date.now() + PRAYER_CACHE_TTL_MS };
-    console.log(`[prayer-wall] GET ${Date.now() - t0}ms (sheets) count=${prayers.length} bust=${bust}`);
+    console.log(`[prayer-wall] GET ${Date.now() - t0}ms count=${prayers.length}`);
     return NextResponse.json({ prayers }, {
-      headers: {
-        "Cache-Control": bust
-          ? "no-store"
-          : "public, max-age=30, stale-while-revalidate=60",
-      },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (err) {
     console.error("[prayer-wall] GET error", err);
@@ -113,7 +96,6 @@ export async function POST(request: Request) {
       },
     });
 
-    prayerCache = null;
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[prayer-wall] POST error", err);
@@ -173,7 +155,6 @@ export async function PATCH(request: Request) {
       requestBody: { values: [["TRUE"]] },
     });
 
-    prayerCache = null;
     console.log(`[prayer-wall] PATCH success rowIndex=${rowIndex} username="${username}"`);
     return NextResponse.json({ success: true });
   } catch (err) {
