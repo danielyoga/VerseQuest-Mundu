@@ -6,6 +6,8 @@ import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import type { DisplayOrder } from "@/lib/display-order";
 import { messages, type Locale } from "@/lib/i18n";
+import { clearSession } from "@/lib/session";
+import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 
 function GearIcon({ className }: { className?: string }) {
   return (
@@ -39,6 +41,13 @@ export function AppSettingsButton() {
   const { displayOrder, setDisplayOrder } = useDisplayOrder();
   const m = messages[locale];
   const [open, setOpen] = useState(false);
+
+  const handleSignOut = () => {
+    clearSession();
+    localStorage.removeItem(APP_DATA_STORAGE_KEY);
+    // Hard reload so all React state (streak, XP) is fully reset
+    window.location.href = "/";
+  };
   const [portalReady, setPortalReady] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -188,8 +197,16 @@ export function AppSettingsButton() {
 
               <button
                 type="button"
+                onClick={handleSignOut}
+                className="mt-6 w-full min-h-[44px] rounded-2xl border border-[var(--vq-border)] py-2.5 text-sm font-medium text-[var(--vq-muted)] transition hover:border-red-300 hover:text-red-500"
+              >
+                {m.settingsSignOut}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setOpen(false)}
-                className="mt-6 w-full min-h-[48px] rounded-2xl bg-[#534AB7] py-3 text-base font-medium text-white transition hover:bg-[#3C3489]"
+                className="mt-2 w-full min-h-[48px] rounded-2xl bg-[#534AB7] py-3 text-base font-medium text-white transition hover:bg-[#3C3489]"
               >
                 {m.settingsDone}
               </button>

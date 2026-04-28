@@ -5,6 +5,7 @@ import { PhoneRegistrationScreen } from "@/components/PhoneRegistrationScreen";
 import { VerseQuestHome } from "@/components/VerseQuestHome";
 import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useUserContext } from "@/contexts/UserContext";
 import { useFirmanPoll } from "@/hooks/useFirmanPoll";
 import { useGratitudeQuest } from "@/hooks/useGratitudeQuest";
 import { useVerseQuest } from "@/hooks/useVerseQuest";
@@ -18,6 +19,7 @@ import { getRantingList } from "@/lib/constants";
 export function VerseQuestApp() {
   const { locale, hydrated: localeReady } = useLocale();
   const { hydrated: displayOrderReady } = useDisplayOrder();
+  const { stats, statsLoading } = useUserContext();
   const m = messages[locale];
 
   const {
@@ -30,7 +32,7 @@ export function VerseQuestApp() {
     registerProfile,
     clearProfile,
     submitVerse,
-  } = useVerseQuest();
+  } = useVerseQuest(stats);
 
   // Single fetch for today's devotion — both devotionAvailable and firmanConfig come from this.
   const [firmanConfig, setFirmanConfig] = useState<FirmanPollConfig | null>(null);
@@ -90,7 +92,8 @@ export function VerseQuestApp() {
     !localeReady ||
     !firmanPoll.hydrated ||
     !gratitudeQuest.hydrated ||
-    !displayOrderReady;
+    !displayOrderReady ||
+    (!!state.profile.phone && statsLoading && !stats);
 
   if (waitingForShell) {
     return (

@@ -13,6 +13,7 @@ import {
 } from "@/lib/streak/streak";
 import { getTodayString } from "@/lib/sheetName";
 import type { StreakSyncMergedPayload } from "@/lib/streak/sync-merge";
+import type { UserStats } from "@/hooks/useUser";
 import type { StoredState, VerseSubmission } from "@/types";
 import { CURRENT_SCHEMA_VERSION } from "@/types";
 
@@ -70,18 +71,20 @@ function loadState(): StoredState {
 
 function saveState(s: StoredState) {
   try {
-    const toSave: StoredState = {
-      ...s,
+    // Only persist identity + submission_dates. Stats (streak, xp, last_submitted_at)
+    // are fetched live from the sheet on every load — never cached to avoid drift.
+    const toSave = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
+      profile: s.profile,
+      submission_dates: s.submission_dates,
     };
-    const payload = JSON.stringify(toSave);
-    localStorage.setItem(APP_DATA_STORAGE_KEY, payload);
+    localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(toSave));
   } catch (e) {
     console.warn("VerseQuest: failed to save app data to localStorage", e);
   }
 }
 
-export function useVerseQuest() {
+export function useVerseQuest(liveStats: UserStats | null = null) {
   const { locale } = useLocale();
   const [state, setState] = useState<StoredState>(emptyState);
   const [hydrated, setHydrated] = useState(false);
@@ -147,11 +150,22 @@ export function useVerseQuest() {
   );
 
   useEffect(() => {
-    // Client-only: read persisted streak from localStorage after mount (SSR-safe).
+    // Client-only: read persisted profile from localStorage after mount (SSR-safe).
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional one-time hydration
     setState(loadState());
     setHydrated(true);
   }, []);
+
+  /** Apply live stats from the sheet whenever they arrive or refresh (e.g. route change). */
+  useEffect(() => {
+    if (!hydrated || !liveStats) return;
+    setState((prev) => ({
+      ...prev,
+      streak_count: liveStats.streak_count,
+      xp_total: liveStats.xp_total,
+      last_submitted_at: liveStats.last_submitted_at,
+    }));
+  }, [hydrated, liveStats]);
 
   /** Sync when another tab updates app data (same origin). */
   useEffect(() => {

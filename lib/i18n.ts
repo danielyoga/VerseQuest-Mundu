@@ -124,6 +124,7 @@ export const messages = {
     displayOrderMissionsFirst: "Missions first",
     displayOrderReadingFirst: "Bible reading first",
     settingsDone: "Done",
+    settingsSignOut: "Sign out",
 
     scheduleHeading: "📅 Today’s reading",
     scheduleNoPlan: "No reading plan for this date in the schedule.",
@@ -329,6 +330,7 @@ export const messages = {
     displayOrderMissionsFirst: "Misi dulu",
     displayOrderReadingFirst: "Bacaan Alkitab dulu",
     settingsDone: "Selesai",
+    settingsSignOut: "Keluar",
 
     scheduleHeading: "📅 Bacaan hari ini",
     scheduleNoPlan: "Belum ada jadwal bacaan untuk tanggal ini.",
