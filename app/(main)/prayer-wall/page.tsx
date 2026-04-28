@@ -61,15 +61,26 @@ export default function PrayerWallPage() {
 
   const refetch = useCallback(() => {
     setLoading(true);
+    console.log("[prayer-wall] refetch start, userName=", userName);
     void fetch("/api/prayer-wall", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { prayers?: Prayer[] }) => {
         const all = (data.prayers ?? []).filter((p) => !p.answered);
-        const own = all.filter((p) => p.username === userName);
-        const other = all.filter((p) => p.username !== userName);
+        console.log(
+          `[prayer-wall] fetched ${data.prayers?.length ?? 0} total,`,
+          `${all.length} unanswered,`,
+          `userName="${userName}"`,
+          all.map((p) => ({ rowIndex: p.rowIndex, real_username: p.real_username, show_name: p.show_name }))
+        );
+        const own = all.filter((p) => p.real_username === userName);
+        const other = all.filter((p) => p.real_username !== userName);
+        console.log(`[prayer-wall] own=${own.length} other=${other.length}`);
         setPrayers([...own, ...other]);
       })
-      .catch(() => setPrayers([]))
+      .catch((err) => {
+        console.error("[prayer-wall] fetch error", err);
+        setPrayers([]);
+      })
       .finally(() => setLoading(false));
   }, [userName]);
 
@@ -88,6 +99,7 @@ export default function PrayerWallPage() {
 
   const markAnswered = async (prayer: Prayer) => {
     if (!userName) return;
+    console.log(`[prayer-wall] markAnswered rowIndex=${prayer.rowIndex} userName="${userName}"`);
     setAnswering(prayer.rowIndex);
     try {
       const res = await fetch("/api/prayer-wall", {
@@ -95,7 +107,15 @@ export default function PrayerWallPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rowIndex: prayer.rowIndex, username: userName }),
       });
-      if (res.ok) refetch();
+      const data = (await res.json()) as { error?: string };
+      if (res.ok) {
+        console.log(`[prayer-wall] markAnswered success rowIndex=${prayer.rowIndex}`);
+        refetch();
+      } else {
+        console.warn(`[prayer-wall] markAnswered failed rowIndex=${prayer.rowIndex} error="${data.error}"`);
+      }
+    } catch (err) {
+      console.error("[prayer-wall] markAnswered network error", err);
     } finally {
       setAnswering(null);
     }
@@ -128,7 +148,7 @@ export default function PrayerWallPage() {
         ) : (
           <ul className="space-y-3 pb-24">
             {prayers.map((prayer, i) => {
-              const isOwn = prayer.username === userName;
+              const isOwn = prayer.real_username === userName;
               const isLiked = likedSet.has(prayer.rowIndex);
               const isAnswering = answering === prayer.rowIndex;
 

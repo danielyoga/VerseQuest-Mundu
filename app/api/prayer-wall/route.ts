@@ -6,7 +6,10 @@ export const runtime = "nodejs";
 export type Prayer = {
   rowIndex: number;
   submitted_at: string;
+  /** Display name — "Anonim" when show_name=false */
   username: string;
+  /** Always the real submitter username, used for ownership checks */
+  real_username: string;
   ranting: string | null;
   prayer_request: string;
   show_name: boolean;
@@ -38,10 +41,12 @@ export async function GET() {
       .map((row, originalIndex) => {
         const showName = String(row[4] ?? "").toUpperCase() === "TRUE";
         const answered = String(row[5] ?? "").toUpperCase() === "TRUE";
+        const realUsername = row[1] ?? "";
         return {
           rowIndex: originalIndex + 2,
           submitted_at: row[0] ?? "",
-          username: showName ? (row[1] ?? "") : "Anonim",
+          username: showName ? realUsername : "Anonim",
+          real_username: realUsername,
           ranting: showName ? (row[2] ?? null) : null,
           prayer_request: row[3] ?? "",
           show_name: showName,
