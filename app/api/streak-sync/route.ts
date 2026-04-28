@@ -9,6 +9,7 @@ import {
   readSubmissionDatesFromMonthlySheets,
   upsertMergedMarksForPhone,
 } from "@/lib/google-sheets/streak-sheet";
+import { appendCommunityVerse } from "@/lib/google-sheets/community-verse-sheet";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
@@ -29,6 +30,23 @@ export async function POST(req: NextRequest) {
     typeof body.ranting === "string" && body.ranting.trim()
       ? body.ranting.trim()
       : undefined;
+
+  const verseToday =
+    body.verse_today && typeof body.verse_today === "object"
+      ? (body.verse_today as Record<string, unknown>)
+      : null;
+  const communityVerse =
+    verseToday &&
+    typeof verseToday.book === "string" &&
+    Number.isFinite(Number(verseToday.chapter)) &&
+    Number.isFinite(Number(verseToday.verse))
+      ? {
+          book: verseToday.book,
+          chapter: Number(verseToday.chapter),
+          verse: Number(verseToday.verse),
+          verse_text: typeof verseToday.verse_text === "string" ? verseToday.verse_text : "",
+        }
+      : null;
   const submission_dates = Array.isArray(body.submission_dates)
     ? body.submission_dates.map((x) => String(x ?? ""))
     : [];
@@ -46,6 +64,15 @@ export async function POST(req: NextRequest) {
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
     await upsertMergedMarksForPhone(phone, name || "—", merged, ranting);
+
+    if (communityVerse) {
+      try {
+        await appendCommunityVerse(communityVerse);
+      } catch (err) {
+        console.error("[community-verse] append failed (non-critical):", err);
+      }
+    }
+
     const mergedState = buildMergedLocalState(prevXp, merged);
     return NextResponse.json({ ok: true, merged: mergedState });
   } catch (e) {

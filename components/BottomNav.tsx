@@ -46,10 +46,10 @@ export function BottomNav() {
   const showAdmin = adminPhone ? isAnyAdmin(adminPhone) : false;
 
   const loadCount = useCallback(() => {
-    void fetch("/api/verse-community", { cache: "no-store" })
+    void fetch("/api/community-verses", { cache: "no-store" })
       .then((r) => r.json())
-      .then((d: { count?: number }) =>
-        setCommunityCount(typeof d.count === "number" ? d.count : 0)
+      .then((d: { verses?: unknown[] }) =>
+        setCommunityCount(Array.isArray(d.verses) ? d.verses.length : 0)
       )
       .catch(() => setCommunityCount(0));
   }, []);
@@ -75,6 +75,7 @@ export function BottomNav() {
 
   const isHome = pathname === "/";
   const isCommunity = pathname === "/community";
+  const isPrayer = pathname === "/prayer-wall";
   const isAdmin = pathname.startsWith("/admin");
   const badge =
     communityCount != null && communityCount > 0
@@ -120,6 +121,18 @@ export function BottomNav() {
             ) : null}
           </span>
           {m.navCommunity}
+        </Link>
+
+        <Link
+          href="/prayer-wall"
+          className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
+            isPrayer ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
+          }`}
+          aria-current={isPrayer ? "page" : undefined}
+          aria-label={m.navPrayerAria}
+        >
+          <span className="text-xl leading-none" aria-hidden>🙏</span>
+          {m.navPrayer}
         </Link>
 
         {showAdmin && (

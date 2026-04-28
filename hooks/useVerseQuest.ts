@@ -91,7 +91,7 @@ export function useVerseQuest() {
   const syncStreakWithSheet = useCallback(
     async (
       snapshot: StoredState,
-      verseToday?: { book: string; chapter: number; verse: number; dateYmd: string }
+      verseToday?: { book: string; chapter: number; verse: number; verse_text: string; dateYmd: string }
     ) => {
       if (!snapshot.profile.phone) return;
       const gen = ++streakSyncGenRef.current;
@@ -108,6 +108,7 @@ export function useVerseQuest() {
             book: verseToday.book,
             chapter: verseToday.chapter,
             verse: verseToday.verse,
+            verse_text: verseToday.verse_text,
             date: verseToday.dateYmd,
           };
         }
@@ -255,6 +256,7 @@ export function useVerseQuest() {
                 book: payload.book,
                 chapter: payload.chapter,
                 verse: payload.verse,
+                verse_text: payload.verse_text ?? "",
                 dateYmd: todayStr,
               }
             : undefined;

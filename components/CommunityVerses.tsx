@@ -4,21 +4,21 @@ import { useEffect, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { bookDisplayName } from "@/lib/bible/book-names-id";
 import { messages } from "@/lib/i18n";
-import type { CommunityFullItem } from "@/app/api/verse-community-full/route";
+import type { CommunityVerseItem } from "@/lib/google-sheets/community-verse-sheet";
 
 export function CommunityVerses() {
   const { locale } = useLocale();
   const m = messages[locale];
-  const [items, setItems] = useState<CommunityFullItem[] | null>(null);
+  const [items, setItems] = useState<CommunityVerseItem[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     function load() {
-      void fetch("/api/verse-community-full", { cache: "no-store" })
+      void fetch("/api/community-verses", { cache: "no-store" })
         .then((r) => r.json())
-        .then((d: { items?: CommunityFullItem[] }) => {
-          if (!cancelled) setItems(Array.isArray(d.items) ? d.items : []);
+        .then((d: { verses?: CommunityVerseItem[] }) => {
+          if (!cancelled) setItems(Array.isArray(d.verses) ? d.verses : []);
         })
         .catch(() => { if (!cancelled) setItems([]); });
     }
@@ -54,15 +54,15 @@ export function CommunityVerses() {
               const label = item.book
                 ? `${bookDisplayName(item.book, locale)} ${item.chapter}:${item.verse}`
                 : `${item.chapter}:${item.verse}`;
-              const key = `${item.book}-${item.chapter}-${item.verse}`;
+              const key = `${item.book}-${item.chapter}-${item.verse}-${item.submitted_at}`;
               return (
                 <li
                   key={key}
                   className="rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 shadow-sm"
                 >
                   <p className="text-[15px] font-semibold text-[#534AB7]">{label}</p>
-                  {item.text ? (
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.text}</p>
+                  {item.verse_text ? (
+                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.verse_text}</p>
                   ) : null}
                 </li>
               );
