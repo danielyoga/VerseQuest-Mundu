@@ -59,8 +59,8 @@ export async function GET() {
 
     return {
       date: match[0] as string,
-      devotion: (match[1] as string | undefined) ?? null,
-      devotionTitle: (match[2] as string | undefined)?.trim() || null,
+      devotionTitle: (match[1] as string | undefined)?.trim() || null,
+      devotion: (match[2] as string | undefined) ?? null,
       reflection,
     };
   })();

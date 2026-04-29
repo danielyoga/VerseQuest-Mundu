@@ -173,7 +173,7 @@ export function FirmanPollModal({
                 onClick={handleSubmit}
                 className="mt-5 flex w-full min-h-[52px] items-center justify-center gap-2 rounded-[14px] bg-[#534AB7] py-[15px] text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98]"
               >
-                <span>🔥</span> {m.firmanSubmitPoll}
+                {m.firmanSubmitPoll}
               </button>
             </>
           )}

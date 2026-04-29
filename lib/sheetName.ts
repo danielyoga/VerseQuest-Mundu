@@ -16,11 +16,14 @@ export function getTodayString(): string {
   return new Date().toISOString().split("T")[0]!;
 }
 
-/** DD/MM/YYYY format used by the Devotion_and_Reflection sheet. */
+/** DD/MM/YYYY format used by the Devotion_and_Reflection sheet, in Jakarta local time. */
 export function getTodaySheetDate(): string {
-  const d = new Date();
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Jakarta",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)!.value;
+  return `${get("day")}/${get("month")}/${get("year")}`;
 }

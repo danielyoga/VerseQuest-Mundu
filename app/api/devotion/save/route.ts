@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     const spreadsheetId = getSpreadsheetId();
     const today = getTodaySheetDate();
     const reflectionJoined = reflection.filter(Boolean).join("|");
-    // Columns: Date | Devotion | Devotion Title | Reflection
-    const newRow = [today, devotion, devotionTitle, reflectionJoined];
+    // Columns: Date | Devotion Title | Devotion | Reflection
+    const newRow = [today, devotionTitle, devotion, reflectionJoined];
 
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId,
