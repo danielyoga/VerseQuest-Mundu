@@ -81,7 +81,10 @@ export function VerseQuestHome({
   const [devotionRead, setDevotionRead] = useState(false);
 
   useEffect(() => {
-    setDevotionRead(localStorage.getItem(devotionKey) === "read");
+    const check = () => setDevotionRead(localStorage.getItem(devotionKey) === "read");
+    check();
+    window.addEventListener("storage", check);
+    return () => window.removeEventListener("storage", check);
   }, [devotionKey]);
 
   const taskDone = submittedToday;
@@ -201,10 +204,10 @@ export function VerseQuestHome({
         <div className="flex gap-3.5 items-center">
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
-              devotionAvailable ? "bg-[#FEF3C7]" : "bg-[var(--vq-bg)]"
+              devotionRead ? "bg-[#EAF3DE]" : devotionAvailable ? "bg-[#FEF3C7]" : "bg-[var(--vq-bg)]"
             }`}
           >
-            📖
+            {devotionRead ? "✅" : "📖"}
           </div>
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="min-w-0 flex-1">
@@ -217,15 +220,32 @@ export function VerseQuestHome({
                     : m.devotionTaskUnavailableDesc}
               </p>
             </div>
+            <span
+              className={`shrink-0 self-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                devotionRead
+                  ? "bg-[#EAF3DE] text-[#27500A]"
+                  : devotionAvailable
+                    ? "bg-[#FEF3C7] text-[#78350F]"
+                    : "bg-[var(--vq-bg)] text-[var(--vq-muted)]"
+              }`}
+            >
+              {devotionRead
+                ? m.devotionTaskBadgeDone
+                : devotionAvailable
+                  ? m.devotionTaskBadgeUnread
+                  : m.devotionTaskBadgeNone}
+            </span>
           </div>
         </div>
         <div className="mt-4">
           <button
             type="button"
             onClick={() => router.push("/devotional")}
-            className="flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98]"
+            className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium text-white transition active:scale-[0.98] ${
+              devotionRead ? "bg-[#3B6D11] hover:bg-[#2d5209]" : "bg-[#534AB7] hover:bg-[#3C3489]"
+            }`}
           >
-            {m.devotionTaskReadCta}
+            {devotionRead ? m.devotionTaskCtaDone : m.devotionTaskReadCta}
           </button>
         </div>
       </div>

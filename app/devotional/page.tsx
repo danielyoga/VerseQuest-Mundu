@@ -31,6 +31,7 @@ export default function DevotionalPage() {
 
   function markAsRead() {
     localStorage.setItem(devotionKey, "read");
+    window.dispatchEvent(new StorageEvent("storage", { key: devotionKey, newValue: "read", storageArea: localStorage }));
     router.back();
   }
 

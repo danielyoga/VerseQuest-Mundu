@@ -157,6 +157,7 @@ export const messages = {
     devotionTaskBadgeUnread: "Unread",
     devotionTaskBadgeNone: "Not Yet",
     devotionTaskReadCta: "Read Now",
+    devotionTaskCtaDone: "✓ Read today",
 
     adminDevotionTitle: "Edit Devotion & Reflection",
     adminDevotionSection: "Daily Devotion",
@@ -363,6 +364,7 @@ export const messages = {
     devotionTaskBadgeUnread: "Belum Dibaca",
     devotionTaskBadgeNone: "Belum Ada",
     devotionTaskReadCta: "Baca Sekarang",
+    devotionTaskCtaDone: "✓ Sudah dibaca hari ini",
 
     adminDevotionTitle: "Edit Renungan & Refleksi",
     adminDevotionSection: "Renungan Harian",
