@@ -188,7 +188,7 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
   const registerProfile = useCallback(
     async (phoneInput: string, ranting?: string): Promise<{ ok: boolean; error?: string }> => {
       const month = new Date().getMonth() + 1;
-      let data: { ok?: boolean; error?: string; name?: string; canonicalPhone?: string };
+      let data: { ok?: boolean; error?: string; name?: string; canonicalPhone?: string; is_coordinator?: boolean; coordinator_ranting?: string | null };
       try {
         const res = await fetch("/api/preregister-lookup", {
           method: "POST",
@@ -209,6 +209,8 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
             name: data.name!,
             phone: data.canonicalPhone!,
             ...(ranting ? { ranting } : {}),
+            is_coordinator: data.is_coordinator ?? false,
+            coordinator_ranting: data.coordinator_ranting ?? null,
           },
         };
         saveState(next);

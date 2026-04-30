@@ -14,15 +14,20 @@ export function BottomNav() {
   const m = messages[locale];
   const [communityCount, setCommunityCount] = useState<number | null>(null);
   const [adminPhone, setAdminPhone] = useState<string | null>(null);
+  const [isCoordinatorUser, setIsCoordinatorUser] = useState(false);
 
-  // Read phone from stored profile to determine admin status
+  // Read phone + coordinator flag from stored profile
   function readAdminPhone() {
     try {
       const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
-      const parsed = raw ? (JSON.parse(raw) as { profile?: { phone?: string } }) : null;
+      const parsed = raw
+        ? (JSON.parse(raw) as { profile?: { phone?: string; is_coordinator?: boolean } })
+        : null;
       setAdminPhone(parsed?.profile?.phone ?? null);
+      setIsCoordinatorUser(parsed?.profile?.is_coordinator ?? false);
     } catch {
       setAdminPhone(null);
+      setIsCoordinatorUser(false);
     }
   }
 
@@ -77,6 +82,7 @@ export function BottomNav() {
   const isCommunity = pathname === "/community";
   const isPrayer = pathname === "/prayer-wall";
   const isAdmin = pathname.startsWith("/admin");
+  const isCoordinator = pathname === "/coordinator";
   const badge =
     communityCount != null && communityCount > 0
       ? communityCount > 99
@@ -146,6 +152,20 @@ export function BottomNav() {
           >
             <span className="text-xl leading-none" aria-hidden>⚙️</span>
             Admin
+          </Link>
+        )}
+
+        {isCoordinatorUser && (
+          <Link
+            href="/coordinator"
+            className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
+              isCoordinator ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
+            }`}
+            aria-current={isCoordinator ? "page" : undefined}
+            aria-label="Absensi"
+          >
+            <span className="text-xl leading-none" aria-hidden>✅</span>
+            Absensi
           </Link>
         )}
       </div>

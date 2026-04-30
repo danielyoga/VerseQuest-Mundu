@@ -12,6 +12,8 @@ export interface StoredProfile {
   phone: string;
   /** Ranting prefix (e.g. "A", "B"). Only present when ranting mode is active. */
   ranting?: string;
+  is_coordinator?: boolean;
+  coordinator_ranting?: string | null;
 }
 
 export interface StoredState {

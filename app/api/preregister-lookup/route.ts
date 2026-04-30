@@ -3,6 +3,7 @@ import { messages, type Locale } from "@/lib/i18n";
 import { lookupPreregisteredName } from "@/lib/google-sheets/preregister-sheet";
 import { normalizePhone } from "@/lib/preregister";
 import { isAnyAdmin } from "@/lib/constants";
+import { isCoordinator, getCoordinatorRanting } from "@/lib/coordinators";
 
 export const runtime = "nodejs";
 
@@ -30,7 +31,13 @@ export async function POST(req: NextRequest) {
 
   // Admin phones bypass the sheet lookup — they are always allowed in.
   if (isAnyAdmin(phone)) {
-    return NextResponse.json({ ok: true, canonicalPhone: phone, name: "Admin" });
+    return NextResponse.json({
+      ok: true,
+      canonicalPhone: phone,
+      name: "Admin",
+      is_coordinator: isCoordinator(phone),
+      coordinator_ranting: getCoordinatorRanting(phone),
+    });
   }
 
   try {
@@ -42,6 +49,8 @@ export async function POST(req: NextRequest) {
       ok: true,
       canonicalPhone: phone,
       name: name.trim(),
+      is_coordinator: isCoordinator(phone),
+      coordinator_ranting: getCoordinatorRanting(phone),
     });
   } catch {
     return NextResponse.json({ ok: false, error: m.loginErrorGeneric }, { status: 502 });

@@ -152,7 +152,7 @@ export const messages = {
     devotionTaskTitle: "Read Today's Devotion",
     devotionTaskDoneDesc: "Read today",
     devotionTaskAvailableDesc: "Today's devotion is available",
-    devotionTaskUnavailableDesc: "Devotio\n not available yet",
+    devotionTaskUnavailableDesc: "Devotion not available yet",
     devotionTaskBadgeDone: "Done",
     devotionTaskBadgeUnread: "Unread",
     devotionTaskBadgeNone: "Not Yet",
@@ -209,6 +209,13 @@ export const messages = {
     prayerWallHoursAgo: (n: number) => `${n} hr ago`,
     prayerWallYesterday: "Yesterday",
     prayerWallDaysAgo: (n: number) => `${n} days ago`,
+
+    coordinatorTitle: "✅ Unsubmitted Bible Read",
+    coordinatorBackAria: "Go back",
+    coordinatorLoading: "Loading data…",
+    coordinatorNotSubmitted: (n: number) => `Not Yet Submitted (${n})`,
+    coordinatorAllDone: "Everyone has submitted today 🎉",
+    coordinatorSubmitted: (n: number) => `Submitted (${n})`,
   },
   id: {
     loading: "Memuat…",
@@ -416,6 +423,13 @@ export const messages = {
     prayerWallHoursAgo: (n: number) => `${n} jam lalu`,
     prayerWallYesterday: "Kemarin",
     prayerWallDaysAgo: (n: number) => `${n} hari lalu`,
+
+    coordinatorTitle: "✅ Absensi Firman Hari Ini",
+    coordinatorBackAria: "Kembali",
+    coordinatorLoading: "Memuat data…",
+    coordinatorNotSubmitted: (n: number) => `Belum Submit (${n})`,
+    coordinatorAllDone: "Semua sudah submit hari ini 🎉",
+    coordinatorSubmitted: (n: number) => `Sudah Submit (${n})`,
   },
 } as const;
 
