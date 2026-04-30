@@ -145,7 +145,7 @@ export default function CoordinatorPage() {
               onClick={() => setDoneOpen((v) => !v)}
               className="mb-2 flex w-full items-center justify-between text-[13px] font-semibold uppercase tracking-wide text-[var(--vq-muted)]"
             >
-              <span>{m.coordinatorSubmitted(submitted.length)}</span>
+              {/* <span>{m.coordinatorSubmitted(submitted.length)}</span> */}
               <span>{doneOpen ? "▴" : "▾"}</span>
             </button>
             {doneOpen && (

@@ -93,7 +93,8 @@ export function VerseQuestApp() {
     !firmanPoll.hydrated ||
     !gratitudeQuest.hydrated ||
     !displayOrderReady ||
-    (!!state.profile.phone && statsLoading && !stats);
+    (!!state.profile.phone && statsLoading && !stats) ||
+    (!!state.profile.phone && devotionAvailable === null);
 
   if (waitingForShell) {
     return (

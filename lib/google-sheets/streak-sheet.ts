@@ -60,61 +60,61 @@ export async function readSubmissionDatesFromMonthlySheets(
 
   const sheets = await getSheetsClient();
   const spreadsheetId = getSpreadsheetId();
-  const out = new Set<string>();
 
-  for (const [month, entries] of byMonth) {
-    const tabTitle = await resolveMonthTabTitle(month, ranting);
-    if (!tabTitle) continue;
+  const perMonthResults = await Promise.all(
+    [...byMonth.entries()].map(async ([month, entries]) => {
+      const tabTitle = await resolveMonthTabTitle(month, ranting);
+      if (!tabTitle) return [];
 
-    const tab = escapeSheetTitleForRange(tabTitle);
-    let res;
-    try {
-      res = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: `${tab}!A1:AZ${MONTH_TAB_READ_ROW_CAP}`,
-      });
-    } catch {
-      continue;
-    }
-    const rows = res.data.values ?? [];
-    if (rows.length < 2) continue;
+      const tab = escapeSheetTitleForRange(tabTitle);
+      let res;
+      try {
+        res = await sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range: `${tab}!A1:AZ${MONTH_TAB_READ_ROW_CAP}`,
+        });
+      } catch {
+        return [];
+      }
+      const rows = res.data.values ?? [];
+      if (rows.length < 2) return [];
 
-    const header = rows[0].map((c) => String(c ?? ""));
-    const iPhone = findHeaderIndex(header, ["phone_number", "phone", "nomor"]);
-    if (iPhone < 0) continue;
+      const header = rows[0].map((c) => String(c ?? ""));
+      const iPhone = findHeaderIndex(header, ["phone_number", "phone", "nomor"]);
+      if (iPhone < 0) return [];
 
-    const dayColToDay = new Map<number, number>();
-    for (let c = 0; c < header.length; c++) {
-      const day = parseDayHeader(header[c] ?? "");
-      if (day !== null) dayColToDay.set(c, day);
-    }
-    if (dayColToDay.size === 0) continue;
+      const dayColToDay = new Map<number, number>();
+      for (let c = 0; c < header.length; c++) {
+        const day = parseDayHeader(header[c] ?? "");
+        if (day !== null) dayColToDay.set(c, day);
+      }
+      if (dayColToDay.size === 0) return [];
 
-    let userRow: string[] | null = null;
-    for (let r = 1; r < rows.length; r++) {
-      const row = rows[r];
-      if (!row?.length) continue;
-      const raw = String(row[iPhone] ?? "").trim();
-      if (normalizePhone(raw) !== canonicalPhone) continue;
-      userRow = row;
-      break;
-    }
-    if (!userRow) continue;
+      let userRow: string[] | null = null;
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row?.length) continue;
+        const raw = String(row[iPhone] ?? "").trim();
+        if (normalizePhone(raw) !== canonicalPhone) continue;
+        userRow = row;
+        break;
+      }
+      if (!userRow) return [];
 
-    const wantDayToYmd = new Map<number, string>();
-    for (const e of entries) {
-      wantDayToYmd.set(e.day, e.ymd);
-    }
+      const wantDayToYmd = new Map<number, string>();
+      for (const e of entries) wantDayToYmd.set(e.day, e.ymd);
 
-    for (const [col, day] of dayColToDay) {
-      const ymd = wantDayToYmd.get(day);
-      if (!ymd) continue;
-      const cell = String(userRow[col] ?? "").trim();
-      if (isMarkedCell(cell)) out.add(ymd);
-    }
-  }
+      const found: string[] = [];
+      for (const [col, day] of dayColToDay) {
+        const ymd = wantDayToYmd.get(day);
+        if (!ymd) continue;
+        if (isMarkedCell(String(userRow[col] ?? ""))) found.push(ymd);
+      }
+      return found;
+    })
+  );
 
-  return normalizeYmdList([...out]);
+  return normalizeYmdList(perMonthResults.flat());
 }
 
 function groupMergedDatesByYearMonth(
@@ -229,7 +229,7 @@ async function upsertMonthRow(
   }
 }
 
-/** Write merged dates into month tabs (day columns only). */
+/** Write merged dates into month tabs (day columns only). Months are written in parallel. */
 export async function upsertMergedMarksForPhone(
   canonicalPhone: string,
   displayName: string,
@@ -237,12 +237,12 @@ export async function upsertMergedMarksForPhone(
   ranting?: string
 ): Promise<void> {
   const groups = groupMergedDatesByYearMonth(mergedDates);
-  for (const [ym, days] of groups) {
-    const [yStr, mStr] = ym.split("-");
-    const month = parseInt(mStr, 10);
-    void yStr;
-    const tabTitle = await resolveMonthTabTitle(month, ranting);
-    if (!tabTitle) continue;
-    await upsertMonthRow(tabTitle, canonicalPhone, displayName, days);
-  }
+  await Promise.all(
+    [...groups.entries()].map(async ([ym, days]) => {
+      const month = parseInt(ym.split("-")[1]!, 10);
+      const tabTitle = await resolveMonthTabTitle(month, ranting);
+      if (!tabTitle) return;
+      await upsertMonthRow(tabTitle, canonicalPhone, displayName, days);
+    })
+  );
 }

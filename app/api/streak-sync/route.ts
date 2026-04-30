@@ -63,7 +63,22 @@ export async function POST(req: NextRequest) {
       ranting
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
-    await upsertMergedMarksForPhone(phone, name || "—", merged, ranting);
+
+    // On load-only sync (no verse), only write the current month — previous months
+    // are already marked from past syncs, so writing all of them is wasteful.
+    const datesToWrite = communityVerse
+      ? merged
+      : (() => {
+          const now = new Date();
+          const cy = now.getFullYear();
+          const cm = now.getMonth() + 1;
+          return merged.filter((d) => {
+            const y = parseInt(d.slice(0, 4), 10);
+            const m = parseInt(d.slice(5, 7), 10);
+            return y === cy && m === cm;
+          });
+        })();
+    await upsertMergedMarksForPhone(phone, name || "—", datesToWrite, ranting);
 
     if (communityVerse) {
       try {

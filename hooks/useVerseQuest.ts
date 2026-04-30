@@ -48,6 +48,8 @@ function parseStored(raw: string): StoredState | null {
         name: parsed.profile.name,
         phone: parsed.profile.phone,
         ...(ranting ? { ranting } : {}),
+        is_coordinator: parsed.profile.is_coordinator ?? false,
+        coordinator_ranting: parsed.profile.coordinator_ranting ?? null,
       },
       submission_dates: Array.isArray(parsed.submission_dates)
         ? parsed.submission_dates
@@ -71,12 +73,12 @@ function loadState(): StoredState {
 
 function saveState(s: StoredState) {
   try {
-    // Only persist identity + submission_dates. Stats (streak, xp, last_submitted_at)
-    // are fetched live from the sheet on every load — never cached to avoid drift.
     const toSave = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
       profile: s.profile,
       submission_dates: s.submission_dates,
+      streak_count: s.streak_count,
+      last_submitted_at: s.last_submitted_at,
     };
     localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(toSave));
   } catch (e) {
@@ -178,11 +180,10 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  /** After login or on load: two-way merge with sheet. Deferred 2s to avoid blocking LCP. */
+  /** After login or on load: two-way merge with sheet. Fires immediately — fully async, does not block render. */
   useEffect(() => {
     if (!hydrated || !state.profile.phone) return;
-    const id = setTimeout(() => { void syncStreakWithSheet(loadState()); }, 2000);
-    return () => clearTimeout(id);
+    void syncStreakWithSheet(loadState());
   }, [hydrated, state.profile.phone, syncStreakWithSheet]);
 
   const registerProfile = useCallback(
@@ -225,10 +226,14 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
     [locale]
   );
 
-  const displayStreak = useMemo(() => getDisplayStreak(state), [state]);
+  // Prefer liveStats directly to avoid waiting for the useEffect state update cycle.
+  const displayStreak = useMemo(
+    () => liveStats ? getDisplayStreak({ streak_count: liveStats.streak_count, last_submitted_at: liveStats.last_submitted_at }) : getDisplayStreak(state),
+    [liveStats, state]
+  );
   const submittedToday = useMemo(
-    () => hasSubmittedToday(state.last_submitted_at),
-    [state.last_submitted_at]
+    () => hasSubmittedToday(liveStats?.last_submitted_at ?? state.last_submitted_at),
+    [liveStats, state.last_submitted_at]
   );
 
   const weekDots = useMemo(
