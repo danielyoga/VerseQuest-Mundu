@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
-import { getCurrentSheetName, getTodayDayJakarta, colLetter } from "@/lib/sheetName";
+import { getCurrentSheetName, getTodayDayJakarta } from "@/lib/sheetName";
 import { getCoordinatorRanting } from "@/lib/coordinators";
 
 export const runtime = "nodejs";
@@ -17,25 +17,27 @@ export async function GET(request: NextRequest) {
   try {
     const sheets = await getSheetsClient();
     const sheetName = getCurrentSheetName(ranting);
-    // A=phone(0), B=name(1), C=day1(2), D=day2(3) … so day N is at 0-based index N+1
     const day = getTodayDayJakarta();
-    const dayColIndex = day + 1;
-    const lastCol = colLetter(dayColIndex);
 
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
-      range: `${sheetName}!A:${lastCol}`,
+      range: `${sheetName}!A:AZ`,
     });
 
     const rows = res.data.values ?? [];
-    const dataRows = rows.slice(1);
+    if (rows.length < 1) return NextResponse.json({ ranting, members: [] });
 
+    // Parse header to find today's day column — handles any extra columns before the day columns.
+    const header = rows[0].map((c: unknown) => String(c ?? "").trim());
+    const dayColIndex = header.findIndex((h) => h === String(day));
+    console.log(`[coordinator/members] header=${JSON.stringify(header)} day=${day} dayColIndex=${dayColIndex}`);
+
+    const dataRows = rows.slice(1);
     const members = dataRows
       .filter((row) => row[0] || row[1])
       .map((row) => {
-        const cell = String(row[dayColIndex] ?? "").trim();
+        const cell = dayColIndex >= 0 ? String(row[dayColIndex] ?? "").trim() : "";
         const submitted_today = cell !== "";
-        console.log(`[coordinator/members] name=${String(row[1] ?? "")} day=${day} col=${lastCol} cell="${cell}" submitted=${submitted_today}`);
         return {
           phone: String(row[0] ?? ""),
           name: String(row[1] ?? ""),
@@ -43,7 +45,7 @@ export async function GET(request: NextRequest) {
         };
       });
 
-    console.log(`[coordinator/members] ranting=${ranting} count=${members.length} day=${day} col=${lastCol}`);
+    console.log(`[coordinator/members] ranting=${ranting} count=${members.length} day=${day} dayColIndex=${dayColIndex}`);
     return NextResponse.json({ ranting, members });
   } catch (err) {
     console.error("[coordinator/members]", err);
