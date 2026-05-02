@@ -8,6 +8,7 @@ import type { DisplayOrder } from "@/lib/display-order";
 import { messages, type Locale } from "@/lib/i18n";
 import { clearSession } from "@/lib/session";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
+import { clearScheduleWindowCache } from "@/lib/schedule/window-cache";
 
 function GearIcon({ className }: { className?: string }) {
   return (
@@ -45,6 +46,7 @@ export function AppSettingsButton() {
   const handleSignOut = () => {
     clearSession();
     localStorage.removeItem(APP_DATA_STORAGE_KEY);
+    clearScheduleWindowCache();
     // Hard reload so all React state (streak, XP) is fully reset
     window.location.href = "/";
   };
