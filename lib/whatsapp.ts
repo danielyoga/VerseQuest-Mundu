@@ -1,11 +1,10 @@
-// const WA_MESSAGE = encodeURIComponent(
-const WA_MESSAGE = "Yukk, jangan lupa submit Bible Read hari ini ya, sekalian polling-nya juga";
+const WA_TEXT = "Yukk, jangan lupa submit Bible Read hari ini ya, sekalian polling-nya juga.\nSegera klik : https://bit.ly/BIBLEREADBIFA\nGod bless you 🙏 😇";
 
 /**
- * Builds a wa.me deep link for a given member phone number.
+ * Builds a WhatsApp deep link for a given member phone number.
  *
  * Sheet phones may be stored without country code (e.g. "81334080077").
- * wa.me requires full E.164 without + (e.g. "6281334080077").
+ * The API requires full E.164 without + (e.g. "6281334080077").
  *
  * Normalization:
  *   starts with +  → strip +
@@ -22,5 +21,6 @@ export function buildWhatsAppLink(rawPhone: string): string {
     normalized = "62" + normalized;
   }
 
-  return `https://wa.me/${normalized}?text=${WA_MESSAGE}`;
+  const encodedText = encodeURIComponent(WA_TEXT).replace(/%20/g, "+");
+  return `https://api.whatsapp.com/send/?phone=${normalized}&text=${encodedText}&type=phone_number&app_absent=0`;
 }
