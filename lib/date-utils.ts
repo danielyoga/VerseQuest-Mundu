@@ -6,6 +6,18 @@ export function toLocalDateString(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+/** Returns all calendar days from the 1st of the current month up to today, oldest first. */
+export function getCurrentMonthDayStrings(anchor: Date = new Date()): string[] {
+  const out: string[] = [];
+  const today = new Date(anchor);
+  const todayDay = today.getDate();
+  for (let i = 1; i <= todayDay; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), i);
+    out.push(toLocalDateString(d));
+  }
+  return out;
+}
+
 /**
  * Monday–Sunday local dates (7 entries), same week logic as streak week dots (ISO week, Monday start).
  */

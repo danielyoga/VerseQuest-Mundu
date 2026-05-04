@@ -5,7 +5,7 @@ import {
   getSpreadsheetId,
   MONTH_TAB_READ_ROW_CAP,
 } from "./client";
-import { getLocalWeekDateStrings } from "@/lib/date-utils";
+import { getCurrentMonthDayStrings } from "@/lib/date-utils";
 import { normalizeYmdList } from "@/lib/streak/sync-merge";
 import { normalizePhone } from "@/lib/preregister";
 import { resolveMonthTabTitle } from "./month-sheet-tab";
@@ -37,8 +37,8 @@ function isMarkedCell(cell: string): boolean {
 }
 
 /**
- * Read submission YYYY-MM-DD from month tabs for the **current local calendar week** (Mon–Sun) only.
- * At most two tabs (when the week crosses a month boundary). Range `A1:AZ{MONTH_TAB_READ_ROW_CAP}`.
+ * Read submission YYYY-MM-DD from month tabs for all days in the current month up to today.
+ * Always reads exactly one tab. Range `A1:AZ{MONTH_TAB_READ_ROW_CAP}`.
  * `localDatesHint` is kept for call-site compatibility; merging still uses the client’s full date list.
  */
 export async function readSubmissionDatesFromMonthlySheets(
@@ -46,7 +46,7 @@ export async function readSubmissionDatesFromMonthlySheets(
   _localDatesHint: string[],
   ranting?: string
 ): Promise<string[]> {
-  const weekList = getLocalWeekDateStrings();
+  const weekList = getCurrentMonthDayStrings();
   const byMonth = new Map<number, { ymd: string; day: number }[]>();
   for (const ymd of weekList) {
     const p = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);

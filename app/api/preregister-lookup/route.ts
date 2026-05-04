@@ -3,7 +3,7 @@ import { messages, type Locale } from "@/lib/i18n";
 import { lookupPreregisteredName } from "@/lib/google-sheets/preregister-sheet";
 import { normalizePhone } from "@/lib/preregister";
 import { isAnyAdmin } from "@/lib/constants";
-import { isCoordinator, getCoordinatorRanting } from "@/lib/coordinators";
+import { isCoordinator, getCoordinatorRanting, isCoordinatorForRanting } from "@/lib/coordinators";
 
 export const runtime = "nodejs";
 
@@ -29,6 +29,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: m.errPhoneInvalid });
   }
 
+  const resolveCoordinatorRanting = (phone: string, preferredRanting?: string): string | null => {
+    if (preferredRanting && isCoordinatorForRanting(phone, preferredRanting)) {
+      return preferredRanting;
+    }
+    return getCoordinatorRanting(phone);
+  };
+
   // Admin phones bypass the sheet lookup — they are always allowed in.
   if (isAnyAdmin(phone)) {
     return NextResponse.json({
@@ -36,7 +43,7 @@ export async function POST(req: NextRequest) {
       canonicalPhone: phone,
       name: "Admin",
       is_coordinator: isCoordinator(phone),
-      coordinator_ranting: getCoordinatorRanting(phone),
+      coordinator_ranting: resolveCoordinatorRanting(phone, ranting),
     });
   }
 
@@ -50,7 +57,7 @@ export async function POST(req: NextRequest) {
       canonicalPhone: phone,
       name: name.trim(),
       is_coordinator: isCoordinator(phone),
-      coordinator_ranting: getCoordinatorRanting(phone),
+      coordinator_ranting: resolveCoordinatorRanting(phone, ranting),
     });
   } catch {
     return NextResponse.json({ ok: false, error: m.loginErrorGeneric }, { status: 502 });

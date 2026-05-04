@@ -22,21 +22,34 @@ function parseCoordinators(): Array<{ phone: string; ranting: string }> {
     return [];
   }
 
-  return raw.split(",").flatMap((entry) => {
+  const entries = raw.split(",").flatMap((entry) => {
     const [phone, ranting] = entry.trim().split(":");
     if (!phone || !ranting) return [];
-    const p = phone.trim();
-    const r = ranting.trim();
-    console.log(`[coordinators] registered: "${p}" → ranting="${r}"`);
-    return [{ phone: p, ranting: r }];
+    return [{ phone: phone.trim(), ranting: ranting.trim() }];
   });
+  console.log(`[coordinators] loaded ${entries.length} entries`);
+  return entries;
 }
 
 export function getCoordinatorRanting(phone: string): string | null {
   const entries = parseCoordinators();
-  const match = entries.find((e) => phoneMatches(e.phone, phone));
-  console.log(`[coordinators] check: "${phone}" → ${match ? `ranting="${match.ranting}"` : "no match"}`);
+  const allMatches = entries.filter((e) => phoneMatches(e.phone, phone));
+  const match = allMatches[0] ?? null;
+  console.log(
+    `[coordinators] getCoordinatorRanting phone="${phone}" candidates=${allMatches.map((e) => `${e.phone}:${e.ranting}`).join(",")||"none"} → ${match ? `ranting="${match.ranting}"` : "no match"}`
+  );
   return match?.ranting ?? null;
+}
+
+/** Verify that `phone` is registered as a coordinator for the given `ranting` specifically. */
+export function isCoordinatorForRanting(phone: string, ranting: string): boolean {
+  const entries = parseCoordinators();
+  const allMatches = entries.filter((e) => phoneMatches(e.phone, phone));
+  const match = allMatches.find((e) => e.ranting.toLowerCase() === ranting.toLowerCase());
+  console.log(
+    `[coordinators] isCoordinatorForRanting phone="${phone}" ranting="${ranting}" candidates=${allMatches.map((e) => `${e.phone}:${e.ranting}`).join(",")||"none"} → ${match ? "ok" : "denied"}`
+  );
+  return match !== undefined;
 }
 
 export function isCoordinator(phone: string): boolean {

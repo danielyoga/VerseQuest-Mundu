@@ -73,7 +73,8 @@ export default function CoordinatorPage() {
   useEffect(() => {
     if (!authChecked || !profile?.is_coordinator) return;
     const phone = encodeURIComponent(profile.phone);
-    void fetch(`/api/coordinator/members?phone=${phone}`)
+    const ranting = encodeURIComponent(profile.coordinator_ranting ?? "");
+    void fetch(`/api/coordinator/members?phone=${phone}&ranting=${ranting}`)
       .then((r) => r.json())
       .then((d: { ranting?: string; members?: MemberStatus[] }) => {
         setRanting(d.ranting ?? "");

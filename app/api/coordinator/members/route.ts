@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
 import { getCurrentSheetName, getTodayDayJakarta } from "@/lib/sheetName";
-import { getCoordinatorRanting } from "@/lib/coordinators";
+import { getCoordinatorRanting, isCoordinatorForRanting } from "@/lib/coordinators";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const phone = request.nextUrl.searchParams.get("phone") ?? "";
 
-  const ranting = getCoordinatorRanting(phone);
-  console.log(`[coordinator/members] request phone="${phone}" → ranting=${ranting ?? "DENIED"}`);
+  const rantingParam = request.nextUrl.searchParams.get("ranting") ?? "";
+  const ranting = rantingParam
+    ? (isCoordinatorForRanting(phone, rantingParam) ? rantingParam : null)
+    : getCoordinatorRanting(phone);
+  console.log(`[coordinator/members] request phone="${phone}" ranting="${rantingParam}" → ${ranting ?? "DENIED"}`);
   if (!ranting) {
     return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
   }
@@ -18,6 +21,7 @@ export async function GET(request: NextRequest) {
     const sheets = await getSheetsClient();
     const sheetName = getCurrentSheetName(ranting);
     const day = getTodayDayJakarta();
+    console.log(`[coordinator/members] sheet="${sheetName}" day=${day}`);
 
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
@@ -25,12 +29,17 @@ export async function GET(request: NextRequest) {
     });
 
     const rows = res.data.values ?? [];
+    console.log(`[coordinator/members] rows fetched=${rows.length}`);
     if (rows.length < 1) return NextResponse.json({ ranting, members: [] });
 
     // Parse header to find today's day column — handles any extra columns before the day columns.
     const header = rows[0].map((c: unknown) => String(c ?? "").trim());
     const dayColIndex = header.findIndex((h) => h === String(day));
-    console.log(`[coordinator/members] header=${JSON.stringify(header)} day=${day} dayColIndex=${dayColIndex}`);
+    if (dayColIndex < 0) {
+      console.warn(`[coordinator/members] day column "${day}" not found in header=${JSON.stringify(header)}`);
+    } else {
+      console.log(`[coordinator/members] header day="${day}" found at col index=${dayColIndex}`);
+    }
 
     const dataRows = rows.slice(1);
     const members = dataRows
@@ -45,7 +54,8 @@ export async function GET(request: NextRequest) {
         };
       });
 
-    console.log(`[coordinator/members] ranting=${ranting} count=${members.length} day=${day} dayColIndex=${dayColIndex}`);
+    const submittedCount = members.filter((m) => m.submitted_today).length;
+    console.log(`[coordinator/members] ranting=${ranting} members=${members.length} submitted=${submittedCount} pending=${members.length - submittedCount}`);
     return NextResponse.json({ ranting, members });
   } catch (err) {
     console.error("[coordinator/members]", err);

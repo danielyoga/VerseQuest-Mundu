@@ -64,6 +64,13 @@ export async function POST(req: NextRequest) {
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
 
+    console.log("[streak-sync]", phone, {
+      localDates,
+      remoteDates,
+      merged,
+      prevXp,
+    });
+
     // On load-only sync (no verse), only write the current month — previous months
     // are already marked from past syncs, so writing all of them is wasteful.
     const datesToWrite = communityVerse
@@ -89,6 +96,7 @@ export async function POST(req: NextRequest) {
     }
 
     const mergedState = buildMergedLocalState(prevXp, merged);
+    console.log("[streak-sync] result", phone, mergedState);
     return NextResponse.json({ ok: true, merged: mergedState });
   } catch (e) {
     console.error("streak-sync:", e);

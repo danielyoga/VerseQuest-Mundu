@@ -130,7 +130,13 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
         if (!data.ok || !data.merged) return;
         if (gen !== streakSyncGenRef.current) return;
         const m = data.merged;
+        console.log("[useVerseQuest] streak-sync response", {
+          streak_count: m.streak_count,
+          last_submitted_at: m.last_submitted_at,
+          submission_dates: m.submission_dates,
+        });
         setState((prev) => {
+          console.log("[useVerseQuest] setState after sync — prev streak:", prev.streak_count, "→ next streak:", m.streak_count);
           const next: StoredState = {
             ...prev,
             submission_dates: m.submission_dates,
@@ -161,12 +167,23 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
   /** Apply live stats from the sheet whenever they arrive or refresh (e.g. route change). */
   useEffect(() => {
     if (!hydrated || !liveStats) return;
-    setState((prev) => ({
-      ...prev,
+    console.log("[useVerseQuest] liveStats arrived", {
       streak_count: liveStats.streak_count,
-      xp_total: liveStats.xp_total,
       last_submitted_at: liveStats.last_submitted_at,
-    }));
+      xp_total: liveStats.xp_total,
+    });
+    setState((prev) => {
+      const next_streak = Math.max(prev.streak_count, liveStats.streak_count);
+      console.log("[useVerseQuest] liveStats setState — prev streak:", prev.streak_count, "liveStats streak:", liveStats.streak_count, "→ next streak:", next_streak);
+      return {
+        ...prev,
+        // Never downgrade streak_count — streak-sync may have already computed a higher value
+        // from the month tabs, while liveStats reads from the main sheet (a separate, stale column).
+        streak_count: next_streak,
+        xp_total: Math.max(prev.xp_total, liveStats.xp_total),
+        last_submitted_at: liveStats.last_submitted_at,
+      };
+    });
   }, [hydrated, liveStats]);
 
   /** Sync when another tab updates app data (same origin). */
@@ -226,14 +243,13 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
     [locale]
   );
 
-  // Prefer liveStats directly to avoid waiting for the useEffect state update cycle.
   const displayStreak = useMemo(
-    () => liveStats ? getDisplayStreak({ streak_count: liveStats.streak_count, last_submitted_at: liveStats.last_submitted_at }) : getDisplayStreak(state),
-    [liveStats, state]
+    () => getDisplayStreak(state),
+    [state]
   );
   const submittedToday = useMemo(
-    () => hasSubmittedToday(liveStats?.last_submitted_at ?? state.last_submitted_at),
-    [liveStats, state.last_submitted_at]
+    () => hasSubmittedToday(state.last_submitted_at),
+    [state.last_submitted_at]
   );
 
   const weekDots = useMemo(
