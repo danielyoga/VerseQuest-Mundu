@@ -1,128 +1,101 @@
-@import "tailwindcss";
+/* VerseQuest design tokens — derived from the team's design system prompt.
+   All values mirror the canonical token list. */
 
 :root {
-  /* ── Legacy tokens (kept for backward compat) ── */
-  --vq-canvas: #f8f7ff;
-  --vq-bg: #ffffff;
-  --vq-bg-2: #f3f0ff;
-  --vq-text: #1a1040;
-  --vq-muted: #7c6fa0;
-  --vq-muted-2: #9986c4;
-  --vq-border: #ece9ff;
-  --vq-border-2: #f0ecff;
-  --vq-radius-xl: 1.25rem;
-  --vq-radius-lg: 0.875rem;
-  --vq-radius-md: 0.75rem;
-  --vq-brand: #534ab7;
-  --vq-on-brand: #ffffff;
-  --vq-on-brand-muted: #e8e4ff;
-  --vq-on-brand-subtle: #ddd8fc;
+  /* Brand */
+  --color-primary: #534AB7;
+  --color-primary-light: #7B72D4;
+  --color-primary-soft: #EDE9FF;
+  --color-primary-border: #C4B5FD;
 
-  /* ── Design system tokens ── */
-  --color-primary: #534ab7;
-  --color-primary-light: #7b72d4;
-  --color-primary-soft: #ede9ff;
-  --color-primary-border: #c4b5fd;
+  /* Backgrounds */
+  --color-bg-page: #F8F7FF;
+  --color-bg-card: #FFFFFF;
+  --color-bg-muted: #F3F0FF;
 
-  --color-bg-page: #f8f7ff;
-  --color-bg-card: #ffffff;
-  --color-bg-muted: #f3f0ff;
+  /* Text */
+  --color-text-primary: #1A1040;
+  --color-text-body: #2D2052;
+  --color-text-secondary: #7C6FA0;
+  --color-text-muted: #9986C4;
 
-  --color-text-primary: #1a1040;
-  --color-text-body: #2d2052;
-  --color-text-secondary: #7c6fa0;
-  --color-text-muted: #9986c4;
+  /* Borders */
+  --color-border: #ECE9FF;
+  --color-border-muted: #F0ECFF;
 
-  --color-border: #ece9ff;
-  --color-border-muted: #f0ecff;
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #BBF7D0;
+  --color-success-text: #4AAE6B;
+  --color-danger: #EF4444;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-border: #FECACA;
+  --color-danger-text: #B91C1C;
+  --color-wa-green: #5DBE7E;
 
-  --color-success: #22c55e;
-  --color-success-bg: #f0fdf4;
-  --color-success-border: #bbf7d0;
-  --color-success-text: #4aae6b;
-  --color-danger: #ef4444;
-  --color-danger-bg: #fef2f2;
-  --color-danger-border: #fecaca;
-  --color-danger-text: #b91c1c;
-  --color-wa-green: #25d366;
-
+  /* Elevation */
   --shadow-card: 0 2px 8px rgba(83, 74, 183, 0.07);
   --shadow-modal: 0 -4px 24px rgba(83, 74, 183, 0.15);
   --shadow-fab: 0 4px 12px rgba(83, 74, 183, 0.4);
   --shadow-active: 0 0 0 3px rgba(83, 74, 183, 0.2);
 
+  /* Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-pill: 999px;
 
+  /* Spacing */
   --space-page-x: 20px;
 
+  /* Type */
   --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  /* Warm-neutral charcoal — desaturated so the brand purple reads calm, not neon */
+  --color-bg-page: #0F0E14;          /* page — near-black w/ a hint of warmth */
+  --color-bg-card: #1A1822;          /* card — one step lighter, subtle purple cast */
+  --color-bg-muted: #232029;         /* muted surfaces (chips, sub-cards) */
+
+  /* Lift the primary so it sits comfortably on dark — same hue, more lightness */
+  --color-primary:        #9A92F0;
+  --color-primary-light:  #B5AEFA;
+  --color-primary-soft:   #2A2541;   /* low-saturation purple for soft fills */
+  --color-primary-border: #4A4280;
+
+  /* Text — warm whites with clear hierarchy (WCAG AA on #1A1822) */
+  --color-text-primary:   #F2EFFA;
+  --color-text-body:      #DCD7E8;
+  --color-text-secondary: #A29BB8;
+  --color-text-muted:     #6F6886;
+
+  /* Borders — barely-there, warm */
+  --color-border:         #2A2733;
+  --color-border-muted:   #221F2A;
+
+  /* Semantic — softened so they don't punch holes */
+  --color-success:        #4ADE80;
+  --color-success-bg:     #142B1F;
+  --color-success-border: #1F4A33;
+  --color-success-text:   #86EFAC;
+  --color-danger:         #F87171;
+  --color-danger-bg:      #2B1416;
+  --color-danger-border:  #4A1F22;
+  --color-danger-text:    #FCA5A5;
+
+  --shadow-card:   0 2px 10px rgba(0, 0, 0, 0.45);
+  --shadow-modal:  0 -8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-fab:    0 4px 14px rgba(154, 146, 240, 0.35);
+  --shadow-active: 0 0 0 3px rgba(154, 146, 240, 0.25);
 }
 
-html {
-  height: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  min-height: 100%;
-  min-height: 100dvh;
-  background: var(--color-bg-page);
-  color: var(--color-text-body);
-  font-family: 'Plus Jakarta Sans', var(--font-geist-sans), system-ui, sans-serif;
-  touch-action: manipulation;
-}
-
-/* ── Animations ── */
-@keyframes vq-slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-@keyframes vq-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes vq-bounce-in {
-  0% { transform: scale(0.5); }
-  70% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-@keyframes vq-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-@utility animate-vq-slide-up {
-  animation: vq-slide-up 0.3s ease;
-}
-@utility animate-vq-fade-in {
-  animation: vq-fade-in 0.3s ease;
-}
-@utility animate-vq-bounce-in {
-  animation: vq-bounce-in 0.6s ease;
-}
-
-/* ── Select helper ── */
-.vq-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-}
-
-/* ── Paper grain overlay ── */
+/* Subtle paper grain — a personal touch, applied to the page background.
+   SVG turbulence is cheap and gives the canvas warmth without imagery. */
 .vq-grain {
   position: absolute;
   inset: 0;
@@ -132,7 +105,19 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.29  0 0 0 0 0.72  0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* ── Page / scroll ── */
+/* Shared app surface */
+.vq-app {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-page);
+  font-family: var(--font-body);
+  color: var(--color-text-body);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .vq-scroll {
   flex: 1;
   overflow-y: auto;
@@ -140,21 +125,23 @@ body {
   -webkit-overflow-scrolling: touch;
   position: relative;
 }
+
 .vq-scroll::-webkit-scrollbar { width: 0; display: none; }
 
-/* ── Header ── */
+/* Page header (sticky-style; we use static within the scrollable area for fidelity) */
 .vq-header {
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
   padding: 14px var(--space-page-x) 12px;
-  flex-shrink: 0;
 }
+
 .vq-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
+
 .vq-title {
   font-size: 22px;
   font-weight: 700;
@@ -162,6 +149,7 @@ body {
   letter-spacing: -0.01em;
   font-family: var(--font-display);
 }
+
 .vq-subtitle {
   font-size: 13px;
   color: var(--color-text-secondary);
@@ -169,7 +157,6 @@ body {
   line-height: 1.45;
 }
 
-/* ── Identity chip ── */
 .vq-id-chip {
   font-size: 11px;
   color: var(--color-text-secondary);
@@ -183,7 +170,7 @@ body {
   background: var(--color-primary);
 }
 
-/* ── Card ── */
+/* Card */
 .vq-card {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -197,7 +184,7 @@ body {
   border-color: var(--color-success-border);
 }
 
-/* ── Pill button ── */
+/* Pill button */
 .vq-pill {
   border-radius: var(--radius-pill);
   padding: 5px 12px;
@@ -221,7 +208,7 @@ body {
 .vq-pill .lbl { color: inherit; }
 .vq-pill.active .lbl { color: white; }
 
-/* ── Primary CTA ── */
+/* Primary CTA */
 .vq-cta {
   width: 100%;
   padding: 14px;
@@ -241,17 +228,23 @@ body {
   transition: all 0.12s ease;
 }
 .vq-cta:active { transform: scale(0.98); }
-.vq-cta:disabled { background: var(--color-primary-border); cursor: not-allowed; }
-.vq-cta.success { background: var(--color-success); }
+.vq-cta:disabled,
+.vq-cta.disabled {
+  background: var(--color-primary-border);
+  cursor: not-allowed;
+}
+.vq-cta.success {
+  background: var(--color-success);
+}
 
-/* ── Input / textarea ── */
+/* Input */
 .vq-input,
 .vq-textarea {
   width: 100%;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  background: #fafaff;
+  background: #FAFAFF;
   font-family: var(--font-body);
   color: var(--color-text-primary);
   font-size: 15px;
@@ -259,6 +252,8 @@ body {
   transition: all 0.12s ease;
   box-sizing: border-box;
 }
+[data-theme="dark"] .vq-input,
+[data-theme="dark"] .vq-textarea { background: var(--color-bg-muted); color: var(--color-text-primary); }
 .vq-input:focus,
 .vq-textarea:focus {
   border-color: var(--color-primary);
@@ -268,7 +263,7 @@ body {
 .vq-input::placeholder,
 .vq-textarea::placeholder { color: var(--color-text-muted); }
 
-/* ── Badge ── */
+/* Badge */
 .vq-badge {
   font-size: 10px;
   font-weight: 700;
@@ -285,12 +280,11 @@ body {
 .vq-badge.success { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success-border); }
 .vq-badge.danger { background: var(--color-danger-bg); color: var(--color-danger-text); }
 
-/* ── Bottom nav ── */
+/* Bottom nav */
 .vq-bottomnav {
-  position: fixed;
+  position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: calc(64px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
+  height: 68px;
   background: color-mix(in oklab, var(--color-bg-card) 92%, transparent);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -316,8 +310,6 @@ body {
   position: relative;
   font-family: var(--font-body);
   min-height: 44px;
-  text-decoration: none;
-  transition: color 0.15s;
 }
 .vq-navitem.active { color: var(--color-primary); }
 .vq-navitem.active::before {
@@ -328,10 +320,10 @@ body {
   background: var(--color-primary);
 }
 
-/* ── FAB ── */
+/* FAB */
 .vq-fab {
-  position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom));
+  position: absolute;
+  bottom: 80px;
   right: 20px;
   width: 56px; height: 56px;
   border-radius: 50%;
@@ -348,24 +340,26 @@ body {
 }
 .vq-fab:active { transform: scale(0.94); }
 
-/* ── Bottom sheet modal ── */
+/* Bottom sheet modal */
 .vq-modal-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(20, 12, 50, 0.45);
   z-index: 100;
-  animation: vq-fade-in 0.18s ease;
+  animation: vq-fade 0.18s ease;
 }
+@keyframes vq-fade { from { opacity: 0; } to { opacity: 1; } }
 .vq-sheet {
-  position: fixed;
+  position: absolute;
   bottom: 0; left: 0; right: 0;
   background: var(--color-bg-card);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  padding: 12px var(--space-page-x) calc(28px + env(safe-area-inset-bottom));
+  padding: 12px var(--space-page-x) 28px;
   box-shadow: var(--shadow-modal);
   z-index: 101;
   animation: vq-slide-up 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+@keyframes vq-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .vq-sheet-handle {
   width: 40px; height: 4px;
   border-radius: 2px;
@@ -373,7 +367,11 @@ body {
   margin: 0 auto 14px;
 }
 
-/* ── Skeleton shimmer ── */
+/* Skeleton shimmer */
+@keyframes vq-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 .vq-skeleton {
   background: linear-gradient(90deg, var(--color-primary-soft) 25%, var(--color-bg-muted) 50%, var(--color-primary-soft) 75%);
   background-size: 200% 100%;
@@ -381,7 +379,7 @@ body {
   border-radius: var(--radius-sm);
 }
 
-/* ── Avatar ── */
+/* Avatar */
 .vq-avatar {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -393,7 +391,11 @@ body {
   font-family: var(--font-body);
 }
 
-/* ── Quote / verse text ── */
+/* Soft hand-drawn touches: gently rotated stickers */
+.vq-tilt-l { transform: rotate(-1.2deg); }
+.vq-tilt-r { transform: rotate(1deg); }
+
+/* The "verse card" — has a soft watermark cross glyph in the corner */
 .vq-quote {
   font-family: var(--font-display);
   font-size: 16px;
@@ -402,26 +404,34 @@ body {
   color: var(--color-text-body);
 }
 
-/* ── Tap feedback ── */
+/* tap feedback */
 .vq-tap { transition: transform 0.1s ease, opacity 0.1s ease; }
 .vq-tap:active { transform: scale(0.97); opacity: 0.9; }
 
-/* ── Mono ── */
 .vq-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-/* ── Streak hero ── */
+/* Soft "kindness" gradient stripe used on streak hero */
 .vq-streak-hero {
   position: relative;
   border-radius: 20px;
   background:
     radial-gradient(120% 100% at 0% 0%, rgba(255,255,255,0.18), transparent 55%),
     radial-gradient(80% 80% at 100% 100%, rgba(255,200,150,0.18), transparent 60%),
-    linear-gradient(135deg, #534ab7 0%, #6657c9 60%, #7b72d4 100%);
+    linear-gradient(135deg, #534AB7 0%, #6657C9 60%, #7B72D4 100%);
   color: #fff;
   padding: 18px 18px 16px;
   overflow: hidden;
 }
+[data-theme="dark"] .vq-streak-hero {
+  /* Dark mode: deep, desaturated plum so the hero feels grounded, not glowing */
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(255,255,255,0.06), transparent 55%),
+    radial-gradient(80% 80% at 100% 100%, rgba(255,200,150,0.07), transparent 60%),
+    linear-gradient(135deg, #2A2541 0%, #332D4F 60%, #3D365B 100%);
+  border: 1px solid var(--color-border);
+}
 .vq-streak-hero::after {
+  /* a softly drawn arc — minimal SVG, not figurative */
   content: '';
   position: absolute;
   inset: 0;
@@ -430,11 +440,21 @@ body {
   pointer-events: none;
 }
 
-/* ── Quest card density ── */
-.vq-quest-row-compact { display: none; }
+/* compact density mode */
+.vq-app[data-density="compact"] .vq-quest-card {
+  padding: 10px 14px;
+}
+.vq-app[data-density="compact"] .vq-quest-icon {
+  width: 36px; height: 36px;
+}
+.vq-app[data-density="compact"] .vq-quest-cta {
+  display: none !important;
+}
+.vq-app[data-density="compact"] .vq-quest-row-regular {
+  display: none !important;
+}
+.vq-app[data-density="compact"] .vq-quest-row-compact {
+  display: flex;
+}
 
-.vq-app[data-density="compact"] .vq-quest-card { padding: 10px 14px; }
-.vq-app[data-density="compact"] .vq-quest-icon { width: 36px !important; height: 36px !important; }
-.vq-app[data-density="compact"] .vq-quest-cta { display: none !important; }
-.vq-app[data-density="compact"] .vq-quest-row-regular { display: none !important; }
-.vq-app[data-density="compact"] .vq-quest-row-compact { display: flex; }
+.vq-quest-row-compact { display: none; }

@@ -13,7 +13,6 @@ export function CommunityVerses() {
 
   useEffect(() => {
     let cancelled = false;
-
     function load() {
       void fetch("/api/community-verses", { cache: "no-store" })
         .then((r) => r.json())
@@ -22,7 +21,6 @@ export function CommunityVerses() {
         })
         .catch(() => { if (!cancelled) setItems([]); });
     }
-
     load();
     function onRefresh() { load(); }
     window.addEventListener("versequest-community-refresh", onRefresh);
@@ -35,21 +33,28 @@ export function CommunityVerses() {
   const showEmpty = items !== null && items.length === 0;
 
   return (
-    <div className="min-h-[min(100dvh,880px)] bg-[var(--vq-canvas)] px-4 py-6">
-      <div className="mx-auto max-w-[390px]">
-        <header className="mb-5">
-          <h1 className="text-[22px] font-medium text-[var(--vq-text)]">{m.communityTitle}</h1>
-          <p className="mt-1 text-sm leading-relaxed text-[var(--vq-muted)]">{m.communitySubtitle}</p>
-        </header>
+    <div style={{ minHeight: 'min(100dvh, 880px)', background: 'var(--color-bg-page)', paddingBottom: 24, position: 'relative' }}>
+      <div className="vq-grain" />
 
+      {/* Header */}
+      <div className="vq-header">
+        <div className="vq-header-row">
+          <div>
+            <div className="vq-title">{m.communityTitle}</div>
+            <div className="vq-subtitle">{m.communitySubtitle}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '16px var(--space-page-x) 0', position: 'relative' }}>
         {items === null ? (
-          <p className="text-sm text-[var(--vq-muted)]">{m.communityLoading}</p>
+          <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>{m.communityLoading}</p>
         ) : showEmpty ? (
-          <p className="text-center text-[15px] leading-relaxed text-[var(--vq-muted)]">
+          <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.6, color: 'var(--color-text-muted)', paddingTop: 48 }}>
             {m.communityEmptyExact}
           </p>
         ) : (
-          <ul className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {items.map((item) => {
               const label = item.book
                 ? `${bookDisplayName(item.book, locale)} ${item.chapter}:${item.verse}`
@@ -58,25 +63,35 @@ export function CommunityVerses() {
               const dateLabel = item.submitted_at
                 ? new Date(item.submitted_at + "T00:00:00").toLocaleDateString(
                     locale === "id" ? "id-ID" : "en-US",
-                    { day: "2-digit", month: "long", year: "numeric" }
+                    { day: "numeric", month: "long", year: "numeric" }
                   )
                 : null;
+
               return (
-                <li
-                  key={key}
-                  className="rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 shadow-sm"
-                >
-                  <p className="text-[15px] font-semibold text-[#534AB7]">📖 {label}</p>
+                <div key={key} className="vq-card" style={{ position: 'relative' }}>
+                  {/* watermark quote mark */}
+                  <div aria-hidden style={{
+                    position: 'absolute', top: 10, right: 14,
+                    fontFamily: 'var(--font-display)', fontSize: 56, lineHeight: 1,
+                    color: 'var(--color-primary)', opacity: 0.1, fontWeight: 700,
+                    pointerEvents: 'none',
+                  }}>
+                    &ldquo;
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span className="vq-badge soft" style={{ whiteSpace: 'nowrap' }}>{label}</span>
+                    {dateLabel && (
+                      <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{dateLabel}</span>
+                    )}
+                  </div>
                   {item.verse_text ? (
-                    <p className="mt-2 text-[14px] leading-relaxed text-[var(--vq-text)]">{item.verse_text}</p>
+                    <div className="vq-quote">{item.verse_text}</div>
                   ) : null}
-                  {dateLabel && (
-                    <p className="mt-2 text-[12px] text-[var(--vq-muted)]">{dateLabel}</p>
-                  )}
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </div>
     </div>

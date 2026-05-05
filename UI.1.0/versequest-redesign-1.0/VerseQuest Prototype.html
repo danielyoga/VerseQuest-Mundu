@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>VerseQuest — Hi-Fi Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: 'Plus Jakarta Sans', sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="glyphs.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "dashboardOrder": "quests_first",
+  "streakStyle": "arc",
+  "density": "compact",
+  "submittedToday": true,
+  "coordinatorPending": 3,
+  "navStyle": "emoji",
+  "dark": false
+}/*EDITMODE-END*/;
+
+// A self-contained mini-app: holds nav state, modal state, etc.
+function MiniApp({ tweaks, initialScreen = 'home' }) {
+  const [screen, setScreen] = useState(initialScreen);
+  const [taskState, setTaskState] = useState({
+    verse: tweaks.submittedToday,
+    devotion: tweaks.submittedToday,
+    firman: tweaks.submittedToday,
+    gratitude: tweaks.submittedToday,
+  });
+  const [verseSuccess, setVerseSuccess] = useState(false);
+
+  // Sync when tweak changes
+  useEffect(() => {
+    setTaskState({
+      verse: tweaks.submittedToday,
+      devotion: tweaks.submittedToday,
+      firman: tweaks.submittedToday,
+      gratitude: tweaks.submittedToday,
+    });
+  }, [tweaks.submittedToday]);
+
+  function nav(id) {
+    if (id === 'prayer') { setScreen('prayer'); return; }
+    setScreen(id);
+  }
+
+  function submitVerse() {
+    setTaskState((s) => ({ ...s, verse: true }));
+    setVerseSuccess(true);
+    setTimeout(() => setVerseSuccess(false), 2500);
+  }
+
+  let body;
+  switch (screen) {
+    case 'prayer':       body = <PrayerWall onNavigate={nav}/>; break;
+    case 'coordinator':  body = <CoordinatorScreen onNavigate={nav} pendingCount={tweaks.coordinatorPending}/>; break;
+    case 'devotional':   body = <DevotionalScreen onNavigate={nav} taskState={taskState} setTaskState={setTaskState}/>; break;
+    case 'community':    body = <CommunityScreen onNavigate={nav}/>; break;
+    case 'signin':       body = <SignInScreen onNavigate={nav}/>; break;
+    case 'home':
+    default:
+      body = <HomeScreen tweaks={tweaks} onNavigate={nav} taskState={taskState} setTaskState={setTaskState} onSubmitVerse={submitVerse}/>;
+  }
+
+  const showNav = !['signin','devotional'].includes(screen);
+  const isCoord = screen === 'coordinator';
+
+  return (
+    <div className="vq-app" data-density={tweaks.density} data-theme={tweaks.dark ? 'dark' : 'light'}>
+      {body}
+      {showNav && <BottomNav active={screen} onNavigate={nav} isCoordinator={isCoord || screen === 'coordinator'} style={tweaks.navStyle}/>}
+
+      {verseSuccess && (
+        <div style={{
+          position: 'absolute', inset: 0, background: 'rgba(20,12,50,0.55)',
+          zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 28, animation: 'vq-fade 0.18s ease',
+        }} onClick={() => setVerseSuccess(false)}>
+          <div style={{
+            width: '100%', maxWidth: 320, background: 'var(--color-bg-card)',
+            borderRadius: 24, padding: '28px 24px', textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%',
+              background: 'var(--color-success-bg)', border: '2px solid var(--color-success-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 14px',
+            }}>
+              <GCheck size={32} stroke={2.6} color="var(--color-success-text)"/>
+            </div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)' }}>Tersimpan!</div>
+            <div style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
+              Ayatmu hari ini sudah masuk ke komunitas. Tuhan menyertai harimu.
+            </div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              marginTop: 14, padding: '6px 14px', borderRadius: 999,
+              background: 'var(--color-primary)', color: '#fff', fontWeight: 700, fontSize: 13,
+            }}>
+              <GBoltSmall size={14} color="#fff"/> +20 XP
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Wrap a MiniApp inside the iOS frame
+function PhoneFrame({ tweaks, initialScreen, frameDark }) {
+  return (
+    <IOSDevice width={390} height={844} dark={frameDark || tweaks.dark}>
+      <div style={{ position: 'absolute', inset: 0, paddingTop: 0 }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50, pointerEvents: 'none' }}>
+          <IOSStatusBar dark={tweaks.dark} time="6:42"/>
+        </div>
+        <div style={{ position: 'absolute', top: 54, left: 0, right: 0, bottom: 0 }}>
+          <MiniApp tweaks={tweaks} initialScreen={initialScreen}/>
+        </div>
+        {/* Home indicator */}
+        <div style={{
+          position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+          width: 134, height: 5, borderRadius: 3,
+          background: tweaks.dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)',
+          zIndex: 60,
+        }}/>
+      </div>
+    </IOSDevice>
+  );
+}
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="daily" title="Daily Core" subtitle="The morning ritual — Beranda, Doa, Komunitas">
+          <DCArtboard id="home" label="01 · Beranda (pagi)" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="home"/>
+          </DCArtboard>
+          <DCArtboard id="prayer" label="02 · Tembok Doa" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="prayer"/>
+          </DCArtboard>
+          <DCArtboard id="community" label="03 · Komunitas" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="community"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="reading" title="Reading & Reflection" subtitle="Dari ayat ke renungan ke aksi">
+          <DCArtboard id="devotional" label="04 · Renungan Pagi" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="devotional"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="coordinator" title="Coordinator" subtitle="Absensi + WhatsApp nudge">
+          <DCArtboard id="coord" label="05 · Absensi" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="coordinator"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="auth" title="Sign-in" subtitle="Phone + WA OTP, Bahasa Indonesia">
+          <DCArtboard id="signin" label="06 · Masuk" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="signin"/>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="VerseQuest Tweaks">
+        <TweakSection label="Layout"/>
+        <TweakRadio label="Beranda order" value={tweaks.dashboardOrder}
+                    options={[{value:'quests_first',label:'Misi'},{value:'reading_first',label:'Bacaan'}]}
+                    onChange={(v) => setTweak('dashboardOrder', v)}/>
+        <TweakRadio label="Quest density" value={tweaks.density}
+                    options={[{value:'regular',label:'Reguler'},{value:'compact',label:'Padat'}]}
+                    onChange={(v) => setTweak('density', v)}/>
+
+        <TweakSection label="Streak"/>
+        <TweakRadio label="Kartu streak" value={tweaks.streakStyle}
+                    options={[{value:'arc',label:'Arc'},{value:'minimal',label:'Minimal'}]}
+                    onChange={(v) => setTweak('streakStyle', v)}/>
+
+        <TweakSection label="State"/>
+        <TweakToggle label="Semua misi sudah selesai" value={tweaks.submittedToday}
+                     onChange={(v) => setTweak('submittedToday', v)}/>
+        <TweakSlider label="Belum submit (koordinator)" value={tweaks.coordinatorPending}
+                     min={0} max={8} step={1} onChange={(v) => setTweak('coordinatorPending', v)}/>
+
+        <TweakSection label="Theme"/>
+        <TweakRadio label="Bottom nav" value={tweaks.navStyle}
+                    options={[{value:'minimal',label:'Minimal'},{value:'emoji',label:'Tebal'}]}
+                    onChange={(v) => setTweak('navStyle', v)}/>
+        <TweakToggle label="Dark mode" value={tweaks.dark}
+                     onChange={(v) => setTweak('dark', v)}/>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

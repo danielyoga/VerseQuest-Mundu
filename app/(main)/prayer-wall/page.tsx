@@ -5,6 +5,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { messages, type Locale } from "@/lib/i18n";
 import { CreatePrayerModal } from "@/components/CreatePrayerModal";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
+import { GHeart, GPlus, GSparkle } from "@/components/ui/Glyphs";
 import type { Prayer } from "@/app/api/prayer-wall/route";
 
 const LIKES_KEY = "prayer_wall_likes";
@@ -29,12 +30,17 @@ function relativeTime(isoString: string, m: (typeof messages)[Locale]): string {
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-
   if (mins < 1) return m.prayerWallJustNow;
   if (mins < 60) return m.prayerWallMinutesAgo(mins);
   if (hours < 24) return m.prayerWallHoursAgo(hours);
   if (days === 1) return m.prayerWallYesterday;
   return m.prayerWallDaysAgo(days);
+}
+
+function avatarInitials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0]! + parts[1]![0]!).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || '?';
 }
 
 export default function PrayerWallPage() {
@@ -45,7 +51,9 @@ export default function PrayerWallPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [likedSet, setLikedSet] = useState<Set<number>>(new Set());
   const [answering, setAnswering] = useState<number | null>(null);
+  const [confirmAnswer, setConfirmAnswer] = useState<number | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [ranting, setRanting] = useState<string | null>(null);
 
   useEffect(() => {
     setLikedSet(getLikedSet());
@@ -54,39 +62,27 @@ export default function PrayerWallPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
-      const parsed = raw ? (JSON.parse(raw) as { profile?: { name?: string } }) : null;
+      const parsed = raw ? (JSON.parse(raw) as { profile?: { name?: string; ranting?: string } }) : null;
       if (parsed?.profile?.name) setUserName(parsed.profile.name);
+      if (parsed?.profile?.ranting) setRanting(parsed.profile.ranting);
     } catch {}
   }, []);
 
   const refetch = useCallback(() => {
     setLoading(true);
-    console.log("[prayer-wall] refetch start, userName=", userName);
     void fetch("/api/prayer-wall", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { prayers?: Prayer[] }) => {
         const all = (data.prayers ?? []).filter((p) => !p.answered);
-        console.log(
-          `[prayer-wall] fetched ${data.prayers?.length ?? 0} total,`,
-          `${all.length} unanswered,`,
-          `userName="${userName}"`,
-          all.map((p) => ({ rowIndex: p.rowIndex, real_username: p.real_username, show_name: p.show_name }))
-        );
         const own = all.filter((p) => p.real_username === userName);
         const other = all.filter((p) => p.real_username !== userName);
-        console.log(`[prayer-wall] own=${own.length} other=${other.length}`);
         setPrayers([...own, ...other]);
       })
-      .catch((err) => {
-        console.error("[prayer-wall] fetch error", err);
-        setPrayers([]);
-      })
+      .catch(() => setPrayers([]))
       .finally(() => setLoading(false));
   }, [userName]);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  useEffect(() => { refetch(); }, [refetch]);
 
   const toggleLike = (rowIndex: number) => {
     setLikedSet((prev) => {
@@ -99,7 +95,6 @@ export default function PrayerWallPage() {
 
   const markAnswered = async (prayer: Prayer) => {
     if (!userName) return;
-    console.log(`[prayer-wall] markAnswered rowIndex=${prayer.rowIndex} userName="${userName}"`);
     setAnswering(prayer.rowIndex);
     try {
       const res = await fetch("/api/prayer-wall", {
@@ -107,151 +102,127 @@ export default function PrayerWallPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rowIndex: prayer.rowIndex, username: userName }),
       });
-      const data = (await res.json()) as { error?: string };
-      if (res.ok) {
-        console.log(`[prayer-wall] markAnswered success rowIndex=${prayer.rowIndex}`);
-        refetch();
-      } else {
-        console.warn(`[prayer-wall] markAnswered failed rowIndex=${prayer.rowIndex} error="${data.error}"`);
-      }
-    } catch (err) {
-      console.error("[prayer-wall] markAnswered network error", err);
-    } finally {
-      setAnswering(null);
-    }
+      if (res.ok) { setConfirmAnswer(null); refetch(); }
+    } catch {}
+    finally { setAnswering(null); }
   };
 
   return (
-    <div className="min-h-[min(100dvh,880px)] bg-[var(--vq-canvas)] px-4 py-6">
-      <div className="mx-auto max-w-[390px]">
-        <header className="mb-5" suppressHydrationWarning>
-          <h1
-            className="text-[22px] font-medium text-[var(--vq-text)]"
-            suppressHydrationWarning
-          >
-            {m.prayerWallTitle}
-          </h1>
-          <p
-            className="mt-1 text-sm leading-relaxed text-[var(--vq-muted)]"
-            suppressHydrationWarning
-          >
-            {m.prayerWallSubtitle}
-          </p>
-        </header>
+    <div style={{ minHeight: 'min(100dvh, 880px)', background: 'var(--color-bg-page)', position: 'relative' }}>
+      <div className="vq-grain" />
 
+      {/* Header */}
+      <div className="vq-header">
+        <div className="vq-header-row">
+          <div>
+            <div className="vq-title">{m.prayerWallTitle}</div>
+            <div className="vq-subtitle">{m.prayerWallSubtitle}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '16px var(--space-page-x) 100px', position: 'relative' }}>
         {loading ? (
-          <p className="text-sm text-[var(--vq-muted)]">{m.loading}</p>
+          <p style={{ fontSize: 14, color: 'var(--color-text-muted)' }}>{m.loading}</p>
         ) : prayers.length === 0 ? (
-          <p className="text-center text-[15px] leading-relaxed text-[var(--vq-muted)]">
+          <p style={{ textAlign: 'center', fontSize: 15, lineHeight: 1.6, color: 'var(--color-text-muted)', paddingTop: 48 }}>
             {m.prayerWallEmpty}
           </p>
         ) : (
-          <ul className="space-y-3 pb-24">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {prayers.map((prayer, i) => {
               const isOwn = prayer.real_username === userName;
               const isLiked = likedSet.has(prayer.rowIndex);
               const isAnswering = answering === prayer.rowIndex;
+              const showConfirm = confirmAnswer === prayer.rowIndex;
 
               return (
-                <li
+                <div
                   key={`${prayer.rowIndex}-${i}`}
-                  className="relative rounded-[var(--vq-radius-lg)] px-4 py-3 shadow-sm"
-                  style={{
-                    border: `2px solid ${isOwn ? "#534AB7" : "var(--vq-border)"}`,
-                    background: "var(--vq-bg)",
-                  }}
+                  className={`vq-card${isOwn ? ' own' : ''}`}
+                  style={{ position: 'relative' }}
                 >
-                  {/* Badges */}
                   {isOwn && (
-                    <span
-                      className="absolute top-3 right-3 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
-                      style={{ background: "#534AB7" }}
-                    >
+                    <span className="vq-badge primary" style={{ position: 'absolute', top: 12, right: 12 }}>
                       {m.prayerWallBadgeOwn}
                     </span>
                   )}
 
-                  {/* Username + ranting */}
-                  <div className="mb-2 flex items-center gap-1.5 pr-20">
-                    <span className="text-[14px] font-semibold text-[#534AB7]">
-                      {prayer.username}
-                    </span>
-                    {prayer.ranting && (
-                      <span className="text-[12px] text-[var(--vq-muted)]">
-                        · {prayer.ranting}
-                      </span>
-                    )}
+                  {/* Author row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, paddingRight: isOwn ? 70 : 0 }}>
+                    <div className="vq-avatar">{avatarInitials(prayer.username)}</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-primary)' }}>{prayer.username}</div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+                        {prayer.ranting ? `${prayer.ranting} · ` : ''}{relativeTime(prayer.submitted_at, m)}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Prayer text */}
-                  <p className="text-[14px] leading-relaxed text-[var(--vq-text)]">
-                    {prayer.prayer_request}
-                  </p>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--color-text-body)' }}>{prayer.prayer_request}</p>
 
-                  {/* Footer: time + buttons */}
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[12px] text-[var(--vq-muted)]">
-                      {relativeTime(prayer.submitted_at, m)}
-                    </p>
-                    <div className="flex items-center gap-2">
+                  {/* Footer actions */}
+                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      className={`vq-pill vq-tap${isLiked ? ' active' : ''}`}
+                      onClick={() => toggleLike(prayer.rowIndex)}
+                      style={{ color: 'var(--color-primary)' }}
+                    >
+                      <GHeart size={14} filled={isLiked} color="var(--color-primary)" />
+                      <span className="lbl">{m.prayerWallAmin}</span>
+                    </button>
+
+                    {isOwn && !showConfirm && !prayer.answered && (
                       <button
-                        onClick={() => toggleLike(prayer.rowIndex)}
-                        className="rounded-lg px-2.5 py-1 text-[12px] font-medium transition-colors"
+                        className="vq-pill vq-tap"
+                        onClick={() => setConfirmAnswer(prayer.rowIndex)}
                         style={{
-                          background: isLiked ? "#534AB7" : "transparent",
-                          color: isLiked ? "#fff" : "#534AB7",
-                          border: "1px solid #534AB7",
+                          background: 'var(--color-success-bg)',
+                          borderColor: 'var(--color-success-border)',
+                          color: 'var(--color-success-text)',
                         }}
                       >
-                        {isLiked ? m.prayerWallAminActive : m.prayerWallAmin}
+                        <GSparkle size={14} color="var(--color-success-text)" />
+                        <span className="lbl">{m.prayerWallMarkAnswered}</span>
                       </button>
+                    )}
 
-                      {isOwn && !prayer.answered && (
+                    {isOwn && showConfirm && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Tandai terjawab?</span>
                         <button
+                          className="vq-pill vq-tap"
                           onClick={() => void markAnswered(prayer)}
                           disabled={isAnswering}
-                          className="rounded-lg px-2.5 py-1 text-[12px] font-medium transition-opacity disabled:opacity-50"
-                          style={{ color: "#16a34a", border: "1px solid #16a34a" }}
+                          style={{ color: 'var(--color-success-text)', borderColor: 'var(--color-success-border)', opacity: isAnswering ? 0.5 : 1 }}
                         >
-                          {isAnswering
-                            ? m.prayerWallMarkAnswering
-                            : m.prayerWallMarkAnswered}
+                          <span className="lbl">{isAnswering ? m.prayerWallMarkAnswering : 'Ya'}</span>
                         </button>
-                      )}
-                    </div>
+                        <button
+                          className="vq-pill vq-tap"
+                          onClick={() => setConfirmAnswer(null)}
+                          style={{ color: 'var(--color-text-muted)' }}
+                        >
+                          <span className="lbl">Batal</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </div>
 
       {userName && (
         <button
+          className="vq-fab vq-tap"
           onClick={() => setModalOpen(true)}
-          style={{
-            position: "fixed",
-            bottom: 80,
-            right: 20,
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            background: "#534AB7",
-            color: "#ffffff",
-            fontSize: 28,
-            fontWeight: 300,
-            border: "none",
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(83,74,183,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 50,
-          }}
           aria-label={m.prayerWallAddAria}
         >
-          +
+          <GPlus color="#fff" size={26} />
         </button>
       )}
 

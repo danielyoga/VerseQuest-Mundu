@@ -6,6 +6,7 @@ import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
+import { GBack, GCheck, GChevronR, GWhatsApp } from "@/components/ui/Glyphs";
 import type { StoredProfile } from "@/types";
 
 interface MemberStatus {
@@ -14,30 +15,10 @@ interface MemberStatus {
   submitted_today: boolean;
 }
 
-function MemberCard({ member }: { member: MemberStatus }) {
-  const waLink = buildWhatsAppLink(member.phone);
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 mb-2">
-      <span className="text-sm font-semibold text-[var(--vq-text)]">{member.name}</span>
-      <a
-        href={waLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#25D366] transition-transform active:scale-95"
-      >
-        <img src="/whatsapp-icon.svg" alt="" aria-hidden width={22} height={22} />
-      </a>
-    </div>
-  );
-}
-
-function MemberCardDone({ member }: { member: MemberStatus }) {
-  return (
-    <div className="flex items-center gap-2 rounded-xl border border-[var(--vq-border)] bg-[var(--vq-bg-2)] px-4 py-3 mb-2 opacity-60">
-      <span className="font-bold text-[#22c55e]">✓</span>
-      <span className="text-sm text-[var(--vq-muted)]">{member.name}</span>
-    </div>
-  );
+function avatarInitials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0]! + parts[1]![0]!).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || '?';
 }
 
 export default function CoordinatorPage() {
@@ -51,16 +32,12 @@ export default function CoordinatorPage() {
   const [loading, setLoading] = useState(true);
   const [doneOpen, setDoneOpen] = useState(false);
 
-  // Auth guard
   useEffect(() => {
     try {
       const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
       const parsed = raw ? (JSON.parse(raw) as { profile?: StoredProfile }) : null;
       const p = parsed?.profile ?? null;
-      if (!p?.is_coordinator) {
-        router.replace("/");
-        return;
-      }
+      if (!p?.is_coordinator) { router.replace("/"); return; }
       setProfile(p);
     } catch {
       router.replace("/");
@@ -69,12 +46,11 @@ export default function CoordinatorPage() {
     }
   }, [router]);
 
-  // Fetch members
   useEffect(() => {
     if (!authChecked || !profile?.is_coordinator) return;
     const phone = encodeURIComponent(profile.phone);
-    const ranting = encodeURIComponent(profile.coordinator_ranting ?? "");
-    void fetch(`/api/coordinator/members?phone=${phone}&ranting=${ranting}`)
+    const rantingParam = encodeURIComponent(profile.coordinator_ranting ?? "");
+    void fetch(`/api/coordinator/members?phone=${phone}&ranting=${rantingParam}`)
       .then((r) => r.json())
       .then((d: { ranting?: string; members?: MemberStatus[] }) => {
         setRanting(d.ranting ?? "");
@@ -84,75 +60,158 @@ export default function CoordinatorPage() {
       .finally(() => setLoading(false));
   }, [authChecked, profile]);
 
-  const dateLabel = new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
-
   const notSubmitted = members.filter((m) => !m.submitted_today);
   const submitted = members.filter((m) => m.submitted_today);
 
   if (!authChecked) return null;
 
   return (
-    <div className="px-4 pt-8">
-      <div className="mx-auto max-w-[390px]">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="mb-1 flex items-center gap-2">
+    <div style={{ minHeight: 'min(100dvh, 880px)', background: 'var(--color-bg-page)', position: 'relative' }}>
+      <div className="vq-grain" />
+
+      {/* Header */}
+      <div className="vq-header">
+        <div className="vq-header-row">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--vq-muted)] hover:bg-[var(--vq-bg-2)]"
+              className="vq-tap"
               aria-label={m.coordinatorBackAria}
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: 4, marginLeft: -4, display: 'flex', alignItems: 'center',
+                color: 'var(--color-text-secondary)',
+              }}
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-                <path d="M11 14l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <GBack size={22} />
             </button>
+            <div>
+              <div className="vq-title">{m.coordinatorTitle}</div>
+              {ranting && (
+                <div className="vq-subtitle">{ranting}</div>
+              )}
+            </div>
           </div>
-          <h1 className="text-2xl font-medium text-[var(--vq-text)]">{m.coordinatorTitle}</h1>
-          {ranting && (
-            <p className="mt-1 text-[13px] text-[var(--vq-muted)]">
-              {ranting} · {dateLabel}
-            </p>
-          )}
         </div>
+      </div>
 
+      <div style={{ padding: '16px var(--space-page-x) 100px', position: 'relative' }}>
         {loading ? (
-          <p className="text-center text-[var(--vq-muted)]">{m.coordinatorLoading}</p>
+          <p style={{ fontSize: 14, color: 'var(--color-text-muted)', textAlign: 'center', paddingTop: 32 }}>
+            {m.coordinatorLoading}
+          </p>
         ) : (
           <>
-            {/* Not submitted */}
-            <p className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-[var(--vq-muted)]">
-              {m.coordinatorNotSubmitted(notSubmitted.length)}
-            </p>
-            {notSubmitted.length === 0 ? (
-              <p className="mb-4 rounded-xl border border-[var(--vq-border)] bg-[var(--vq-bg)] px-4 py-3 text-sm text-[var(--vq-muted)]">
-                {m.coordinatorAllDone}
-              </p>
-            ) : (
-              <div className="mb-4">
-                {notSubmitted.map((m) => (
-                  <MemberCard key={m.phone || m.name} member={m} />
-                ))}
+            {/* Summary counts */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+              <div style={{
+                flex: 1, padding: 12, borderRadius: 12,
+                background: 'var(--color-danger-bg)',
+                border: '1px solid var(--color-danger-border)',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-danger-text)', textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.85 }}>
+                  Belum Submit
+                </div>
+                <div className="vq-mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-danger-text)', marginTop: 2 }}>
+                  {notSubmitted.length}
+                </div>
               </div>
+              <div style={{
+                flex: 1, padding: 12, borderRadius: 12,
+                background: 'var(--color-success-bg)',
+                border: '1px solid var(--color-success-border)',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-success-text)', textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.85 }}>
+                  Sudah Submit
+                </div>
+                <div className="vq-mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-success-text)', marginTop: 2 }}>
+                  {submitted.length}
+                </div>
+              </div>
+            </div>
+
+            {/* Not submitted */}
+            {notSubmitted.length === 0 ? (
+              <div className="vq-card" style={{
+                background: 'var(--color-success-bg)',
+                borderColor: 'var(--color-success-border)',
+                textAlign: 'center', padding: 24, marginBottom: 18,
+              }}>
+                <div style={{
+                  width: 48, height: 48, margin: '0 auto 10px', borderRadius: '50%',
+                  background: 'var(--color-success-border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <GCheck size={26} stroke={2.5} color="var(--color-success-text)" />
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-success-text)', fontFamily: 'var(--font-display)' }}>
+                  {m.coordinatorAllDone}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 8 }}>
+                  Sapa lewat WhatsApp
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+                  {notSubmitted.map((member) => (
+                    <div
+                      key={member.phone || member.name}
+                      className="vq-card"
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}
+                    >
+                      <div className="vq-avatar">{avatarInitials(member.name)}</div>
+                      <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{member.name}</div>
+                      <a
+                        href={buildWhatsAppLink(member.phone)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="vq-tap"
+                        aria-label={`WhatsApp ${member.name}`}
+                        style={{
+                          width: 40, height: 40, borderRadius: '50%',
+                          background: 'var(--color-wa-green)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <GWhatsApp size={18} color="#fff" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
 
             {/* Submitted — collapsible */}
             <button
               type="button"
               onClick={() => setDoneOpen((v) => !v)}
-              className="mb-2 flex w-full items-center justify-between text-[13px] font-semibold uppercase tracking-wide text-[var(--vq-muted)]"
+              className="vq-tap"
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'transparent', border: 'none', padding: '10px 4px', cursor: 'pointer',
+                fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase',
+                color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)',
+              }}
             >
-              {/* <span>{m.coordinatorSubmitted(submitted.length)}</span> */}
-              <span>{doneOpen ? "▴" : "▾"}</span>
+              <span>Sudah submit ({submitted.length})</span>
+              <span style={{ transform: doneOpen ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                <GChevronR size={14} />
+              </span>
             </button>
             {doneOpen && (
-              <div>
-                {submitted.map((m) => (
-                  <MemberCardDone key={m.phone || m.name} member={m} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                {submitted.map((member) => (
+                  <div key={member.phone || member.name} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 14px', borderRadius: 12,
+                    background: 'var(--color-bg-muted)', opacity: 0.75,
+                  }}>
+                    <GCheck size={16} stroke={2.5} color="var(--color-success-text)" />
+                    <span style={{ fontSize: 13.5, color: 'var(--color-text-secondary)' }}>{member.name}</span>
+                  </div>
                 ))}
               </div>
             )}
