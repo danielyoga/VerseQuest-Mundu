@@ -20,13 +20,17 @@ export function proxy(request: NextRequest) {
           ? "Safari"
           : "Other";
 
+  const isApi = pathname.startsWith("/api/");
+  const tag = isApi ? "[api]" : "[page]";
+  const ts = new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
+
   const parts: string[] = [method, pathname];
   if (isRsc) parts.push(`rsc=${searchParams.get("_rsc")}`);
   if (inm) parts.push(`inm=${inm.slice(0, 16)}…`); // presence of inm → likely 304
   if (refPath !== "-") parts.push(`ref=${refPath}`);
   parts.push(uaShort);
 
-  console.log(`[proxy] ${parts.join(" ")}`);
+  console.log(`[proxy]${tag} ${ts} ${parts.join(" ")}`);
 
   return NextResponse.next();
 }

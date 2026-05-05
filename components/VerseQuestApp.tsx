@@ -87,19 +87,45 @@ export function VerseQuestApp() {
     clearProfile();
   }, [profileMissingRanting, clearProfile]);
 
-  const waitingForShell =
-    !hydrated ||
-    !localeReady ||
-    !firmanPoll.hydrated ||
-    !gratitudeQuest.hydrated ||
-    !displayOrderReady ||
-    (!!state.profile.phone && statsLoading && !stats) ||
-    (!!state.profile.phone && devotionAvailable === null);
+  const pendingGates = {
+    hydrated: !hydrated,
+    localeReady: !localeReady,
+    firmanPollHydrated: !firmanPoll.hydrated,
+    gratitudeQuestHydrated: !gratitudeQuest.hydrated,
+    displayOrderReady: !displayOrderReady,
+    statsLoading: !!state.profile.phone && statsLoading && !stats,
+    devotionPending: !!state.profile.phone && devotionAvailable === null,
+  };
+
+  const waitingForShell = Object.values(pendingGates).some(Boolean);
+
+  useEffect(() => {
+    const blocking = Object.entries(pendingGates)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+    if (blocking.length > 0) {
+      console.log("[VerseQuestApp] still loading — waiting on:", blocking);
+    } else {
+      console.log("[VerseQuestApp] all gates resolved, rendering shell");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    hydrated, localeReady, firmanPoll.hydrated, gratitudeQuest.hydrated,
+    displayOrderReady, statsLoading, stats, state.profile.phone, devotionAvailable,
+  ]);
 
   if (waitingForShell) {
+    const blocking = Object.entries(pendingGates)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--vq-canvas)] text-[var(--vq-muted)]">
-        {m.loading}
+        <div className="text-center space-y-2">
+          <p>{m.loading}</p>
+          {process.env.NODE_ENV === "development" && (
+            <p className="text-xs opacity-50">waiting: {blocking.join(", ")}</p>
+          )}
+        </div>
       </div>
     );
   }
