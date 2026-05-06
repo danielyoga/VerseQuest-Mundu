@@ -194,3 +194,84 @@ export function GSettings({ size = 20, color = 'currentColor' }: GlyphProps) {
     </svg>
   );
 }
+
+export function GShare({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 12v6a2 2 0 002 2h12a2 2 0 002-2v-6" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M12 3v12M8 7l4-4 4 4" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function GArchive({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="4" rx="1" stroke={color} strokeWidth="1.6"/>
+      <path d="M5 8v10a1 1 0 001 1h12a1 1 0 001-1V8" stroke={color} strokeWidth="1.6"/>
+      <path d="M10 12h4" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function GPencil({ size = 14, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 20l4-1 11-11a2 2 0 00-3-3L5 16l-1 4z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function GNote({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="3" width="16" height="18" rx="2" stroke={color} strokeWidth="1.6"/>
+      <path d="M8 8h8M8 12h8M8 16h5" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function GPin({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2a5 5 0 015 5c0 3.5-5 11-5 11S7 10.5 7 7a5 5 0 015-5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <circle cx="12" cy="7" r="1.8" stroke={color} strokeWidth="1.4"/>
+    </svg>
+  );
+}
+
+export function GEcho({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M5 12c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+      <circle cx="12" cy="12" r="1.5" fill={color}/>
+    </svg>
+  );
+}
+
+export function GBell({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M6 10a6 6 0 0112 0v4l2 2H4l2-2v-4z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M10 18a2 2 0 004 0" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function GFilter({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 6h16M7 12h10M10 18h4" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function GHighlight({ size = 20, color = 'currentColor' }: GlyphProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M9 20h6M12 3l6 6-8 8-4-1-1-4 7-9z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M15 6l3 3" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}

@@ -112,8 +112,8 @@ export function VerseQuestApp() {
     <VerseQuestHome
       state={state}
       displayStreak={displayStreak}
-      submittedToday={submittedToday}
       weekDots={weekDots}
+      submittedToday={submittedToday}
       moodEmoji={moodEmoji}
       submitVerse={submitVerse}
       firmanConfig={firmanConfig}

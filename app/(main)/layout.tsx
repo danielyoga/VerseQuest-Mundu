@@ -15,7 +15,7 @@ export default function MainLayout({
       <div className="min-h-screen bg-[var(--vq-canvas)]">
         <main
           id="main-content"
-          className="pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
+          className="pb-[calc(64px+env(safe-area-inset-bottom))]"
         >
           {children}
         </main>

@@ -19,10 +19,17 @@ const SCHEDULE = {
 };
 
 const PRAYERS_INITIAL = [
-  { id: 1, name: 'Yoga', ranting: 'LABU', text: 'Mohon doa untuk ujian skripsi minggu depan, semoga diberi ketenangan dan hikmat.', minsAgo: 12, likes: 4, own: true, answered: false },
-  { id: 2, name: 'Hana', ranting: 'AKAR', text: 'Doakan adikku yang sedang sakit, semoga lekas pulih dan keluarga dikuatkan.', minsAgo: 47, likes: 11, own: false, answered: false },
-  { id: 3, name: 'Bima', ranting: 'BATANG', text: 'Berdoa untuk pekerjaan baru — semoga Tuhan menuntun langkah dan memberi keputusan yang tepat.', minsAgo: 180, likes: 7, own: false, answered: false },
-  { id: 4, name: 'Sari', ranting: 'DAUN', text: 'Doakan kelompok kecil kami minggu ini, semoga ada damai di antara kami.', minsAgo: 1440, likes: 18, own: false, answered: false },
+  { id: 1, name: 'Yoga', ranting: 'LABU', text: 'Mohon doa untuk ujian skripsi minggu depan, semoga diberi ketenangan dan hikmat.', minsAgo: 12, likes: 4, own: true, answered: false, category: 'Pribadi' },
+  { id: 2, name: 'Hana', ranting: 'AKAR', text: 'Doakan adikku yang sedang sakit, semoga lekas pulih dan keluarga dikuatkan.', minsAgo: 47, likes: 11, own: false, answered: false, category: 'Kesehatan' },
+  { id: 3, name: 'Bima', ranting: 'BATANG', text: 'Berdoa untuk pekerjaan baru — semoga Tuhan menuntun langkah dan memberi keputusan yang tepat. Banyak ketidakpastian, tapi percaya Tuhan punya rencana terbaik.', minsAgo: 180, likes: 7, own: false, answered: false, category: 'Pelayanan' },
+  { id: 4, name: 'Sari', ranting: 'DAUN', text: 'Doakan kelompok kecil kami minggu ini, semoga ada damai di antara kami.', minsAgo: 1440, likes: 18, own: false, answered: false, category: 'Keluarga', pinned: true },
+  { id: 5, name: 'Kevin', ranting: 'BATANG', text: 'Doakan pemulihan ibu saya dari operasi yang dijadwalkan minggu ini. Semoga Tuhan menyertai dokter dan memberi kekuatan bagi keluarga.', minsAgo: 320, likes: 9, own: false, answered: false, category: 'Kesehatan' },
+];
+
+const PRAYERS_ANSWERED = [
+  { id: 101, name: 'Yoga', ranting: 'LABU', text: 'Doa untuk presentasi tugas akhir semester kemarin, semoga berjalan lancar.', minsAgo: 2880, likes: 5, own: true, answered: true, category: 'Pribadi', testimony: 'Puji Tuhan! Presentasi berjalan sangat lancar dan dosen mengapresiasi hasilnya.' },
+  { id: 102, name: 'Lia', ranting: 'DAUN', text: 'Doakan penyembuhan ayah dari demam berdarah yang sudah 2 minggu.', minsAgo: 4320, likes: 14, own: false, answered: true, category: 'Kesehatan', testimony: 'Ayah sudah pulih sepenuhnya! Terima kasih atas semua doa kalian.' },
+  { id: 103, name: 'Andre', ranting: 'AKAR', text: 'Doakan agar ada jalan keluar dari masalah keuangan yang sedang dihadapi keluarga kami.', minsAgo: 5760, likes: 8, own: false, answered: true, category: 'Keluarga', testimony: '' },
 ];
 
 const MEMBERS_ALL = [
@@ -41,10 +48,10 @@ const MEMBERS_ALL = [
 ];
 
 const COMMUNITY_VERSES = [
-  { book: 'Mazmur', c: 23, v: 1, text: 'TUHAN adalah gembalaku, takkan kekurangan aku.', date: '5 Mei 2026' },
-  { book: 'Filipi', c: 4, v: 13, text: 'Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.', date: '4 Mei 2026' },
-  { book: 'Yesaya', c: 41, v: 10, text: 'Janganlah takut, sebab Aku menyertai engkau, janganlah bimbang, sebab Aku ini Allahmu;', date: '3 Mei 2026' },
-  { book: 'Roma', c: 8, v: 28, text: 'Allah turut bekerja dalam segala sesuatu untuk mendatangkan kebaikan bagi mereka yang mengasihi Dia.', date: '2 Mei 2026' },
+  { id: 1, book: 'Mazmur', c: 23, v: 1, text: 'TUHAN adalah gembalaku, takkan kekurangan aku.', date: '5 Mei 2026', sharedBy: 'Hana', ranting: 'AKAR', gema: 4, pinned: true },
+  { id: 2, book: 'Filipi', c: 4, v: 13, text: 'Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.', date: '4 Mei 2026', sharedBy: 'Bima', ranting: 'BATANG', gema: 12, pinned: false },
+  { id: 3, book: 'Yesaya', c: 41, v: 10, text: 'Janganlah takut, sebab Aku menyertai engkau, janganlah bimbang, sebab Aku ini Allahmu;', date: '3 Mei 2026', sharedBy: 'Sari', ranting: 'DAUN', gema: 7, pinned: false },
+  { id: 4, book: 'Roma', c: 8, v: 28, text: 'Allah turut bekerja dalam segala sesuatu untuk mendatangkan kebaikan bagi mereka yang mengasihi Dia.', date: '2 Mei 2026', sharedBy: 'Joel', ranting: 'BATANG', gema: 3, pinned: false },
 ];
 
 function relTime(mins) {
@@ -57,4 +64,4 @@ function relTime(mins) {
 
 function bookName(b) { return b; }
 
-Object.assign(window, { ME, SCHEDULE, PRAYERS_INITIAL, MEMBERS_ALL, COMMUNITY_VERSES, relTime, bookName });
+Object.assign(window, { ME, SCHEDULE, PRAYERS_INITIAL, PRAYERS_ANSWERED, MEMBERS_ALL, COMMUNITY_VERSES, relTime, bookName });

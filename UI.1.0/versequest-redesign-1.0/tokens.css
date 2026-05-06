@@ -9,13 +9,13 @@
   --color-primary-border: #C4B5FD;
 
   /* Backgrounds */
-  --color-bg-page: #F8F7FF;
+  --color-bg-page: #FAFAF8;
   --color-bg-card: #FFFFFF;
-  --color-bg-muted: #F3F0FF;
+  --color-bg-muted: #F5F3FF;
 
   /* Text */
   --color-text-primary: #1A1040;
-  --color-text-body: #2D2052;
+  --color-text-body: #2A1F4E;
   --color-text-secondary: #7C6FA0;
   --color-text-muted: #9986C4;
 
@@ -23,12 +23,24 @@
   --color-border: #ECE9FF;
   --color-border-muted: #F0ECFF;
 
+  /* Warm neutral layer */
+  --color-bg-warm:      #FEFCF7;
+  --color-bg-warm-card: #FFFDF5;
+  --color-border-warm:  #EDE8D8;
+  --color-text-warm:    #4A3F2F;
+
+  /* Gold accent (celebration, coordinator, answered states) */
+  --color-gold:        #D97706;
+  --color-gold-light:  #FEF3C7;
+  --color-gold-border: #FCD34D;
+  --color-gold-text:   #92400E;
+
   /* Semantic */
-  --color-success: #22C55E;
+  --color-success: #16A34A;
   --color-success-bg: #F0FDF4;
   --color-success-border: #BBF7D0;
   --color-success-text: #4AAE6B;
-  --color-danger: #EF4444;
+  --color-danger: #DC2626;
   --color-danger-bg: #FEF2F2;
   --color-danger-border: #FECACA;
   --color-danger-text: #B91C1C;
@@ -39,6 +51,7 @@
   --shadow-modal: 0 -4px 24px rgba(83, 74, 183, 0.15);
   --shadow-fab: 0 4px 12px rgba(83, 74, 183, 0.4);
   --shadow-active: 0 0 0 3px rgba(83, 74, 183, 0.2);
+  --shadow-island: 0 8px 32px rgba(83,74,183,0.18), 0 2px 8px rgba(0,0,0,0.08);
 
   /* Radii */
   --radius-sm: 8px;
@@ -47,8 +60,22 @@
   --radius-xl: 20px;
   --radius-pill: 999px;
 
-  /* Spacing */
-  --space-page-x: 20px;
+  /* Spacing scale */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --space-page-x:  var(--space-5);
+  --space-section: var(--space-4);
+  --space-card-p:  var(--space-4);
+  --space-row-gap: var(--space-3);
 
   /* Type */
   --font-display: 'Plus Jakarta Sans', sans-serif;
@@ -58,27 +85,35 @@
 
 [data-theme="dark"] {
   /* Warm-neutral charcoal — desaturated so the brand purple reads calm, not neon */
-  --color-bg-page: #0F0E14;          /* page — near-black w/ a hint of warmth */
-  --color-bg-card: #1A1822;          /* card — one step lighter, subtle purple cast */
-  --color-bg-muted: #232029;         /* muted surfaces (chips, sub-cards) */
+  --color-bg-page: #0F0E14;
+  --color-bg-card: #1A1822;
+  --color-bg-muted: #232029;
 
-  /* Lift the primary so it sits comfortably on dark — same hue, more lightness */
   --color-primary:        #9A92F0;
   --color-primary-light:  #B5AEFA;
-  --color-primary-soft:   #2A2541;   /* low-saturation purple for soft fills */
+  --color-primary-soft:   #2A2541;
   --color-primary-border: #4A4280;
 
-  /* Text — warm whites with clear hierarchy (WCAG AA on #1A1822) */
   --color-text-primary:   #F2EFFA;
   --color-text-body:      #DCD7E8;
   --color-text-secondary: #A29BB8;
   --color-text-muted:     #6F6886;
 
-  /* Borders — barely-there, warm */
   --color-border:         #2A2733;
   --color-border-muted:   #221F2A;
 
-  /* Semantic — softened so they don't punch holes */
+  /* Warm neutral layer — dark variants */
+  --color-bg-warm:      #131210;
+  --color-bg-warm-card: #1C1A16;
+  --color-border-warm:  #2E2A22;
+  --color-text-warm:    #D6CFBF;
+
+  /* Gold accent — brighter in dark */
+  --color-gold:        #FBBF24;
+  --color-gold-light:  #1C1500;
+  --color-gold-border: #78350F;
+  --color-gold-text:   #FDE68A;
+
   --color-success:        #4ADE80;
   --color-success-bg:     #142B1F;
   --color-success-border: #1F4A33;
@@ -92,18 +127,20 @@
   --shadow-modal:  0 -8px 32px rgba(0, 0, 0, 0.6);
   --shadow-fab:    0 4px 14px rgba(154, 146, 240, 0.35);
   --shadow-active: 0 0 0 3px rgba(154, 146, 240, 0.25);
+  --shadow-island: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
 }
 
-/* Subtle paper grain — a personal touch, applied to the page background.
-   SVG turbulence is cheap and gives the canvas warmth without imagery. */
+/* Paper grain — opacity varies by theme for visual comfort. */
 .vq-grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.29  0 0 0 0 0.72  0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
+[data-theme="dark"]  .vq-grain { opacity: 0.18; }
+[data-theme="sepia"] .vq-grain { opacity: 0.55; }
 
 /* Shared app surface */
 .vq-app {
@@ -133,6 +170,21 @@
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
   padding: 14px var(--space-page-x) 12px;
+  position: relative;
+  z-index: 55;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.vq-header[data-variant="warm"] {
+  background: var(--color-bg-warm-card);
+  border-bottom-color: var(--color-border-warm);
+}
+.vq-header[data-variant="transparent"] {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+.vq-header[data-variant="transparent"].is-scrolled {
+  background: var(--color-bg-card);
+  border-bottom-color: var(--color-border);
 }
 
 .vq-header-row {
@@ -280,44 +332,68 @@
 .vq-badge.success { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success-border); }
 .vq-badge.danger { background: var(--color-danger-bg); color: var(--color-danger-text); }
 
-/* Bottom nav */
+/* Floating island bottom nav */
 .vq-bottomnav {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 68px;
-  background: color-mix(in oklab, var(--color-bg-card) 92%, transparent);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  align-items: stretch;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  max-width: calc(100% - 40px);
   z-index: 40;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-island);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 .vq-navitem {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 3px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--color-text-muted);
   background: none;
   border: none;
   cursor: pointer;
-  padding-top: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
   position: relative;
   font-family: var(--font-body);
   min-height: 44px;
+  min-width: 56px;
+  transition: color 0.15s;
+  white-space: nowrap;
 }
-.vq-navitem.active { color: var(--color-primary); }
-.vq-navitem.active::before {
-  content: '';
+.vq-navitem.active {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+.vq-navitem-label {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.15s ease, opacity 0.15s ease;
+}
+.vq-navitem.active .vq-navitem-label {
+  max-height: 16px;
+  opacity: 1;
+}
+/* coordinator badge */
+.vq-navitem-badge {
   position: absolute;
-  top: 4px;
-  width: 4px; height: 4px; border-radius: 50%;
-  background: var(--color-primary);
+  top: 6px;
+  right: 10px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  border: 1.5px solid var(--color-bg-card);
 }
 
 /* FAB */
@@ -458,3 +534,79 @@
 }
 
 .vq-quest-row-compact { display: none; }
+
+/* ── DailyRing animations ───────────────────────────────────────────────── */
+@keyframes vq-ring-draw {
+  from { stroke-dashoffset: 90; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes vq-flame-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.75; transform: scale(1.22); }
+}
+@keyframes vq-confetti {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--vq-dx), 110px) rotate(var(--vq-rot)); opacity: 0; }
+}
+@keyframes vq-celebration-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vq-daily-ring-flame-pulse {
+  animation: vq-flame-pulse 1.5s ease-in-out infinite;
+  display: inline-flex;
+}
+.vq-quest-group-row {
+  width: 100%; display: flex; align-items: center;
+  padding: 0; background: transparent; border: none;
+  cursor: pointer; font-family: var(--font-body); text-align: left;
+  transition: background 0.1s ease;
+}
+.vq-quest-group-row:active { background: var(--color-bg-muted); }
+.vq-quest-group-row:disabled { cursor: default; }
+.vq-quest-group-row:disabled:active { background: transparent; }
+
+/* ── PRD-004: Reader highlight colours ──────────────────────────────────── */
+.vq-hl-yellow  { background: rgba(253, 230, 138, 0.82); border-radius: 4px; padding: 2px 3px; }
+.vq-hl-green   { background: rgba(187, 247, 208, 0.82); border-radius: 4px; padding: 2px 3px; }
+.vq-hl-lavender{ background: rgba(196, 181, 253, 0.82); border-radius: 4px; padding: 2px 3px; }
+[data-theme="dark"] .vq-hl-yellow   { background: rgba(146,  64,  14, 0.55); }
+[data-theme="dark"] .vq-hl-green    { background: rgba( 20,  83,  45, 0.55); }
+[data-theme="dark"] .vq-hl-lavender { background: rgba( 76,  29, 149, 0.55); }
+
+/* Sepia reader theme — scoped to the reader wrapper */
+.vq-reader-sepia {
+  background: #FDF6E3;
+  --color-text-body:      #3B2F2F;
+  --color-text-primary:   #2A1F1F;
+  --color-text-secondary: #6B5050;
+  --color-text-muted:     #9A7A6A;
+  --color-primary:        #8B6914;
+  --color-primary-soft:   #F5EAC8;
+  --color-primary-border: #D4A84B;
+  --color-bg-card:        #FAEFD5;
+  --color-bg-muted:       #F0E0BC;
+  --color-border:         #E8D5B0;
+}
+
+/* Highlight toolbar fade-in */
+@keyframes vq-hl-toolbar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.vq-hl-toolbar {
+  animation: vq-hl-toolbar-in 0.12s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* Reader settings panel slide-down */
+@keyframes vq-settings-drop {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.vq-reader-settings {
+  animation: vq-settings-drop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Font-size transition on article body */
+.vq-reader-article { transition: font-size 0.15s ease; }

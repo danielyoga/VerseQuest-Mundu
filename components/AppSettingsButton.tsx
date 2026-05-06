@@ -6,7 +6,7 @@ import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useDisplayPrefs } from "@/contexts/DisplayPrefsContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import type { DisplayOrder } from "@/lib/display-order";
-import type { Density, StreakStyle } from "@/lib/display-prefs";
+import type { Density } from "@/lib/display-prefs";
 import { messages, type Locale } from "@/lib/i18n";
 import { clearSession } from "@/lib/session";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
@@ -71,7 +71,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function AppSettingsButton() {
   const { locale, setLocale } = useLocale();
   const { displayOrder, setDisplayOrder } = useDisplayOrder();
-  const { density, setDensity, streakStyle, setStreakStyle } = useDisplayPrefs();
+  const { density, setDensity } = useDisplayPrefs();
+
+  const displayModeOptions: { value: Density; label: string }[] = [
+    { value: "compact", label: "Compact" },
+    { value: "regular", label: "Casual" },
+  ];
   const m = messages[locale];
   const [open, setOpen] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
@@ -120,16 +125,6 @@ export function AppSettingsButton() {
   const orderOptions: { value: DisplayOrder; label: string }[] = [
     { value: "missions_first", label: m.displayOrderMissionsFirst },
     { value: "reading_first", label: m.displayOrderReadingFirst },
-  ];
-
-  const densityOptions: { value: Density; label: string }[] = [
-    { value: "compact", label: "Padat" },
-    { value: "regular", label: "Reguler" },
-  ];
-
-  const streakStyleOptions: { value: StreakStyle; label: string }[] = [
-    { value: "arc", label: "Penuh" },
-    { value: "minimal", label: "Minimal" },
   ];
 
   return (
@@ -191,35 +186,15 @@ export function AppSettingsButton() {
               />
             </div>
 
-            {/* Display options */}
-            <div className="mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-4">
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                Tampilan
-              </p>
-
-              <div className="mb-4">
-                <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">
-                  Kepadatan misi
-                </p>
-                <SegmentedControl
-                  options={densityOptions}
-                  value={density}
-                  onChange={setDensity}
-                  ariaLabel="Kepadatan misi"
-                />
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">
-                  Kartu streak
-                </p>
-                <SegmentedControl
-                  options={streakStyleOptions}
-                  value={streakStyle}
-                  onChange={setStreakStyle}
-                  ariaLabel="Kartu streak"
-                />
-              </div>
+            {/* Display mode */}
+            <div className="mb-5">
+              <SectionLabel>Tampilan</SectionLabel>
+              <SegmentedControl
+                options={displayModeOptions}
+                value={density}
+                onChange={setDensity}
+                ariaLabel="Tampilan"
+              />
             </div>
 
             {/* Sign out */}

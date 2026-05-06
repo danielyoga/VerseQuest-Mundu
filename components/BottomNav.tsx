@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
@@ -11,11 +10,13 @@ import { GHome, GUsers, GPray, GCheckCircle, GSettings } from "@/components/ui/G
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale } = useLocale();
   const m = messages[locale];
   const [communityCount, setCommunityCount] = useState<number | null>(null);
   const [adminPhone, setAdminPhone] = useState<string | null>(null);
   const [isCoordinatorUser, setIsCoordinatorUser] = useState(false);
+  const [coordinatorPending, setCoordinatorPending] = useState(0);
 
   function readAdminPhone() {
     try {
@@ -31,10 +32,19 @@ export function BottomNav() {
     }
   }
 
+  function readCoordinatorPending() {
+    try {
+      const n = parseInt(localStorage.getItem("vq_coordinator_pending") ?? "0", 10);
+      setCoordinatorPending(isNaN(n) ? 0 : n);
+    } catch { setCoordinatorPending(0); }
+  }
+
   useEffect(() => {
     readAdminPhone();
+    readCoordinatorPending();
     function onStorage(e: StorageEvent) {
       if (e.key === APP_DATA_STORAGE_KEY) readAdminPhone();
+      if (e.key === "vq_coordinator_pending") readCoordinatorPending();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener("versequest-profile-updated", readAdminPhone);
@@ -82,76 +92,69 @@ export function BottomNav() {
       : null;
 
   return (
-    <nav className="vq-bottomnav" aria-label={m.navBarAria}>
-      <div style={{ display: 'flex', flex: 1, maxWidth: 390, margin: '0 auto', width: '100%' }}>
-        <Link
-          href="/"
-          className={`vq-navitem${isHome ? ' active' : ''}`}
-          aria-current={isHome ? "page" : undefined}
-          aria-label={m.navHomeAria}
+    <nav className="vq-bottomnav">
+      <button
+        type="button"
+        className={`vq-navitem vq-tap${isHome ? ' active' : ''}`}
+        onClick={() => router.push("/")}
+      >
+        <GHome size={22} color={isHome ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isHome} />
+        {m.navHome}
+      </button>
+
+      <button
+        type="button"
+        className={`vq-navitem vq-tap${isCommunity ? ' active' : ''}`}
+        onClick={() => router.push("/community")}
+      >
+        <span style={{ position: 'relative', display: 'inline-flex' }}>
+          <GUsers size={22} color={isCommunity ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isCommunity} />
+          {badge && (
+            <span style={{
+              position: 'absolute', top: -4, right: -8,
+              minWidth: 16, height: 16, borderRadius: 8,
+              background: 'var(--color-primary)', color: '#fff',
+              fontSize: 9, fontWeight: 700, lineHeight: '16px',
+              textAlign: 'center', padding: '0 3px',
+            }}>
+              {badge}
+            </span>
+          )}
+        </span>
+        {m.navCommunity}
+      </button>
+
+      <button
+        type="button"
+        className={`vq-navitem vq-tap${isPrayer ? ' active' : ''}`}
+        onClick={() => router.push("/prayer-wall")}
+      >
+        <GPray size={22} color={isPrayer ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isPrayer} />
+        {m.navPrayer}
+      </button>
+
+      {showAdmin && (
+        <button
+          type="button"
+          className={`vq-navitem vq-tap${isAdmin ? ' active' : ''}`}
+          onClick={() => router.push("/admin/devotion")}
         >
-          <GHome size={22} color={isHome ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isHome} />
-          {m.navHome}
-        </Link>
+          <GSettings size={20} color={isAdmin ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
+          Admin
+        </button>
+      )}
 
-        <Link
-          href="/community"
-          className={`vq-navitem${isCommunity ? ' active' : ''}`}
-          aria-current={isCommunity ? "page" : undefined}
-          aria-label={badge ? `${m.navCommunityAria} (${badge} ${m.navCommunityBadgeHint})` : m.navCommunityAria}
-          style={{ position: 'relative' }}
+      {isCoordinatorUser && (
+        <button
+          type="button"
+          className={`vq-navitem vq-tap${isCoordinator ? ' active' : ''}`}
+          onClick={() => router.push("/coordinator")}
         >
-          <span style={{ position: 'relative', display: 'inline-flex' }}>
-            <GUsers size={22} color={isCommunity ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isCommunity} />
-            {badge && (
-              <span style={{
-                position: 'absolute', top: -4, right: -8,
-                minWidth: 16, height: 16, borderRadius: 8,
-                background: 'var(--color-primary)', color: '#fff',
-                fontSize: 9, fontWeight: 700, lineHeight: '16px',
-                textAlign: 'center', padding: '0 3px',
-              }}>
-                {badge}
-              </span>
-            )}
-          </span>
-          {m.navCommunity}
-        </Link>
-
-        <Link
-          href="/prayer-wall"
-          className={`vq-navitem${isPrayer ? ' active' : ''}`}
-          aria-current={isPrayer ? "page" : undefined}
-          aria-label={m.navPrayerAria}
-        >
-          <GPray size={22} color={isPrayer ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isPrayer} />
-          {m.navPrayer}
-        </Link>
-
-        {showAdmin && (
-          <Link
-            href="/admin/devotion"
-            className={`vq-navitem${isAdmin ? ' active' : ''}`}
-            aria-current={isAdmin ? "page" : undefined}
-            aria-label="Admin"
-          >
-            <GSettings size={20} color={isAdmin ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
-            Admin
-          </Link>
-        )}
-
-        {isCoordinatorUser && (
-          <Link
-            href="/coordinator"
-            className={`vq-navitem${isCoordinator ? ' active' : ''}`}
-            aria-current={isCoordinator ? "page" : undefined}
-            aria-label="Absensi"
-          >
-            <GCheckCircle size={22} color={isCoordinator ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isCoordinator} />
-            Absensi
-          </Link>
-        )}
-      </div>
+          {coordinatorPending > 0 && <span className="vq-navitem-badge" aria-hidden="true" />}
+          <GCheckCircle size={22} color={isCoordinator ? 'var(--color-primary)' : 'var(--color-text-muted)'} filled={isCoordinator} />
+          Absensi
+        </button>
+      )}
     </nav>
   );
 }

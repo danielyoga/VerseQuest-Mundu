@@ -147,6 +147,7 @@ export const messages = {
     devotionUnavailable: "Today's devotion is not available yet. Check back later.",
     devotionReflectionTitle: "Today's Reflection",
     devotionMarkRead: "Mark as Read",
+    devotionMarkedRead: "Already Read",
     devotionBackAria: "Go back",
 
     devotionTaskTitle: "Read Today's Devotion",
@@ -361,6 +362,7 @@ export const messages = {
     devotionUnavailable: "Renungan hari ini belum tersedia. Cek lagi nanti.",
     devotionReflectionTitle: "Refleksi Hari Ini",
     devotionMarkRead: "Tandai Sudah Dibaca",
+    devotionMarkedRead: "Sudah dibaca",
     devotionBackAria: "Kembali",
 
     devotionTaskTitle: "Baca Renungan Hari Ini",

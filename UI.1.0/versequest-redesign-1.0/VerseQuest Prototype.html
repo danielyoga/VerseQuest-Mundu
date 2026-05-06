@@ -31,13 +31,15 @@
 const { useState, useEffect } = React;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "dashboardOrder": "quests_first",
-  "streakStyle": "arc",
   "density": "compact",
   "submittedToday": true,
   "coordinatorPending": 3,
   "navStyle": "emoji",
-  "dark": false
+  "dark": (() => {
+    const stored = localStorage.getItem('vq_theme');
+    if (stored) return stored === 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  })()
 }/*EDITMODE-END*/;
 
 // A self-contained mini-app: holds nav state, modal state, etc.
@@ -62,7 +64,7 @@ function MiniApp({ tweaks, initialScreen = 'home' }) {
   }, [tweaks.submittedToday]);
 
   function nav(id) {
-    if (id === 'prayer') { setScreen('prayer'); return; }
+    if (id === 'doa') { setScreen('prayer'); return; }
     setScreen(id);
   }
 
@@ -74,23 +76,27 @@ function MiniApp({ tweaks, initialScreen = 'home' }) {
 
   let body;
   switch (screen) {
+    case 'komunitas':    body = <KomunitasScreen onNavigate={nav}/>; break;
+    case 'komunitas-ayat': body = <KomunitasScreen onNavigate={nav} initialTab="ayat"/>; break;
     case 'prayer':       body = <PrayerWall onNavigate={nav}/>; break;
     case 'coordinator':  body = <CoordinatorScreen onNavigate={nav} pendingCount={tweaks.coordinatorPending}/>; break;
     case 'devotional':   body = <DevotionalScreen onNavigate={nav} taskState={taskState} setTaskState={setTaskState}/>; break;
+    case 'library':      body = <LibraryScreen onNavigate={nav}/>; break;
     case 'community':    body = <CommunityScreen onNavigate={nav}/>; break;
-    case 'signin':       body = <SignInScreen onNavigate={nav}/>; break;
+    case 'signin':        body = <SignInScreen onNavigate={nav}/>; break;
+    case 'register':      body = <PhoneRegistrationScreen onNavigate={nav}/>; break;
     case 'home':
     default:
-      body = <HomeScreen tweaks={tweaks} onNavigate={nav} taskState={taskState} setTaskState={setTaskState} onSubmitVerse={submitVerse}/>;
+      body = <HomeScreen onNavigate={nav} taskState={taskState} setTaskState={setTaskState} onSubmitVerse={submitVerse}/>;
   }
 
-  const showNav = !['signin','devotional'].includes(screen);
+  const showNav = !['signin','register','devotional','library'].includes(screen);
   const isCoord = screen === 'coordinator';
 
   return (
     <div className="vq-app" data-density={tweaks.density} data-theme={tweaks.dark ? 'dark' : 'light'}>
       {body}
-      {showNav && <BottomNav active={screen} onNavigate={nav} isCoordinator={isCoord || screen === 'coordinator'} style={tweaks.navStyle}/>}
+      {showNav && <BottomNav active={screen} onNavigate={nav} isCoordinator={isCoord || screen === 'coordinator'} pendingCount={tweaks.coordinatorPending}/>}
 
       {verseSuccess && (
         <div style={{
@@ -155,6 +161,16 @@ function PhoneFrame({ tweaks, initialScreen, frameDark }) {
 function App() {
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
+  // System dark mode — only fires when no user override is stored
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => {
+      if (!localStorage.getItem('vq_theme')) setTweak('dark', e.matches);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   return (
     <>
       <DesignCanvas>
@@ -182,8 +198,29 @@ function App() {
           </DCArtboard>
         </DCSection>
 
-        <DCSection id="auth" title="Sign-in" subtitle="Phone + WA OTP, Bahasa Indonesia">
-          <DCArtboard id="signin" label="06 · Masuk" width={390} height={844}>
+        <DCSection id="prd004" title="PRD-004 · Devotional Reader Revamp" subtitle="Highlights · Notes · Library · Share · Font size · Sepia">
+          <DCArtboard id="devotional-revamp" label="10 · Renungan (revamped)" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="devotional"/>
+          </DCArtboard>
+          <DCArtboard id="library" label="10b · Perpustakaan" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="library"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="komunitas" title="PRD-003 · Komunitas" subtitle="Unified Doa Wall + Ayat Bersama + ShareVerseModal">
+          <DCArtboard id="komunitas-doa" label="08 · Komunitas (Doa Wall)" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="komunitas"/>
+          </DCArtboard>
+          <DCArtboard id="komunitas-ayat" label="09 · Komunitas (Ayat Bersama)" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="komunitas-ayat"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="auth" title="Sign-in & Onboarding" subtitle="Phone + first-run onboarding, Bahasa Indonesia">
+          <DCArtboard id="register" label="06 · Onboarding" width={390} height={844}>
+            <PhoneFrame tweaks={tweaks} initialScreen="register"/>
+          </DCArtboard>
+          <DCArtboard id="signin" label="07 · Masuk" width={390} height={844}>
             <PhoneFrame tweaks={tweaks} initialScreen="signin"/>
           </DCArtboard>
         </DCSection>
@@ -191,17 +228,9 @@ function App() {
 
       <TweaksPanel title="VerseQuest Tweaks">
         <TweakSection label="Layout"/>
-        <TweakRadio label="Beranda order" value={tweaks.dashboardOrder}
-                    options={[{value:'quests_first',label:'Misi'},{value:'reading_first',label:'Bacaan'}]}
-                    onChange={(v) => setTweak('dashboardOrder', v)}/>
         <TweakRadio label="Quest density" value={tweaks.density}
                     options={[{value:'regular',label:'Reguler'},{value:'compact',label:'Padat'}]}
                     onChange={(v) => setTweak('density', v)}/>
-
-        <TweakSection label="Streak"/>
-        <TweakRadio label="Kartu streak" value={tweaks.streakStyle}
-                    options={[{value:'arc',label:'Arc'},{value:'minimal',label:'Minimal'}]}
-                    onChange={(v) => setTweak('streakStyle', v)}/>
 
         <TweakSection label="State"/>
         <TweakToggle label="Semua misi sudah selesai" value={tweaks.submittedToday}
@@ -214,7 +243,7 @@ function App() {
                     options={[{value:'minimal',label:'Minimal'},{value:'emoji',label:'Tebal'}]}
                     onChange={(v) => setTweak('navStyle', v)}/>
         <TweakToggle label="Dark mode" value={tweaks.dark}
-                     onChange={(v) => setTweak('dark', v)}/>
+                     onChange={(v) => { localStorage.setItem('vq_theme', v ? 'dark' : 'light'); setTweak('dark', v); }}/>
       </TweaksPanel>
     </>
   );

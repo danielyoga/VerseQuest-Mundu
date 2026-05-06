@@ -187,8 +187,102 @@ function GLogout({ size = 14, color = 'currentColor' }) {
   );
 }
 
+function GShare({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 3v13" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
+      <path d="M8 7l4-4 4 4" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5 14v4a1 1 0 001 1h12a1 1 0 001-1v-4" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function GArchive({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3.5" width="18" height="4" rx="1.2" stroke={color} strokeWidth="1.6"/>
+      <path d="M4 7.5v11A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5v-11" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M9.5 12h5" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function GPencil({ size = 14, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M14.5 4L20 9.5l-11 11H3.5v-5.5L14.5 4z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M12 6.5l5.5 5.5" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* GNote — rectangle with horizontal lines; coordinator notes */
+function GNote({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="3" width="16" height="18" rx="2" stroke={color} strokeWidth="1.6"/>
+      <path d="M8 8h8M8 12h8M8 16h5" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* GPin — thumbtack; pinned prayer/verse */
+function GPin({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2l2.5 5.5H19l-4 3.5 1.5 5.5L12 14l-4.5 2.5L9 11 5 7.5h4.5L12 2z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M12 14v8" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* GEcho — radiating arcs; Gema reaction */
+function GEcho({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0" stroke={color} strokeWidth="1.6"/>
+      <path d="M8.5 8.5a5 5 0 0 0 0 7" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M5.5 5.5a9 9 0 0 0 0 13" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.6"/>
+      <path d="M18.5 5.5a9 9 0 0 1 0 13" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.6"/>
+    </svg>
+  );
+}
+
+/* GBell — bell silhouette; reminder/notification */
+function GBell({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M6 10a6 6 0 1 1 12 0c0 3.5 1.5 5 1.5 5H4.5S6 13.5 6 10z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M10 17a2 2 0 0 0 4 0" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* GFilter — funnel; category filter */
+function GFilter({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 5h16M7 10h10M10 15h4M11.5 19.5h1" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* GHighlight — marker with underline; highlight mode in reader */
+function GHighlight({ size = 20, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M9 20h6" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M13.5 4.5l4 4-7 7H7v-3.5l6.5-7.5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M11 7l4 4" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 Object.assign(window, {
   GBook, GCross, GHands, GHeart, GCheck, GFlame, GSparkle, GBack, GChevronR,
   GHome, GUsers, GPray, GCheckCircle, GPlus, GPhone, GWhatsApp, GMoon,
   GBoltSmall, GClock, GLogout,
+  GShare, GArchive, GPencil,
+  GNote, GPin, GEcho, GBell, GFilter, GHighlight,
 });

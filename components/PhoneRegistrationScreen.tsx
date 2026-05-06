@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AppSettingsButton } from "@/components/AppSettingsButton";
+import { GCross } from "@/components/ui/Glyphs";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import { normalizePhone, normalizePhoneDraftForDisplay } from "@/lib/preregister";
 import { getRantingList } from "@/lib/constants";
 
-/** Styled dropdown that matches the existing input design language. */
 function RantingDropdown({
   value,
   options,
@@ -33,18 +33,40 @@ function RantingDropdown({
   }, []);
 
   return (
-    <div ref={ref} className="relative w-full">
+    <div ref={ref} style={{ position: "relative", width: "100%" }}>
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
-        className="flex min-h-[48px] w-full items-center justify-between rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-base text-[var(--vq-text)] transition-colors hover:border-[#534AB7]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#534AB7]/40"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          minHeight: 48,
+          padding: "12px 14px",
+          borderRadius: "var(--radius-md)",
+          border: "1.5px solid var(--color-border)",
+          background: "#FAFAFF",
+          color: "var(--color-text-primary)",
+          fontSize: 15,
+          fontFamily: "var(--font-body)",
+          cursor: "pointer",
+          transition: "border-color 0.12s ease, box-shadow 0.12s ease",
+          boxSizing: "border-box",
+        }}
       >
-        <span>Ranting {value}</span>
+        <span>{label}: {value}</span>
         <svg
-          className={`ml-2 shrink-0 text-[var(--vq-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          style={{
+            marginLeft: 8,
+            flexShrink: 0,
+            color: "var(--color-text-muted)",
+            transition: "transform 150ms",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
           width="12" height="12" viewBox="0 0 12 12" fill="none"
           aria-hidden
         >
@@ -56,7 +78,21 @@ function RantingDropdown({
         <ul
           role="listbox"
           aria-label={label}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg)] shadow-lg"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: "calc(100% + 4px)",
+            zIndex: 20,
+            overflow: "hidden",
+            borderRadius: "var(--radius-md)",
+            border: "1.5px solid var(--color-border)",
+            background: "var(--color-bg-card)",
+            boxShadow: "var(--shadow-modal)",
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+          }}
         >
           {options.map((opt) => {
             const selected = opt === value;
@@ -70,20 +106,28 @@ function RantingDropdown({
                   onChange(opt);
                   setOpen(false);
                 }}
-                className={[
-                  "flex cursor-pointer items-center gap-2 px-3.5 py-3 text-base transition-colors",
-                  selected
-                    ? "bg-[#534AB7]/8 font-medium text-[#534AB7]"
-                    : "text-[var(--vq-text)] hover:bg-[var(--vq-bg-2)]",
-                ].join(" ")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "12px 14px",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  color: selected ? "var(--color-primary)" : "var(--color-text-primary)",
+                  background: selected ? "rgba(83,74,183,0.06)" : "transparent",
+                  fontWeight: selected ? 600 : 400,
+                  fontFamily: "var(--font-body)",
+                  transition: "background 0.1s ease",
+                }}
               >
-                {selected && (
+                {selected ? (
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                     <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
+                ) : (
+                  <span style={{ width: 14, display: "inline-block" }} />
                 )}
-                {!selected && <span className="w-[14px]" />}
-                Ranting {opt}
+                {opt}
               </li>
             );
           })}
@@ -124,21 +168,50 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--vq-canvas)] px-4 py-12">
-      <div className="mx-auto flex max-w-[390px] flex-col items-center rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)] p-8 shadow-sm">
-        <div className="mb-4 flex w-full flex-row items-center justify-end">
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh", background: "var(--color-bg-page)", position: "relative" }}>
+      <div className="vq-grain" />
+
+      {/* Scrollable content */}
+      <div style={{ flex: 1, padding: "60px 28px 0", position: "relative" }}>
+
+        {/* Settings + logo row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: "var(--color-primary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <GCross size={22} color="#fff" />
+            </div>
+            <div style={{
+              fontSize: 22, fontWeight: 700,
+              color: "var(--color-text-primary)",
+              fontFamily: "var(--font-display)",
+            }}>
+              Verse<span style={{ color: "var(--color-primary)" }}>Quest</span>
+            </div>
+          </div>
           <AppSettingsButton />
         </div>
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-[10px] bg-[#534AB7] text-2xl text-white">
-          📖
-        </div>
-        <h1 className="text-center text-2xl font-medium text-[var(--vq-text)]">{m.loginTitle}</h1>
-        <p className="mt-2 text-center text-sm leading-relaxed text-[var(--vq-muted)]">
+
+        <h1 style={{
+          fontFamily: "var(--font-display)",
+          fontSize: 30, fontWeight: 700,
+          color: "var(--color-text-primary)",
+          lineHeight: 1.18, margin: "8px 0 8px",
+          letterSpacing: "-0.02em",
+        }}>
+          {m.loginTitle}
+        </h1>
+        <p style={{ fontSize: 14.5, color: "var(--color-text-secondary)", lineHeight: 1.55, margin: 0 }}>
           {m.loginSubtitle}
         </p>
+
         <form
           id="vq-register-phone"
-          className="mt-8 w-full"
+          style={{ marginTop: 28 }}
           onSubmit={(e) => {
             e.preventDefault();
             if (!canSubmit) return;
@@ -161,14 +234,25 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
             })();
           }}
         >
-          <label className="block w-full">
-            <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+          <label style={{ display: "block" }}>
+            <span style={{
+              display: "block", marginBottom: 8,
+              fontSize: 12, fontWeight: 700,
+              color: "var(--color-text-secondary)",
+              textTransform: "uppercase", letterSpacing: "0.05em",
+            }}>
               {m.loginPhoneLabel}
             </span>
-            <div className="flex gap-2">
-              <span className="flex w-[72px] shrink-0 items-center justify-center rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] text-[15px] text-[var(--vq-text)]">
-                +62
-              </span>
+            <div style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "0 12px",
+                border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-md)",
+                background: "#FAFAFF", color: "var(--color-text-primary)",
+                fontSize: 14, fontWeight: 600, fontFamily: "var(--font-body)", flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 16, lineHeight: 1 }}>🇮🇩</span>
+                <span>+62</span>
+              </div>
               <input
                 ref={phoneInputRef}
                 type="tel"
@@ -184,17 +268,42 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
                   setPhoneDraft((prev) => normalizePhoneDraftForDisplay(prev));
                 }}
                 placeholder="81234567890"
-                className="min-h-[48px] min-w-0 flex-1 rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-base text-[var(--vq-text)]"
+                style={{
+                  flex: 1, minWidth: 0,
+                  border: "1.5px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "12px 14px",
+                  background: "#FAFAFF",
+                  color: "var(--color-text-primary)",
+                  fontSize: 15,
+                  fontFamily: "var(--font-body)",
+                  outline: "none",
+                  transition: "border-color 0.12s ease, box-shadow 0.12s ease",
+                  boxSizing: "border-box",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--color-primary)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-active)";
+                }}
+                onBlurCapture={(e) => {
+                  e.currentTarget.style.borderColor = "var(--color-border)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               />
             </div>
-            <p className="mt-1.5 text-[11px] leading-snug text-[var(--vq-muted-2)]">
+            <p style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-muted)" }}>
               {m.loginCountryHint}
             </p>
           </label>
 
           {showRantingDropdown && (
-            <div className="mt-4 w-full">
-              <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+            <div style={{ marginTop: 16 }}>
+              <span style={{
+                display: "block", marginBottom: 8,
+                fontSize: 12, fontWeight: 700,
+                color: "var(--color-text-secondary)",
+                textTransform: "uppercase", letterSpacing: "0.05em",
+              }}>
                 {m.loginRantingLabel}
               </span>
               <RantingDropdown
@@ -210,18 +319,44 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
           )}
 
           {registerError && (
-            <p className="mt-3 w-full rounded-lg bg-red-50 px-3 py-2 text-[13px] leading-snug text-red-800">
+            <div style={{
+              marginTop: 12,
+              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              background: "var(--color-danger-bg)",
+              border: "1px solid var(--color-danger-border)",
+              fontSize: 13, lineHeight: 1.5,
+              color: "var(--color-danger-text)",
+            }}>
               {registerError}
-            </p>
+            </div>
           )}
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="mt-6 w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] disabled:cursor-not-allowed disabled:bg-[var(--vq-bg-2)] disabled:text-[var(--vq-muted-2)]"
-          >
-            {registerSubmitting ? m.loading : m.loginContinue}
-          </button>
         </form>
+      </div>
+
+      {/* Fixed bottom CTA */}
+      <div style={{ padding: "12px 28px 32px", flexShrink: 0 }}>
+        <button
+          type="submit"
+          form="vq-register-phone"
+          disabled={!canSubmit}
+          style={{
+            width: "100%",
+            padding: 14,
+            borderRadius: "var(--radius-md)",
+            background: canSubmit ? "var(--color-primary)" : "var(--color-primary-border)",
+            color: "#fff",
+            fontSize: 15, fontWeight: 700,
+            fontFamily: "var(--font-body)",
+            border: "none",
+            cursor: canSubmit ? "pointer" : "not-allowed",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 8, minHeight: 48,
+            transition: "all 0.12s ease",
+          }}
+        >
+          {registerSubmitting ? m.loading : m.loginContinue}
+        </button>
       </div>
     </div>
   );

@@ -12,6 +12,8 @@ type DevotionPayload = {
   devotion: string | null;
   devotionTitle: string | null;
   reflection: string[];
+  verseRef: string | null;
+  verseText: string | null;
 };
 
 let devotionCache: { date: string; data: DevotionPayload; expiresAt: number } | null = null;
@@ -43,14 +45,14 @@ export async function GET() {
     const sheets = await getSheetsClient();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
-      range: `${SHEET}!A:D`,
+      range: `${SHEET}!A:F`,
     });
 
     const rows = res.data.values ?? [];
     const match = rows.slice(1).find((row) => String(row[0] ?? "").trim() === today);
 
     if (!match) {
-      return { devotion: null, devotionTitle: null, reflection: [] };
+      return { devotion: null, devotionTitle: null, reflection: [], verseRef: null, verseText: null };
     }
 
     const reflection = match[3]
@@ -62,6 +64,8 @@ export async function GET() {
       devotionTitle: (match[1] as string | undefined)?.trim() || null,
       devotion: (match[2] as string | undefined) ?? null,
       reflection,
+      verseRef: (match[4] as string | undefined)?.trim() || null,
+      verseText: (match[5] as string | undefined)?.trim() || null,
     };
   })();
 
