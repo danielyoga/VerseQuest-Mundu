@@ -5,6 +5,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { messages, type Locale } from "@/lib/i18n";
 import { CreatePrayerModal } from "@/components/CreatePrayerModal";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
+import { isAnyAdmin } from "@/lib/constants";
 import type { Prayer } from "@/app/api/prayer-wall/route";
 
 const LIKES_KEY = "prayer_wall_likes";
@@ -46,6 +47,8 @@ export default function PrayerWallPage() {
   const [likedSet, setLikedSet] = useState<Set<number>>(new Set());
   const [answering, setAnswering] = useState<number | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
 
   useEffect(() => {
     setLikedSet(getLikedSet());
@@ -54,8 +57,12 @@ export default function PrayerWallPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(APP_DATA_STORAGE_KEY);
-      const parsed = raw ? (JSON.parse(raw) as { profile?: { name?: string } }) : null;
+      const parsed = raw ? (JSON.parse(raw) as { profile?: { name?: string; phone?: string } }) : null;
       if (parsed?.profile?.name) setUserName(parsed.profile.name);
+      if (parsed?.profile?.phone) {
+        setUserPhone(parsed.profile.phone);
+        setIsAdminUser(isAnyAdmin(parsed.profile.phone));
+      }
     } catch {}
   }, []);
 
@@ -99,13 +106,15 @@ export default function PrayerWallPage() {
 
   const markAnswered = async (prayer: Prayer) => {
     if (!userName) return;
-    console.log(`[prayer-wall] markAnswered rowIndex=${prayer.rowIndex} userName="${userName}"`);
+    console.log(`[prayer-wall] markAnswered rowIndex=${prayer.rowIndex} userName="${userName}" isAdmin=${isAdminUser}`);
     setAnswering(prayer.rowIndex);
     try {
+      const body: Record<string, unknown> = { rowIndex: prayer.rowIndex, username: userName };
+      if (isAdminUser && userPhone) body.adminPhone = userPhone;
       const res = await fetch("/api/prayer-wall", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rowIndex: prayer.rowIndex, username: userName }),
+        body: JSON.stringify(body),
       });
       const data = (await res.json()) as { error?: string };
       if (res.ok) {
@@ -151,6 +160,7 @@ export default function PrayerWallPage() {
               const isOwn = prayer.real_username === userName;
               const isLiked = likedSet.has(prayer.rowIndex);
               const isAnswering = answering === prayer.rowIndex;
+              const canMarkAnswered = (isOwn || isAdminUser) && !prayer.answered;
 
               return (
                 <li
@@ -206,7 +216,7 @@ export default function PrayerWallPage() {
                         {isLiked ? m.prayerWallAminActive : m.prayerWallAmin}
                       </button>
 
-                      {isOwn && !prayer.answered && (
+                      {canMarkAnswered && (
                         <button
                           onClick={() => void markAnswered(prayer)}
                           disabled={isAnswering}

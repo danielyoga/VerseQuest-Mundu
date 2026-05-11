@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
+import { isAdmin } from "@/lib/admin";
 
 export const runtime = "nodejs";
 
@@ -16,9 +17,14 @@ export type Prayer = {
   answered: boolean;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   const t0 = Date.now();
   try {
+    const { searchParams } = new URL(request.url);
+    const adminPhone = searchParams.get("adminPhone") ?? "";
+    // Admin bypass: real names are always visible to admins for pastoral follow-up
+    const callerIsAdmin = adminPhone ? isAdmin(adminPhone) : false;
+
     const sheets = await getSheetsClient();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
@@ -35,9 +41,9 @@ export async function GET() {
         return {
           rowIndex: originalIndex + 2,
           submitted_at: row[0] ?? "",
-          username: showName ? realUsername : "Anonim",
+          username: (showName || callerIsAdmin) ? realUsername : "Anonim",
           real_username: realUsername,
-          ranting: showName ? (row[2] ?? null) : null,
+          ranting: (showName || callerIsAdmin) ? (row[2] ?? null) : null,
           prayer_request: row[3] ?? "",
           show_name: showName,
           answered,
@@ -45,7 +51,7 @@ export async function GET() {
       })
       .reverse();
 
-    console.log(`[prayer-wall] GET ${Date.now() - t0}ms count=${prayers.length}`);
+    console.log(`[prayer-wall] GET ${Date.now() - t0}ms count=${prayers.length} isAdmin=${callerIsAdmin}`);
     return NextResponse.json({ prayers }, {
       headers: { "Cache-Control": "no-store" },
     });
@@ -104,15 +110,17 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  let body: { rowIndex?: number; username?: string };
+  let body: { rowIndex?: number; username?: string; adminPhone?: string };
   try {
     body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "Permintaan tidak valid." }, { status: 400 });
   }
 
-  const { rowIndex, username } = body;
-  console.log(`[prayer-wall] PATCH received rowIndex=${rowIndex} username="${username}"`);
+  const { rowIndex, username, adminPhone } = body;
+  // Server-side admin check — never trust a flag from the client
+  const callerIsAdmin = adminPhone ? isAdmin(adminPhone) : false;
+  console.log(`[prayer-wall] PATCH received rowIndex=${rowIndex} username="${username}" isAdmin=${callerIsAdmin}`);
 
   if (!rowIndex || !username) {
     console.warn(`[prayer-wall] PATCH rejected: missing fields rowIndex=${rowIndex} username="${username}"`);
@@ -138,9 +146,9 @@ export async function PATCH(request: Request) {
     }
 
     const ownerUsername = row[0];
-    console.log(`[prayer-wall] PATCH ownership check ownerUsername="${ownerUsername}" requestUsername="${username}" match=${ownerUsername === username}`);
+    console.log(`[prayer-wall] PATCH ownership check ownerUsername="${ownerUsername}" requestUsername="${username}" callerIsAdmin=${callerIsAdmin}`);
 
-    if (ownerUsername !== username) {
+    if (!callerIsAdmin && ownerUsername !== username) {
       console.warn(`[prayer-wall] PATCH forbidden: ownerUsername="${ownerUsername}" !== requestUsername="${username}"`);
       return NextResponse.json(
         { error: "Hanya pembuat doa yang dapat menandai sebagai terjawab." },
@@ -155,7 +163,7 @@ export async function PATCH(request: Request) {
       requestBody: { values: [["TRUE"]] },
     });
 
-    console.log(`[prayer-wall] PATCH success rowIndex=${rowIndex} username="${username}"`);
+    console.log(`[prayer-wall] PATCH success rowIndex=${rowIndex} username="${username}" isAdmin=${callerIsAdmin}`);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[prayer-wall] PATCH error", err);
