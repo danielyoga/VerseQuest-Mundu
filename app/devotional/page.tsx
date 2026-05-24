@@ -91,7 +91,8 @@ export default function DevotionalPage() {
         <button
           type="button"
           onClick={markAsRead}
-          className="w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98]"
+          disabled={!devotion}
+          className="w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           {m.devotionMarkRead}
         </button>
