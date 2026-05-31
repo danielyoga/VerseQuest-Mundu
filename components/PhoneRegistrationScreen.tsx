@@ -23,14 +23,15 @@ function RantingDropdown({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function onPointerDown(e: PointerEvent) {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, []);
+    document.addEventListener("click", onClickOutside);
+    return () => document.removeEventListener("click", onClickOutside);
+  }, [open]);
 
   return (
     <div ref={ref} className="relative w-full">
@@ -56,7 +57,7 @@ function RantingDropdown({
         <ul
           role="listbox"
           aria-label={label}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg)] shadow-lg"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-64 touch-pan-y overflow-y-auto rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg)] shadow-lg"
         >
           {options.map((opt) => {
             const selected = opt === value;
@@ -65,8 +66,7 @@ function RantingDropdown({
                 key={opt}
                 role="option"
                 aria-selected={selected}
-                onPointerDown={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   onChange(opt);
                   setOpen(false);
                 }}
@@ -124,7 +124,7 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--vq-canvas)] px-4 py-12">
+    <div className="min-h-screen overflow-y-auto bg-[var(--vq-canvas)] px-4 py-12">
       <div className="mx-auto flex max-w-[390px] flex-col items-center rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)] p-8 shadow-sm">
         <div className="mb-4 flex w-full flex-row items-center justify-end">
           <AppSettingsButton />
