@@ -123,6 +123,10 @@ export const messages = {
       "Choose whether daily quests or today’s Bible reading appears first.",
     displayOrderMissionsFirst: "Missions first",
     displayOrderReadingFirst: "Bible reading first",
+    settingsThemeSection: "Theme",
+    settingsThemeSystem: "System",
+    settingsThemeLight: "Light",
+    settingsThemeDark: "Dark",
     settingsDone: "Done",
     settingsSignOut: "Sign out",
 
@@ -338,6 +342,10 @@ export const messages = {
       "Pilih apakah misi harian atau bacaan Alkitab hari ini ditampilkan lebih dulu.",
     displayOrderMissionsFirst: "Misi dulu",
     displayOrderReadingFirst: "Bacaan Alkitab dulu",
+    settingsThemeSection: "Tema",
+    settingsThemeSystem: "Sistem",
+    settingsThemeLight: "Terang",
+    settingsThemeDark: "Gelap",
     settingsDone: "Selesai",
     settingsSignOut: "Keluar",
 

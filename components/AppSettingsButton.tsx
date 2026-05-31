@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useDisplayPrefs } from "@/contexts/DisplayPrefsContext";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { DisplayOrder } from "@/lib/display-order";
 import type { Density } from "@/lib/display-prefs";
 import { messages, type Locale } from "@/lib/i18n";
@@ -72,6 +73,7 @@ export function AppSettingsButton() {
   const { locale, setLocale } = useLocale();
   const { displayOrder, setDisplayOrder } = useDisplayOrder();
   const { density, setDensity } = useDisplayPrefs();
+  const { preference, setPreference } = useTheme();
 
   const displayModeOptions: { value: Density; label: string }[] = [
     { value: "compact", label: "Compact" },
@@ -125,6 +127,11 @@ export function AppSettingsButton() {
   const orderOptions: { value: DisplayOrder; label: string }[] = [
     { value: "missions_first", label: m.displayOrderMissionsFirst },
     { value: "reading_first", label: m.displayOrderReadingFirst },
+  ];
+  const themeOptions: { value: "system" | "light" | "dark"; label: string }[] = [
+    { value: "system", label: m.settingsThemeSystem },
+    { value: "light", label: m.settingsThemeLight },
+    { value: "dark", label: m.settingsThemeDark },
   ];
 
   return (
@@ -183,6 +190,17 @@ export function AppSettingsButton() {
                 value={displayOrder}
                 onChange={setDisplayOrder}
                 ariaLabel={m.settingsDisplayOrderSection}
+              />
+            </div>
+
+            {/* Theme mode */}
+            <div className="mb-5">
+              <SectionLabel>{m.settingsThemeSection}</SectionLabel>
+              <SegmentedControl
+                options={themeOptions}
+                value={preference}
+                onChange={setPreference}
+                ariaLabel={m.settingsThemeSection}
               />
             </div>
 
