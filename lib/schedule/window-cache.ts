@@ -45,12 +45,10 @@ export function clearScheduleWindowCache(): void {
 
 /**
  * True when we can trust the cached entry for today without refetching the sheet.
- * `no_row` or a missing entry means we should fetch again (sheet may have been updated).
+ * `no_row`, `verses_empty`, and `verses_invalid` all return false so that fixing
+ * the sheet is reflected on the next page load without manual cache clearing.
  */
 export function isUsableCachedScheduleDay(day: ScheduleWindowDay | undefined): boolean {
   if (!day) return false;
-  if (day.ok) return true;
-  if (day.reason === "no_row") return false;
-  if (day.book != null && day.reading != null) return true;
-  return false;
+  return day.ok;
 }
