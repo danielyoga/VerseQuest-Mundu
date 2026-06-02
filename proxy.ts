@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isServerDebugLog } from "@/lib/log";
 
 export function proxy(request: NextRequest) {
+  if (!isServerDebugLog()) return NextResponse.next();
   const { pathname, searchParams } = request.nextUrl;
   const method = request.method;
 

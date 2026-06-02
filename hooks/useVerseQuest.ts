@@ -13,7 +13,7 @@ import {
 } from "@/lib/streak/streak";
 import { getTodayString } from "@/lib/sheetName";
 import type { StreakSyncMergedPayload } from "@/lib/streak/sync-merge";
-import type { UserStats } from "@/hooks/useUser";
+import { clientDebugLog } from "@/lib/log";
 import type { StoredState, VerseSubmission } from "@/types";
 import { CURRENT_SCHEMA_VERSION } from "@/types";
 
@@ -86,12 +86,15 @@ function saveState(s: StoredState) {
   }
 }
 
-export function useVerseQuest(liveStats: UserStats | null = null) {
+const STREAK_SYNC_MIN_MS = 60_000;
+
+export function useVerseQuest() {
   const { locale } = useLocale();
   const [state, setState] = useState<StoredState>(emptyState);
   const [hydrated, setHydrated] = useState(false);
   /** Drop stale sync responses when a newer sync was started (submit vs initial load). */
   const streakSyncGenRef = useRef(0);
+  const lastStreakSyncRef = useRef<{ phone: string; at: number } | null>(null);
 
   /** Merge local streak fields with Google Sheet (union dates, no deletions). Optional verse marks month tab + community sheet. */
   const syncStreakWithSheet = useCallback(
@@ -100,6 +103,16 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
       verseToday?: { book: string; chapter: number; verse: number; verse_text: string; dateYmd: string }
     ) => {
       if (!snapshot.profile.phone) return;
+
+      const now = Date.now();
+      if (
+        !verseToday &&
+        lastStreakSyncRef.current?.phone === snapshot.profile.phone &&
+        now - lastStreakSyncRef.current.at < STREAK_SYNC_MIN_MS
+      ) {
+        return;
+      }
+
       const gen = ++streakSyncGenRef.current;
       try {
         const body: Record<string, unknown> = {
@@ -130,13 +143,12 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
         if (!data.ok || !data.merged) return;
         if (gen !== streakSyncGenRef.current) return;
         const m = data.merged;
-        console.log("[useVerseQuest] streak-sync response", {
+        lastStreakSyncRef.current = { phone: snapshot.profile.phone, at: Date.now() };
+        clientDebugLog("useVerseQuest", "streak-sync response", {
           streak_count: m.streak_count,
           last_submitted_at: m.last_submitted_at,
-          submission_dates: m.submission_dates,
         });
         setState((prev) => {
-          console.log("[useVerseQuest] setState after sync — prev streak:", prev.streak_count, "→ next streak:", m.streak_count);
           const next: StoredState = {
             ...prev,
             submission_dates: m.submission_dates,
@@ -164,28 +176,6 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
     setHydrated(true);
   }, []);
 
-  /** Apply live stats from the sheet whenever they arrive or refresh (e.g. route change). */
-  useEffect(() => {
-    if (!hydrated || !liveStats) return;
-    console.log("[useVerseQuest] liveStats arrived", {
-      streak_count: liveStats.streak_count,
-      last_submitted_at: liveStats.last_submitted_at,
-      xp_total: liveStats.xp_total,
-    });
-    setState((prev) => {
-      const next_streak = Math.max(prev.streak_count, liveStats.streak_count);
-      console.log("[useVerseQuest] liveStats setState — prev streak:", prev.streak_count, "liveStats streak:", liveStats.streak_count, "→ next streak:", next_streak);
-      return {
-        ...prev,
-        // Never downgrade streak_count — streak-sync may have already computed a higher value
-        // from the month tabs, while liveStats reads from the main sheet (a separate, stale column).
-        streak_count: next_streak,
-        xp_total: Math.max(prev.xp_total, liveStats.xp_total),
-        last_submitted_at: liveStats.last_submitted_at,
-      };
-    });
-  }, [hydrated, liveStats]);
-
   /** Sync when another tab updates app data (same origin). */
   useEffect(() => {
     function onStorage(e: StorageEvent) {
@@ -206,7 +196,15 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
   const registerProfile = useCallback(
     async (phoneInput: string, ranting?: string): Promise<{ ok: boolean; error?: string }> => {
       const month = new Date().getMonth() + 1;
-      let data: { ok?: boolean; error?: string; name?: string; canonicalPhone?: string; is_coordinator?: boolean; coordinator_ranting?: string | null };
+      let data: {
+        ok?: boolean;
+        error?: string;
+        name?: string;
+        canonicalPhone?: string;
+        ranting?: string;
+        is_coordinator?: boolean;
+        coordinator_ranting?: string | null;
+      };
       try {
         const res = await fetch("/api/preregister-lookup", {
           method: "POST",
@@ -226,7 +224,7 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
           profile: {
             name: data.name!,
             phone: data.canonicalPhone!,
-            ...(ranting ? { ranting } : {}),
+            ...((data.ranting ?? ranting) ? { ranting: data.ranting ?? ranting } : {}),
             is_coordinator: data.is_coordinator ?? false,
             coordinator_ranting: data.coordinator_ranting ?? null,
           },

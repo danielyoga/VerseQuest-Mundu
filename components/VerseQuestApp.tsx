@@ -5,7 +5,8 @@ import { PhoneRegistrationScreen } from "@/components/PhoneRegistrationScreen";
 import { VerseQuestHome } from "@/components/VerseQuestHome";
 import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useUserContext } from "@/contexts/UserContext";
+import { fetchDevotionToday } from "@/lib/client/fetch-devotion-today";
+import { clientDebugLog } from "@/lib/log";
 import { useFirmanPoll } from "@/hooks/useFirmanPoll";
 import { useGratitudeQuest } from "@/hooks/useGratitudeQuest";
 import { useVerseQuest } from "@/hooks/useVerseQuest";
@@ -19,7 +20,6 @@ import { getRantingList } from "@/lib/constants";
 export function VerseQuestApp() {
   const { locale, hydrated: localeReady } = useLocale();
   const { hydrated: displayOrderReady } = useDisplayOrder();
-  const { stats, statsLoading } = useUserContext();
   const m = messages[locale];
 
   const {
@@ -32,16 +32,15 @@ export function VerseQuestApp() {
     registerProfile,
     clearProfile,
     submitVerse,
-  } = useVerseQuest(stats);
+  } = useVerseQuest();
 
   // Single fetch for today's devotion — both devotionAvailable and firmanConfig come from this.
   const [firmanConfig, setFirmanConfig] = useState<FirmanPollConfig | null>(null);
   const [devotionAvailable, setDevotionAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    void fetch("/api/devotion/today")
-      .then((r) => r.json())
-      .then((d: { devotion?: string | null; reflection?: string[] }) => {
+    void fetchDevotionToday()
+      .then((d) => {
         setDevotionAvailable(!!d.devotion);
         const items = d.reflection ?? [];
         if (items.length === 0) {
@@ -93,7 +92,6 @@ export function VerseQuestApp() {
     firmanPollHydrated: !firmanPoll.hydrated,
     gratitudeQuestHydrated: !gratitudeQuest.hydrated,
     displayOrderReady: !displayOrderReady,
-    statsLoading: !!state.profile.phone && statsLoading && !stats,
     devotionPending: !!state.profile.phone && devotionAvailable === null,
   };
 
@@ -104,14 +102,14 @@ export function VerseQuestApp() {
       .filter(([, v]) => v)
       .map(([k]) => k);
     if (blocking.length > 0) {
-      console.log("[VerseQuestApp] still loading — waiting on:", blocking);
+      clientDebugLog("VerseQuestApp", "still loading — waiting on:", blocking);
     } else {
-      console.log("[VerseQuestApp] all gates resolved, rendering shell");
+      clientDebugLog("VerseQuestApp", "all gates resolved, rendering shell");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     hydrated, localeReady, firmanPoll.hydrated, gratitudeQuest.hydrated,
-    displayOrderReady, statsLoading, stats, state.profile.phone, devotionAvailable,
+    displayOrderReady, state.profile.phone, devotionAvailable,
   ]);
 
   if (waitingForShell) {

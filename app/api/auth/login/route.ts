@@ -39,11 +39,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const name = await lookupPreregisteredName(phone, month, ranting);
-    if (!name) {
+    const found = await lookupPreregisteredName(phone, month, ranting);
+    if (!found) {
       return NextResponse.json({ ok: false, error: m.errPhoneNotInvited });
     }
-    return NextResponse.json({ ok: true, canonicalPhone: phone, name: name.trim() });
+    const resolvedRanting = found.ranting ?? ranting;
+    return NextResponse.json({
+      ok: true,
+      canonicalPhone: phone,
+      name: found.name.trim(),
+      ...(resolvedRanting ? { ranting: resolvedRanting } : {}),
+    });
   } catch {
     return NextResponse.json({ ok: false, error: m.loginErrorGeneric }, { status: 502 });
   }

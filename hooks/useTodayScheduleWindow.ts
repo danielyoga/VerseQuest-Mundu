@@ -111,10 +111,12 @@ export function useTodayScheduleWindow() {
       })
       .then((data) => {
         if (ac.signal.aborted) return;
-        writeScheduleWindowCache(ymd, data);
         const entry = data.days?.find(
           (x) => x.month === month && x.date === date
         );
+        if (isUsableCachedScheduleDay(entry)) {
+          writeScheduleWindowCache(ymd, data);
+        }
         applyScheduleWindowDay(entry);
       })
       .catch((err: unknown) => {

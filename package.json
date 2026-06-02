@@ -11,7 +11,9 @@
     "generate:bible-json": "node scripts/generate-bible-verse-counts.mjs",
     "gsheet:try": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/gsheet-try.ts",
     "gsheet:populate-schedule": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts",
-    "gsheet:monthly": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts"
+    "gsheet:monthly": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -37,7 +39,8 @@
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "node-domexception": "$node-domexception"

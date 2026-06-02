@@ -10,6 +10,8 @@ import {
   upsertMergedMarksForPhone,
 } from "@/lib/google-sheets/streak-sheet";
 import { appendCommunityVerse } from "@/lib/google-sheets/community-verse-sheet";
+import { serverDebugLog } from "@/lib/log";
+
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
     );
     const merged = mergeSubmissionDateSets(localDates, remoteDates);
 
-    console.log("[streak-sync]", phone, {
+    serverDebugLog("streak-sync", phone, {
       localDates,
       remoteDates,
       merged,
@@ -96,7 +98,7 @@ export async function POST(req: NextRequest) {
     }
 
     const mergedState = buildMergedLocalState(prevXp, merged);
-    console.log("[streak-sync] result", phone, mergedState);
+    serverDebugLog("streak-sync", "result", phone, mergedState);
     return NextResponse.json({ ok: true, merged: mergedState });
   } catch (e) {
     console.error("streak-sync:", e);

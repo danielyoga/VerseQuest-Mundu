@@ -169,6 +169,16 @@ async function main() {
 
     try {
       const verses = await fetchPassageVersesFromReading(book, reading);
+      // Sanity-check: every item must have the literal key "verse" (not "1erse" or any other variant)
+      const malformed = verses.filter(
+        (v) => !("verse" in v) || typeof v.verse !== "number"
+      );
+      if (malformed.length > 0) {
+        console.error(
+          `Sheet row ${minSheetRow + r - 1}: VALIDATION FAILED — ${malformed.length} item(s) missing "verse" key. Skipping write.`
+        );
+        continue;
+      }
       const json = JSON.stringify(verses);
       const sheetRow1Based = minSheetRow + (r - 1);
       updates.push({ row1Based: sheetRow1Based, json });

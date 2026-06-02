@@ -130,3 +130,34 @@ export async function resolveMonthTabTitle(
   }
   return null;
 }
+
+/** English month name for calendar month 1–12. */
+export function monthEnglishName(month: number): string {
+  return ENGLISH_MONTH_NAMES[month - 1] ?? "";
+}
+
+/** Extract ranting prefix from a tab like `LABU_June` / `LABU_JUNE`. */
+export function rantingFromMonthTabTitle(
+  tabTitle: string,
+  month: number
+): string | null {
+  const monthName = monthEnglishName(month);
+  if (!monthName) return null;
+  const suffix = `_${monthName}`;
+  if (!tabTitle.toLowerCase().endsWith(suffix.toLowerCase())) return null;
+  const prefix = tabTitle.slice(0, tabTitle.length - suffix.length).trim();
+  return prefix || null;
+}
+
+/** All `{ranting}_{Month}` tabs for a calendar month (ranting mode). */
+export async function listRantingMonthTabTitles(month: number): Promise<string[]> {
+  if (month < 1 || month > 12) return [];
+  const monthName = monthEnglishName(month);
+  const suffix = `_${monthName}`;
+  const titles = await getAllSheetTitles();
+  return titles.filter(
+    (t) =>
+      t.length > suffix.length &&
+      t.toLowerCase().endsWith(suffix.toLowerCase())
+  );
+}

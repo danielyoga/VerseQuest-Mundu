@@ -252,9 +252,11 @@ export async function pruneStaleRows(): Promise<void> {
 
     const unique = uniqueSortedRows(kept);
     await writeCommunitySheetRows(unique, true);
-    console.log(
-      `[community] pruned ${parsed.rows.length - kept.length} stale row(s); kept ${unique.length}`
-    );
+    if (process.env.VERSEQUEST_DEBUG_LOGS === "1") {
+      console.log(
+        `[community] pruned ${parsed.rows.length - kept.length} stale row(s); kept ${unique.length}`
+      );
+    }
   });
 }
 

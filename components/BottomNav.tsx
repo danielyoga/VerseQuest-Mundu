@@ -7,6 +7,10 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import { isAnyAdmin } from "@/lib/constants";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
+import {
+  fetchVerseCommunityCount,
+  invalidateVerseCommunityCountCache,
+} from "@/lib/client/fetch-verse-community-count";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -50,13 +54,8 @@ export function BottomNav() {
 
   const showAdmin = adminPhone ? isAnyAdmin(adminPhone) : false;
 
-  const loadCount = useCallback(() => {
-    void fetch("/api/verse-community-count")
-      .then((r) => r.json())
-      .then((d: { count?: number }) =>
-        setCommunityCount(typeof d.count === "number" ? d.count : 0)
-      )
-      .catch(() => setCommunityCount(0));
+  const loadCount = useCallback((force = false) => {
+    void fetchVerseCommunityCount(force).then(setCommunityCount);
   }, []);
 
   useEffect(() => {
@@ -65,16 +64,12 @@ export function BottomNav() {
 
   useEffect(() => {
     function onRefresh() {
-      loadCount();
+      invalidateVerseCommunityCountCache();
+      loadCount(true);
     }
     window.addEventListener("versequest-community-refresh", onRefresh);
-    function onVis() {
-      if (document.visibilityState === "visible") loadCount();
-    }
-    document.addEventListener("visibilitychange", onVis);
     return () => {
       window.removeEventListener("versequest-community-refresh", onRefresh);
-      document.removeEventListener("visibilitychange", onVis);
     };
   }, [loadCount]);
 
@@ -100,6 +95,7 @@ export function BottomNav() {
       <div className="mx-auto flex max-w-[390px]">
         <Link
           href="/"
+          prefetch={false}
           className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
             isHome ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
           }`}
@@ -112,6 +108,7 @@ export function BottomNav() {
 
         <Link
           href="/community"
+          prefetch={false}
           className={`relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
             isCommunity ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
           }`}
@@ -131,6 +128,7 @@ export function BottomNav() {
 
         <Link
           href="/prayer-wall"
+          prefetch={false}
           className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
             isPrayer ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
           }`}
@@ -144,6 +142,7 @@ export function BottomNav() {
         {showAdmin && (
           <Link
             href="/admin/devotion"
+            prefetch={false}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
               isAdmin ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
             }`}
@@ -158,6 +157,7 @@ export function BottomNav() {
         {isCoordinatorUser && (
           <Link
             href="/coordinator"
+            prefetch={false}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
               isCoordinator ? "text-[#534AB7]" : "text-[var(--vq-muted)]"
             }`}

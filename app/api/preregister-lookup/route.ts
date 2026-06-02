@@ -48,16 +48,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const name = await lookupPreregisteredName(phone, month, ranting);
-    if (!name) {
+    const found = await lookupPreregisteredName(phone, month, ranting);
+    if (!found) {
       return NextResponse.json({ ok: false, error: m.errPhoneNotInvited });
     }
+    const resolvedRanting = found.ranting ?? ranting;
     return NextResponse.json({
       ok: true,
       canonicalPhone: phone,
-      name: name.trim(),
+      name: found.name.trim(),
+      ...(resolvedRanting ? { ranting: resolvedRanting } : {}),
       is_coordinator: isCoordinator(phone),
-      coordinator_ranting: resolveCoordinatorRanting(phone, ranting),
+      coordinator_ranting: resolveCoordinatorRanting(phone, resolvedRanting),
     });
   } catch {
     return NextResponse.json({ ok: false, error: m.loginErrorGeneric }, { status: 502 });

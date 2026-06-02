@@ -310,6 +310,16 @@ export function lookupScheduleForDate(
         }
       }
       if (verses.length === 0) {
+        if (
+          parsed.length > 0 &&
+          typeof parsed[0] === "object" &&
+          parsed[0] !== null
+        ) {
+          const sampleKeys = Object.keys(parsed[0] as object).join(", ");
+          console.warn(
+            `[schedule] ${month}/${date}: ${parsed.length} item(s) found but none had required keys (chapter/verse/text). First item keys: ${sampleKeys}`
+          );
+        }
         return {
           ok: false,
           reason: "verses_invalid",

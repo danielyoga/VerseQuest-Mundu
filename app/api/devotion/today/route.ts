@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
+import { serverDebugLog } from "@/lib/log";
 import { getTodaySheetDate } from "@/lib/sheetName";
 
 export const runtime = "nodejs";
@@ -25,7 +26,7 @@ export async function GET() {
   if (devotionCache && devotionCache.date !== today) devotionCache = null;
 
   if (devotionCache && Date.now() < devotionCache.expiresAt) {
-    console.log(`[devotion/today] GET ${Date.now() - t0}ms (cache hit)`);
+    serverDebugLog("devotion/today", `GET ${Date.now() - t0}ms (cache hit)`);
     return NextResponse.json(devotionCache.data, {
       headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" },
     });
@@ -33,7 +34,7 @@ export async function GET() {
 
   if (inflight) {
     const data = await inflight;
-    console.log(`[devotion/today] GET ${Date.now() - t0}ms (inflight)`);
+    serverDebugLog("devotion/today", `GET ${Date.now() - t0}ms (inflight)`);
     return NextResponse.json(data, {
       headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" },
     });
@@ -71,7 +72,7 @@ export async function GET() {
     const data = await inflight;
     devotionCache = { date: today, data, expiresAt: Date.now() + CACHE_TTL_MS };
     inflight = null;
-    console.log(`[devotion/today] GET ${Date.now() - t0}ms (sheets)`);
+    serverDebugLog("devotion/today", `GET ${Date.now() - t0}ms (sheets)`);
     return NextResponse.json(data, {
       headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" },
     });

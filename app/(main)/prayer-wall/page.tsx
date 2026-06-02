@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
+import { clientDebugLog } from "@/lib/log";
 import { messages, type Locale } from "@/lib/i18n";
 import { CreatePrayerModal } from "@/components/CreatePrayerModal";
 import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
@@ -68,20 +69,13 @@ export default function PrayerWallPage() {
 
   const refetch = useCallback(() => {
     setLoading(true);
-    console.log("[prayer-wall] refetch start, userName=", userName);
     void fetch("/api/prayer-wall", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { prayers?: Prayer[] }) => {
         const all = (data.prayers ?? []).filter((p) => !p.answered);
-        console.log(
-          `[prayer-wall] fetched ${data.prayers?.length ?? 0} total,`,
-          `${all.length} unanswered,`,
-          `userName="${userName}"`,
-          all.map((p) => ({ rowIndex: p.rowIndex, real_username: p.real_username, show_name: p.show_name }))
-        );
         const own = all.filter((p) => p.real_username === userName);
         const other = all.filter((p) => p.real_username !== userName);
-        console.log(`[prayer-wall] own=${own.length} other=${other.length}`);
+        clientDebugLog("prayer-wall", `fetched ${all.length} unanswered (own=${own.length})`);
         setPrayers([...own, ...other]);
       })
       .catch((err) => {
@@ -106,7 +100,6 @@ export default function PrayerWallPage() {
 
   const markAnswered = async (prayer: Prayer) => {
     if (!userName) return;
-    console.log(`[prayer-wall] markAnswered rowIndex=${prayer.rowIndex} userName="${userName}" isAdmin=${isAdminUser}`);
     setAnswering(prayer.rowIndex);
     try {
       const body: Record<string, unknown> = { rowIndex: prayer.rowIndex, username: userName };
@@ -118,10 +111,9 @@ export default function PrayerWallPage() {
       });
       const data = (await res.json()) as { error?: string };
       if (res.ok) {
-        console.log(`[prayer-wall] markAnswered success rowIndex=${prayer.rowIndex}`);
         refetch();
       } else {
-        console.warn(`[prayer-wall] markAnswered failed rowIndex=${prayer.rowIndex} error="${data.error}"`);
+        clientDebugLog("prayer-wall", `markAnswered failed: ${data.error}`);
       }
     } catch (err) {
       console.error("[prayer-wall] markAnswered network error", err);

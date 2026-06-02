@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchDevotionToday } from "@/lib/client/fetch-devotion-today";
 import { getTodayString } from "@/lib/sheetName";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
@@ -19,9 +20,8 @@ export default function DevotionalPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    void fetch("/api/devotion/today", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d: { devotion?: string | null; devotionTitle?: string | null }) => {
+    void fetchDevotionToday()
+      .then((d) => {
         setDevotion(d.devotion ?? null);
         setDevotionTitle(d.devotionTitle ?? null);
       })

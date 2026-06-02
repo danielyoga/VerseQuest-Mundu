@@ -1,7 +1,11 @@
+import { isServerDebugLog } from "@/lib/log";
+
 export interface CoordinatorEntry {
   phone: string;
   ranting: string;
 }
+
+let cachedEntries: Array<{ phone: string; ranting: string }> | null = null;
 
 function digitsOnly(s: string): string {
   return s.replace(/\D/g, "");
@@ -16,40 +20,39 @@ function phoneMatches(a: string, b: string): boolean {
 }
 
 function parseCoordinators(): Array<{ phone: string; ranting: string }> {
+  if (cachedEntries) return cachedEntries;
+
   const raw = process.env.COORDINATORS ?? "";
   if (!raw.trim()) {
-    console.log("[coordinators] COORDINATORS env var is empty or unset");
-    return [];
+    cachedEntries = [];
+    return cachedEntries;
   }
 
-  const entries = raw.split(",").flatMap((entry) => {
+  cachedEntries = raw.split(",").flatMap((entry) => {
     const [phone, ranting] = entry.trim().split(":");
     if (!phone || !ranting) return [];
     return [{ phone: phone.trim(), ranting: ranting.trim() }];
   });
-  console.log(`[coordinators] loaded ${entries.length} entries`);
-  return entries;
+  if (isServerDebugLog()) {
+    console.log(`[coordinators] loaded ${cachedEntries.length} entries`);
+  }
+  return cachedEntries;
 }
 
 export function getCoordinatorRanting(phone: string): string | null {
   const entries = parseCoordinators();
-  const allMatches = entries.filter((e) => phoneMatches(e.phone, phone));
-  const match = allMatches[0] ?? null;
-  console.log(
-    `[coordinators] getCoordinatorRanting phone="${phone}" candidates=${allMatches.map((e) => `${e.phone}:${e.ranting}`).join(",")||"none"} → ${match ? `ranting="${match.ranting}"` : "no match"}`
-  );
+  const match = entries.find((e) => phoneMatches(e.phone, phone));
   return match?.ranting ?? null;
 }
 
 /** Verify that `phone` is registered as a coordinator for the given `ranting` specifically. */
 export function isCoordinatorForRanting(phone: string, ranting: string): boolean {
   const entries = parseCoordinators();
-  const allMatches = entries.filter((e) => phoneMatches(e.phone, phone));
-  const match = allMatches.find((e) => e.ranting.toLowerCase() === ranting.toLowerCase());
-  console.log(
-    `[coordinators] isCoordinatorForRanting phone="${phone}" ranting="${ranting}" candidates=${allMatches.map((e) => `${e.phone}:${e.ranting}`).join(",")||"none"} → ${match ? "ok" : "denied"}`
+  return entries.some(
+    (e) =>
+      phoneMatches(e.phone, phone) &&
+      e.ranting.toLowerCase() === ranting.toLowerCase()
   );
-  return match !== undefined;
 }
 
 export function isCoordinator(phone: string): boolean {

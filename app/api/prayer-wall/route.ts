@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
 import { isAdmin } from "@/lib/admin";
+import { serverDebugLog } from "@/lib/log";
 
 export const runtime = "nodejs";
 
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
       })
       .reverse();
 
-    console.log(`[prayer-wall] GET ${Date.now() - t0}ms count=${prayers.length} isAdmin=${callerIsAdmin}`);
+    serverDebugLog("prayer-wall", `GET ${Date.now() - t0}ms count=${prayers.length}`);
     return NextResponse.json({ prayers }, {
       headers: { "Cache-Control": "no-store" },
     });
@@ -120,10 +121,7 @@ export async function PATCH(request: Request) {
   const { rowIndex, username, adminPhone } = body;
   // Server-side admin check — never trust a flag from the client
   const callerIsAdmin = adminPhone ? isAdmin(adminPhone) : false;
-  console.log(`[prayer-wall] PATCH received rowIndex=${rowIndex} username="${username}" isAdmin=${callerIsAdmin}`);
-
   if (!rowIndex || !username) {
-    console.warn(`[prayer-wall] PATCH rejected: missing fields rowIndex=${rowIndex} username="${username}"`);
     return NextResponse.json({ error: "Data tidak lengkap." }, { status: 400 });
   }
 
@@ -131,25 +129,20 @@ export async function PATCH(request: Request) {
     const sheets = await getSheetsClient();
 
     const range = `Prayer_Wall!B${rowIndex}:F${rowIndex}`;
-    console.log(`[prayer-wall] PATCH reading sheet range="${range}"`);
     const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
       range,
     });
 
     const row = readRes.data.values?.[0] as string[] | undefined;
-    console.log(`[prayer-wall] PATCH sheet row=`, JSON.stringify(row ?? null));
 
     if (!row) {
-      console.warn(`[prayer-wall] PATCH row not found rowIndex=${rowIndex}`);
       return NextResponse.json({ error: "Doa tidak ditemukan." }, { status: 404 });
     }
 
     const ownerUsername = row[0];
-    console.log(`[prayer-wall] PATCH ownership check ownerUsername="${ownerUsername}" requestUsername="${username}" callerIsAdmin=${callerIsAdmin}`);
 
     if (!callerIsAdmin && ownerUsername !== username) {
-      console.warn(`[prayer-wall] PATCH forbidden: ownerUsername="${ownerUsername}" !== requestUsername="${username}"`);
       return NextResponse.json(
         { error: "Hanya pembuat doa yang dapat menandai sebagai terjawab." },
         { status: 403 }
@@ -163,7 +156,7 @@ export async function PATCH(request: Request) {
       requestBody: { values: [["TRUE"]] },
     });
 
-    console.log(`[prayer-wall] PATCH success rowIndex=${rowIndex} username="${username}" isAdmin=${callerIsAdmin}`);
+    serverDebugLog("prayer-wall", `PATCH ok rowIndex=${rowIndex}`);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[prayer-wall] PATCH error", err);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
+import { serverDebugLog } from "@/lib/log";
 import { getCurrentSheetName } from "@/lib/sheetName";
 
 export const runtime = "nodejs";
@@ -10,18 +11,13 @@ export async function GET(request: NextRequest) {
   const phone = searchParams.get("phone");
   const ranting = searchParams.get("ranting");
 
-  console.log(`[user/me] GET phone=${phone ?? "?"} ranting=${ranting ?? "?"}`);
-
   if (!phone || !ranting) {
-    console.warn(`[user/me] missing params — phone=${phone} ranting=${ranting}`);
     return NextResponse.json({ error: "Missing params" }, { status: 400 });
   }
 
   try {
     const sheets = await getSheetsClient();
     const sheetName = getCurrentSheetName(ranting);
-    console.log(`[user/me] sheets client ready, querying sheet="${sheetName}" +${Date.now() - t0}ms`);
-
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
       range: `${sheetName}!A:J`,
@@ -32,11 +28,13 @@ export async function GET(request: NextRequest) {
     const userRow = dataRows.find((row) => row[0] === phone);
 
     if (!userRow) {
-      console.warn(`[user/me] 404 phone=${phone} not found in sheet +${Date.now() - t0}ms`);
       return NextResponse.json({ error: "User tidak ditemukan." }, { status: 404 });
     }
 
-    console.log(`[user/me] 200 phone=${phone} streak=${userRow[8] ?? 0} xp=${userRow[9] ?? 0} +${Date.now() - t0}ms`);
+    serverDebugLog(
+      "user/me",
+      `200 phone=${phone} streak=${userRow[8] ?? 0} xp=${userRow[9] ?? 0} +${Date.now() - t0}ms`
+    );
     return NextResponse.json({
       name: userRow[1] ?? "",
       streak_count: parseInt(userRow[8] ?? "0", 10),
