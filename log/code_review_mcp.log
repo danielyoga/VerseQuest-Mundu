@@ -19,3 +19,46 @@
 2026-06-02 10:46:08 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
 2026-06-02 10:46:08 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
 2026-06-02 10:46:08 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db
+2026-06-04 15:16:25 - code_review_mcp - INFO - Registered capability: sddl_check (SDDL database query analysis)
+2026-06-04 15:16:25 - code_review_mcp - INFO - Registered tools for capability: sddl_check
+2026-06-04 15:16:25 - code_review_mcp - INFO - Starting Code Review MCP Server...
+2026-06-04 15:16:25 - code_review_mcp - INFO - ARC_ENV=live  base_url=https://arc.shopee.io
+2026-06-04 15:16:25 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
+2026-06-04 15:16:25 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
+2026-06-04 15:16:25 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:06:34 - code_review_mcp - INFO - Registered capability: sddl_check (SDDL database query analysis)
+2026-07-08 10:06:34 - code_review_mcp - INFO - Registered capability: tms_check (TMS tracking event validation)
+2026-07-08 10:06:34 - code_review_mcp - INFO - Registered tools for capability: sddl_check
+2026-07-08 10:06:34 - code_review_mcp - INFO - Registered tools for capability: tms_check
+2026-07-08 10:06:34 - code_review_mcp - INFO - Starting Code Review MCP Server...
+2026-07-08 10:06:34 - code_review_mcp - INFO - ARC_ENV=live  base_url=https://arc.shopee.io
+2026-07-08 10:06:34 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
+2026-07-08 10:06:34 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:06:34 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:06:39 - code_review_mcp - INFO - Registered capability: sddl_check (SDDL database query analysis)
+2026-07-08 10:06:39 - code_review_mcp - INFO - Registered capability: tms_check (TMS tracking event validation)
+2026-07-08 10:06:39 - code_review_mcp - INFO - Registered tools for capability: sddl_check
+2026-07-08 10:06:39 - code_review_mcp - INFO - Registered tools for capability: tms_check
+2026-07-08 10:06:39 - code_review_mcp - INFO - Starting Code Review MCP Server...
+2026-07-08 10:06:39 - code_review_mcp - INFO - ARC_ENV=live  base_url=https://arc.shopee.io
+2026-07-08 10:06:39 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
+2026-07-08 10:06:39 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:06:39 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:07:05 - code_review_mcp - INFO - Registered capability: sddl_check (SDDL database query analysis)
+2026-07-08 10:07:05 - code_review_mcp - INFO - Registered capability: tms_check (TMS tracking event validation)
+2026-07-08 10:07:05 - code_review_mcp - INFO - Registered tools for capability: sddl_check
+2026-07-08 10:07:05 - code_review_mcp - INFO - Registered tools for capability: tms_check
+2026-07-08 10:07:05 - code_review_mcp - INFO - Starting Code Review MCP Server...
+2026-07-08 10:07:05 - code_review_mcp - INFO - ARC_ENV=live  base_url=https://arc.shopee.io
+2026-07-08 10:07:05 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
+2026-07-08 10:07:05 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:07:05 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:07:16 - code_review_mcp - INFO - Registered capability: sddl_check (SDDL database query analysis)
+2026-07-08 10:07:16 - code_review_mcp - INFO - Registered capability: tms_check (TMS tracking event validation)
+2026-07-08 10:07:16 - code_review_mcp - INFO - Registered tools for capability: sddl_check
+2026-07-08 10:07:16 - code_review_mcp - INFO - Registered tools for capability: tms_check
+2026-07-08 10:07:16 - code_review_mcp - INFO - Starting Code Review MCP Server...
+2026-07-08 10:07:16 - code_review_mcp - INFO - ARC_ENV=live  base_url=https://arc.shopee.io
+2026-07-08 10:07:16 - code_review_mcp - INFO - Local log files will be saved to ./log/ directory
+2026-07-08 10:07:16 - code_review_mcp - INFO - SQLite schema initialized at /Users/LDNID0469/.skynet-review/review.db
+2026-07-08 10:07:16 - code_review_mcp - INFO - SQLite schema ready at /Users/LDNID0469/.skynet-review/review.db

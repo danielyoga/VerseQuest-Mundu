@@ -51,6 +51,12 @@ let cachedTitles: string[] | null = null;
 let cachedAt = 0;
 const TITLE_CACHE_MS = 60_000;
 
+/** Force-expire the tab title cache (call after adding/deleting a sheet tab). */
+export function invalidateSheetTitleCache(): void {
+  cachedTitles = null;
+  cachedAt = 0;
+}
+
 /** All tab titles in the spreadsheet (short-lived cache). */
 export async function getAllSheetTitles(): Promise<string[]> {
   const now = Date.now();
