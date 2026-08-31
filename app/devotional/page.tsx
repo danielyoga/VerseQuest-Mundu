@@ -77,9 +77,10 @@ export default function DevotionalPage() {
             {devotionTitle && (
               <p className="mb-3 text-xl font-bold text-[var(--vq-text)]">{devotionTitle}</p>
             )}
-            <p className="whitespace-pre-wrap break-words leading-[1.8] text-[15px] text-[var(--vq-text)]">
-              {devotion}
-            </p>
+            <div
+              className="vq-devotion-body whitespace-pre-wrap break-words leading-[1.8] text-[15px] text-[var(--vq-text)]"
+              dangerouslySetInnerHTML={{ __html: devotion }}
+            />
           </div>
         ) : (
           <div className="mb-6 rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)] p-6">

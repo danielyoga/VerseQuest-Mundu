@@ -6,6 +6,9 @@ import { APP_DATA_STORAGE_KEY } from "@/hooks/useVerseQuest";
 import { isDevotionAdmin } from "@/lib/constants";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
+import DevotionalEditor from "@/components/admin/DevotionalEditor";
+
+const DEVOTION_MAX_CHARS = 5000;
 
 export default function AdminDevotionPage() {
   const router = useRouter();
@@ -17,6 +20,8 @@ export default function AdminDevotionPage() {
 
   const [devotionTitle, setDevotionTitle] = useState("");
   const [devotion, setDevotion] = useState("");
+  const [devotionLen, setDevotionLen] = useState(0);
+  const [mobilePreview, setMobilePreview] = useState(false);
   const [reflections, setReflections] = useState(["", "", ""]);
   const [mode, setMode] = useState<"new" | "edit">("new");
   const [saving, setSaving] = useState(false);
@@ -47,6 +52,7 @@ export default function AdminDevotionPage() {
       .then((d: { devotion?: string | null; devotionTitle?: string | null; reflection?: string[] }) => {
         if (d.devotion) {
           setDevotion(d.devotion);
+          setDevotionLen(d.devotion.replace(/<[^>]*>/g, "").length);
           setMode("edit");
         }
         if (d.devotionTitle) {
@@ -95,7 +101,7 @@ export default function AdminDevotionPage() {
     }
   }
 
-  const canSave = devotion.trim().length >= 50 && !saving;
+  const canSave = devotionLen >= 50 && devotionLen <= DEVOTION_MAX_CHARS && !saving;
 
   if (!authChecked) {
     return (
@@ -108,21 +114,51 @@ export default function AdminDevotionPage() {
   if (!phone || !isDevotionAdmin(phone)) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--vq-canvas)] px-4 pb-32 pt-8">
-      <div className="mx-auto max-w-[390px]">
+    <div className="min-h-screen bg-[var(--vq-canvas)] px-4 pb-32 pt-8 sm:px-[50px]">
+      <div className={mobilePreview ? "mx-auto w-full max-w-[390px] transition-[max-width]" : "mx-auto w-full transition-[max-width]"}>
         {/* Header */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--vq-muted)] hover:bg-[var(--vq-bg-2)]"
+              aria-label={m.adminBackAria}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                <path d="M11 14l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <h1 className="text-xl font-semibold text-[var(--vq-text)]">{m.adminDevotionTitle}</h1>
+          </div>
           <button
             type="button"
-            onClick={() => router.back()}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--vq-muted)] hover:bg-[var(--vq-bg-2)]"
-            aria-label={m.adminBackAria}
+            onClick={() => setMobilePreview((v) => !v)}
+            className={
+              mobilePreview
+                ? "flex items-center gap-2 rounded-full bg-[#534AB7] px-3.5 py-2 text-[13px] font-semibold text-white shadow-sm"
+                : "flex items-center gap-2 rounded-full border-2 border-[#534AB7]/30 bg-white px-3.5 py-2 text-[13px] font-semibold text-[#534AB7] hover:border-[#534AB7]/60 hover:bg-[var(--vq-bg-2)]"
+            }
+            aria-pressed={mobilePreview}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <path d="M11 14l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {mobilePreview ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <rect x="5" y="1.5" width="6" height="13" rx="1.25" stroke="currentColor" strokeWidth="1.4" />
+                  <path d="M7 12h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                {m.adminMobilePreviewOn}
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <rect x="1.5" y="2" width="13" height="9" rx="1.25" stroke="currentColor" strokeWidth="1.4" />
+                  <path d="M5.5 14h5M8 11v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                {m.adminMobilePreviewOff}
+              </>
+            )}
           </button>
-          <h1 className="text-xl font-semibold text-[var(--vq-text)]">{m.adminDevotionTitle}</h1>
         </div>
 
         {/* Devotion section */}
@@ -139,17 +175,18 @@ export default function AdminDevotionPage() {
             placeholder={m.adminDevotionTitlePlaceholder}
             className="mb-4 min-h-[44px] w-full rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-2.5 text-base text-[var(--vq-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#534AB7]/40"
           />
-          <textarea
-            value={devotion}
-            onChange={(e) => setDevotion(e.target.value)}
-            maxLength={3000}
-            className="w-full resize-none rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] p-3.5 text-base text-[var(--vq-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#534AB7]/40"
-            style={{ minHeight: 160 }}
+          <DevotionalEditor
+            initialHtml={devotion}
+            compact={mobilePreview}
+            onChange={(html, len) => {
+              setDevotion(html);
+              setDevotionLen(len);
+            }}
           />
           <p className="mt-1.5 text-right text-[11px] text-[var(--vq-muted-2)]">
-            {devotion.length} / 3000
+            {devotionLen} / {DEVOTION_MAX_CHARS}
           </p>
-          {devotion.trim().length < 50 && devotion.length > 0 && (
+          {devotionLen < 50 && devotionLen > 0 && (
             <p className="mt-1 text-[11px] text-amber-700">{m.adminDevotionMinLength}</p>
           )}
         </div>

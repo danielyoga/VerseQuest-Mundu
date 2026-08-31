@@ -6,6 +6,12 @@ import { isDevotionAdmin } from "@/lib/constants";
 export const runtime = "nodejs";
 
 const SHEET = "Devotion_and_Reflection";
+const TITLE_MAX_CHARS = 200;
+const DEVOTION_MAX_CHARS = 5000;
+
+function plainTextLength(html: string) {
+  return html.replace(/<[^>]*>/g, "").length;
+}
 
 export async function POST(request: Request) {
   let phone: string, devotion: string, devotionTitle: string, reflection: string[];
@@ -28,9 +34,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Tidak diizinkan" }, { status: 403 });
   }
 
-  if (!devotion || devotion.length < 50) {
+  const devotionLen = plainTextLength(devotion);
+
+  if (!devotion || devotionLen < 50) {
     return NextResponse.json(
       { error: "Renungan tidak boleh kosong (min. 50 karakter)" },
+      { status: 400 }
+    );
+  }
+
+  if (devotionLen > DEVOTION_MAX_CHARS) {
+    return NextResponse.json(
+      { error: `Renungan tidak boleh lebih dari ${DEVOTION_MAX_CHARS} karakter` },
+      { status: 400 }
+    );
+  }
+
+  if (devotionTitle.length > TITLE_MAX_CHARS) {
+    return NextResponse.json(
+      { error: `Judul tidak boleh lebih dari ${TITLE_MAX_CHARS} karakter` },
       { status: 400 }
     );
   }

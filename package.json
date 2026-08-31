@@ -16,8 +16,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@lexical/html": "^0.49.0",
+    "@lexical/react": "^0.49.0",
     "@vercel/analytics": "^2.0.1",
     "googleapis": "^171.4.0",
+    "isomorphic-dompurify": "^2.36.0",
+    "lexical": "^0.49.0",
     "next": "16.2.1",
     "node-domexception": "file:./vendor/node-domexception-stub",
     "react": "19.2.4",

@@ -90,3 +90,19 @@ body {
   background-position: right 12px center;
   padding-right: 32px;
 }
+
+/* ── Devotion rich text body ── */
+.vq-devotion-body p { margin: 0 0 14px; }
+.vq-devotion-body p:last-child { margin-bottom: 0; }
+.vq-devotion-body h2 { font-size: 20px; font-weight: 700; margin: 20px 0 10px; color: var(--vq-text); }
+.vq-devotion-body h3 { font-size: 17px; font-weight: 600; margin: 16px 0 8px; color: var(--vq-text); }
+.vq-devotion-body ul, .vq-devotion-body ol { margin: 0 0 14px; padding-left: 22px; }
+.vq-devotion-body li { margin-bottom: 4px; }
+.vq-devotion-body blockquote {
+  margin: 0 0 14px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--vq-brand);
+  background: var(--vq-on-brand-subtle);
+  border-radius: 0 10px 10px 0;
+  font-style: italic;
+}

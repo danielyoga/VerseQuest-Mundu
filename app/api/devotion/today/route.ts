@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import DOMPurify from "isomorphic-dompurify";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/google-sheets/client";
 import { serverDebugLog } from "@/lib/log";
 import { getTodaySheetDate } from "@/lib/sheetName";
@@ -61,7 +62,7 @@ export async function GET() {
     return {
       date: match[0] as string,
       devotionTitle: (match[1] as string | undefined)?.trim() || null,
-      devotion: (match[2] as string | undefined) ?? null,
+      devotion: match[2] ? DOMPurify.sanitize(match[2] as string) : null,
       reflection,
     };
   })();
