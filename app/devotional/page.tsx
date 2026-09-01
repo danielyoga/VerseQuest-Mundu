@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import DOMPurify from "dompurify";
 import { fetchDevotionToday } from "@/lib/client/fetch-devotion-today";
 import { getTodayString } from "@/lib/sheetName";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -22,7 +23,7 @@ export default function DevotionalPage() {
   useEffect(() => {
     void fetchDevotionToday()
       .then((d) => {
-        setDevotion(d.devotion ?? null);
+        setDevotion(d.devotion ? DOMPurify.sanitize(d.devotion) : null);
         setDevotionTitle(d.devotionTitle ?? null);
       })
       .catch(() => setDevotion(null))
