@@ -226,7 +226,7 @@ export function useVerseQuest(liveStats: UserStats | null = null) {
         if (!data.ok || !data.ranting || data.ranting === snapshot.profile.ranting) {
           return snapshot;
         }
-        clientDebugLog("useVerseQuest", "ranting reconciled", {
+        console.log("[useVerseQuest] ranting reconciled", {
           from: snapshot.profile.ranting,
           to: data.ranting,
         });
