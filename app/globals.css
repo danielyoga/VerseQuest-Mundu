@@ -90,3 +90,29 @@ body {
   background-position: right 12px center;
   padding-right: 32px;
 }
+
+.devotion-html p {
+  margin-bottom: 1em;
+  white-space: pre-wrap;
+}
+
+.devotion-html p:last-child {
+  margin-bottom: 0;
+}
+
+.devotion-html strong, .devotion-html b {
+  font-weight: 700;
+}
+
+.devotion-html em, .devotion-html i {
+  font-style: italic;
+}
+
+.devotion-html ul, .devotion-html ol {
+  margin: 0 0 1em 1.25em;
+}
+
+.devotion-html a {
+  color: #534AB7;
+  text-decoration: underline;
+}

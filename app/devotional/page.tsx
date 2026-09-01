@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import DOMPurify from "dompurify";
 import { fetchDevotionToday } from "@/lib/client/fetch-devotion-today";
 import { getTodayString } from "@/lib/sheetName";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -77,9 +78,10 @@ export default function DevotionalPage() {
             {devotionTitle && (
               <p className="mb-3 text-xl font-bold text-[var(--vq-text)]">{devotionTitle}</p>
             )}
-            <p className="whitespace-pre-wrap break-words leading-[1.8] text-[15px] text-[var(--vq-text)]">
-              {devotion}
-            </p>
+            <div
+              className="devotion-html break-words leading-[1.8] text-[15px] text-[var(--vq-text)]"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(devotion) }}
+            />
           </div>
         ) : (
           <div className="mb-6 rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)] p-6">
