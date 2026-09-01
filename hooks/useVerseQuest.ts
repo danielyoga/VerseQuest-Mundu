@@ -187,11 +187,66 @@ export function useVerseQuest() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  /**
+   * The sheet is the source of truth for which ranting a member belongs to.
+   * The cached `ranting` is only a hint for which tab to check first — if the
+   * sheet has since moved/removed the row, re-resolve it before syncing so we
+   * never write attendance marks against a stale ranting.
+   */
+  const reconcileRanting = useCallback(
+    async (snapshot: StoredState): Promise<StoredState> => {
+      if (!snapshot.profile.phone) return snapshot;
+      try {
+        const month = new Date().getMonth() + 1;
+        const res = await fetch("/api/preregister-lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: snapshot.profile.phone,
+            month,
+            locale,
+            ranting: snapshot.profile.ranting,
+          }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          ranting?: string;
+          coordinator_ranting?: string | null;
+        };
+        if (!data.ok || !data.ranting || data.ranting === snapshot.profile.ranting) {
+          return snapshot;
+        }
+        console.log("[useVerseQuest] ranting reconciled", {
+          from: snapshot.profile.ranting,
+          to: data.ranting,
+        });
+        const next: StoredState = {
+          ...snapshot,
+          profile: {
+            ...snapshot.profile,
+            ranting: data.ranting,
+            coordinator_ranting: data.coordinator_ranting ?? snapshot.profile.coordinator_ranting,
+          },
+        };
+        saveState(next);
+        setState(next);
+        return next;
+      } catch {
+        // Offline or lookup failure — keep the cached ranting for this pass.
+        return snapshot;
+      }
+    },
+    [locale]
+  );
+
   /** After login or on load: two-way merge with sheet. Fires immediately — fully async, does not block render. */
   useEffect(() => {
     if (!hydrated || !state.profile.phone) return;
-    void syncStreakWithSheet(loadState());
-  }, [hydrated, state.profile.phone, syncStreakWithSheet]);
+    void (async () => {
+      const reconciled = await reconcileRanting(loadState());
+      void syncStreakWithSheet(reconciled);
+    })();
+  }, [hydrated, state.profile.phone, reconcileRanting, syncStreakWithSheet]);
 
   const registerProfile = useCallback(
     async (phoneInput: string, ranting?: string): Promise<{ ok: boolean; error?: string }> => {

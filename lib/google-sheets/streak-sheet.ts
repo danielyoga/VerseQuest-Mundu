@@ -183,21 +183,20 @@ async function upsertMonthRow(
     }
   }
 
-  const newRow = new Array(header.length).fill("");
+  // The sheet is the source of truth for membership: a user's row is only ever
+  // provisioned there (registration/coordinator flow), never created by app
+  // interaction. If the phone isn't on this tab, there is nothing to mark.
+  if (rowIdx < 0) return;
 
-  if (rowIdx >= 0) {
-    const existing = rows[rowIdx];
-    for (let c = 0; c < header.length; c++) {
-      newRow[c] = String(existing[c] ?? "");
-    }
-    newRow[iPhone] = String(existing[iPhone] ?? "").trim() || canonicalPhone;
-    if (iName >= 0) {
-      const prevName = String(existing[iName] ?? "").trim();
-      newRow[iName] = displayName.trim() || prevName || "—";
-    }
-  } else {
-    newRow[iPhone] = canonicalPhone;
-    if (iName >= 0) newRow[iName] = displayName.trim() || "—";
+  const existing = rows[rowIdx];
+  const newRow = new Array(header.length).fill("");
+  for (let c = 0; c < header.length; c++) {
+    newRow[c] = String(existing[c] ?? "");
+  }
+  newRow[iPhone] = String(existing[iPhone] ?? "").trim() || canonicalPhone;
+  if (iName >= 0) {
+    const prevName = String(existing[iName] ?? "").trim();
+    newRow[iName] = prevName || displayName.trim() || "—";
   }
 
   for (const [col, dayNum] of dayColToDay) {
@@ -209,24 +208,14 @@ async function upsertMonthRow(
   }
 
   const lastLetter = columnIndexToA1Letter(header.length - 1);
-  const row1Based = rowIdx >= 0 ? rowIdx + 1 : rows.length + 1;
+  const row1Based = rowIdx + 1;
 
-  if (rowIdx >= 0) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${tab}!A${row1Based}:${lastLetter}${row1Based}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [newRow] },
-    });
-  } else {
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${tab}!A:${lastLetter}`,
-      valueInputOption: "USER_ENTERED",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: { values: [newRow] },
-    });
-  }
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${tab}!A${row1Based}:${lastLetter}${row1Based}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [newRow] },
+  });
 }
 
 /** Write merged dates into month tabs (day columns only). Months are written in parallel. */
