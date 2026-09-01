@@ -141,6 +141,8 @@ export const messages = {
     modalVerseSubtitleScheduled: "Choose a verse from today’s scheduled passage.",
 
     loginRantingLabel: "Ranting",
+    loginRantingDetecting: "Detecting…",
+    loginRantingNotFound: "Not found yet",
 
     devotionNavTitle: "Daily Devotion",
     devotionLoadingText: "Loading devotion",
@@ -355,6 +357,8 @@ export const messages = {
     modalVerseSubtitleScheduled: "Pilih ayat dari bagian yang dijadwalkan hari ini.",
 
     loginRantingLabel: "Ranting",
+    loginRantingDetecting: "Mencari Ranting...",
+    loginRantingNotFound: "Belum ditemukan",
 
     devotionNavTitle: "Renungan Harian",
     devotionLoadingText: "Memuat renungan",

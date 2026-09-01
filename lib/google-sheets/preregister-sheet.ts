@@ -62,27 +62,11 @@ async function buildTabsToSearch(
   return queue;
 }
 
-async function lookupNameInTab(
-  tabTitle: string,
-  canonicalPhone: string
-): Promise<string | null> {
-  const sheets = await getSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const title = escapeSheetTitleForRange(tabTitle);
-  dbg("using tab", tabTitle, "range", `${title}!A1:Z${MONTH_TAB_READ_ROW_CAP}`);
-
-  let res;
-  try {
-    res = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `${title}!A1:Z${MONTH_TAB_READ_ROW_CAP}`,
-    });
-  } catch (e) {
-    dbg("spreadsheets.values.get failed", e);
-    return null;
-  }
-
-  const rows = res.data.values ?? [];
+function findNameInRows(
+  rows: unknown[][],
+  canonicalPhone: string,
+  tabTitle: string
+): string | null {
   if (rows.length < 2) {
     dbg("abort: empty tab", tabTitle);
     return null;
@@ -113,6 +97,40 @@ async function lookupNameInTab(
 }
 
 /**
+ * Fetches every candidate tab in a single batched request instead of one
+ * `values.get` round-trip per tab — searching N tabs sequentially otherwise
+ * costs N network round-trips (multiple seconds once N gets past a handful).
+ */
+async function lookupNamesInTabs(
+  tabTitles: string[],
+  canonicalPhone: string
+): Promise<Map<string, string>> {
+  const sheets = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+  const ranges = tabTitles.map(
+    (t) => `${escapeSheetTitleForRange(t)}!A1:Z${MONTH_TAB_READ_ROW_CAP}`
+  );
+  dbg("batch fetching tabs", tabTitles);
+
+  let res;
+  try {
+    res = await sheets.spreadsheets.values.batchGet({ spreadsheetId, ranges });
+  } catch (e) {
+    dbg("spreadsheets.values.batchGet failed", e);
+    return new Map();
+  }
+
+  const found = new Map<string, string>();
+  const valueRanges = res.data.valueRanges ?? [];
+  for (let i = 0; i < tabTitles.length; i++) {
+    const rows = (valueRanges[i]?.values ?? []) as unknown[][];
+    const name = findNameInRows(rows, canonicalPhone, tabTitles[i]);
+    if (name) found.set(tabTitles[i], name);
+  }
+  return found;
+}
+
+/**
  * Tab resolved via VERSEQUEST_SHEET_NAMING mode. Pass ranting for "ranting" mode.
  * In ranting mode, if the phone is not on the selected tab, searches other
  * `{ranting}_{Month}` tabs and returns the ranting where the row was found.
@@ -140,8 +158,9 @@ export async function lookupPreregisteredName(
 
   dbg("tabs to search (in order)", tabsToSearch);
 
+  const namesByTab = await lookupNamesInTabs(tabsToSearch, canonicalPhone);
   for (const tabTitle of tabsToSearch) {
-    const name = await lookupNameInTab(tabTitle, canonicalPhone);
+    const name = namesByTab.get(tabTitle);
     if (!name) continue;
 
     const resolvedRanting = rantingFromMonthTabTitle(tabTitle, month) ?? undefined;

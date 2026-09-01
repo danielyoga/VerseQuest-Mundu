@@ -5,93 +5,6 @@ import { AppSettingsButton } from "@/components/AppSettingsButton";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import { normalizePhone, normalizePhoneDraftForDisplay } from "@/lib/preregister";
-import { getRantingList } from "@/lib/constants";
-
-/** Styled dropdown that matches the existing input design language. */
-function RantingDropdown({
-  value,
-  options,
-  onChange,
-  label,
-}: {
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  label: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("click", onClickOutside);
-    return () => document.removeEventListener("click", onClickOutside);
-  }, [open]);
-
-  return (
-    <div ref={ref} className="relative w-full">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={label}
-        onClick={() => setOpen((o) => !o)}
-        className="flex min-h-[48px] w-full items-center justify-between rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-base text-[var(--vq-text)] transition-colors hover:border-[#534AB7]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#534AB7]/40"
-      >
-        <span>Ranting {value}</span>
-        <svg
-          className={`ml-2 shrink-0 text-[var(--vq-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
-          width="12" height="12" viewBox="0 0 12 12" fill="none"
-          aria-hidden
-        >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {open && (
-        <ul
-          role="listbox"
-          aria-label={label}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-64 touch-pan-y overflow-y-auto rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg)] shadow-lg"
-        >
-          {options.map((opt) => {
-            const selected = opt === value;
-            return (
-              <li
-                key={opt}
-                role="option"
-                aria-selected={selected}
-                onClick={() => {
-                  onChange(opt);
-                  setOpen(false);
-                }}
-                className={[
-                  "flex cursor-pointer items-center gap-2 px-3.5 py-3 text-base transition-colors",
-                  selected
-                    ? "bg-[#534AB7]/8 font-medium text-[#534AB7]"
-                    : "text-[var(--vq-text)] hover:bg-[var(--vq-bg-2)]",
-                ].join(" ")}
-              >
-                {selected && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                    <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-                {!selected && <span className="w-[14px]" />}
-                Ranting {opt}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 type Props = {
   registerProfile: (
@@ -109,19 +22,74 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
   const [registerSubmitting, setRegisterSubmitting] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
-  const rantingList = getRantingList();
-  const showRantingDropdown = rantingList.length > 0;
-  const [ranting, setRanting] = useState(rantingList[0] ?? "");
+  const [detectedRanting, setDetectedRanting] = useState<string | null>(null);
+  const [rantingStatus, setRantingStatus] = useState<"idle" | "checking" | "found" | "not_found">(
+    "idle"
+  );
 
   const canSubmit =
     !registerSubmitting &&
     !!canonicalPhoneDraft &&
-    canonicalPhoneDraft.length >= 10 &&
-    (!showRantingDropdown || !!ranting);
+    canonicalPhoneDraft.length >= 10;
 
   useEffect(() => {
     phoneInputRef.current?.focus();
   }, []);
+
+  // Background checker: once the user stops typing a complete phone number,
+  // silently ask the server which ranting it belongs to (read-only lookup —
+  // no error is surfaced here, that only happens on actual submit).
+  useEffect(() => {
+    if (canonicalPhoneDraft.length < 10) {
+      setDetectedRanting(null);
+      setRantingStatus("idle");
+      return;
+    }
+    setRantingStatus("checking");
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const res = await fetch("/api/preregister-lookup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone: canonicalPhoneDraft,
+              month: new Date().getMonth() + 1,
+              locale,
+            }),
+          });
+          const data = (await res.json()) as {
+            ok?: boolean;
+            ranting?: string;
+            coordinator_ranting?: string | null;
+          };
+          if (cancelled) return;
+          const resolved = data.ok ? (data.ranting ?? data.coordinator_ranting ?? null) : null;
+          setDetectedRanting(resolved);
+          setRantingStatus(resolved ? "found" : "not_found");
+        } catch {
+          if (!cancelled) {
+            setDetectedRanting(null);
+            setRantingStatus("not_found");
+          }
+        }
+      })();
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [canonicalPhoneDraft, locale]);
+
+  const rantingFieldText =
+    rantingStatus === "checking"
+      ? m.loginRantingDetecting
+      : rantingStatus === "found" && detectedRanting
+        ? detectedRanting
+        : rantingStatus === "not_found"
+          ? m.loginRantingNotFound
+          : "—";
 
   return (
     <div className="min-h-screen overflow-y-auto bg-[var(--vq-canvas)] px-4 py-12">
@@ -146,9 +114,11 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
               setRegisterSubmitting(true);
               try {
                 setPhoneDraft(normalizePhoneDraftForDisplay(canonicalPhoneDraft));
+                // Pass along whatever the background checker already resolved;
+                // the server re-resolves regardless if this is missing/stale.
                 const r = await registerProfile(
                   canonicalPhoneDraft,
-                  showRantingDropdown ? ranting : undefined
+                  detectedRanting ?? undefined
                 );
                 if (!r.ok) {
                   setRegisterError(r.error ?? m.loginErrorGeneric);
@@ -192,22 +162,20 @@ export function PhoneRegistrationScreen({ registerProfile }: Props) {
             </p>
           </label>
 
-          {showRantingDropdown && (
-            <div className="mt-4 w-full">
-              <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
-                {m.loginRantingLabel}
-              </span>
-              <RantingDropdown
-                value={ranting}
-                options={rantingList}
-                label={m.loginRantingLabel}
-                onChange={(v) => {
-                  setRegisterError(null);
-                  setRanting(v);
-                }}
-              />
-            </div>
-          )}
+          <div className="mt-4 w-full">
+            <span className="mb-1.5 block text-[13px] font-medium text-[var(--vq-muted)]">
+              {m.loginRantingLabel}
+            </span>
+            <input
+              type="text"
+              value={rantingFieldText}
+              disabled
+              readOnly
+              aria-label={m.loginRantingLabel}
+              aria-live="polite"
+              className="min-h-[48px] w-full cursor-not-allowed rounded-[var(--vq-radius-md)] border border-[var(--vq-border-2)] bg-[var(--vq-bg-2)] px-3.5 py-3 text-base text-[var(--vq-muted)]"
+            />
+          </div>
 
           {registerError && (
             <p className="mt-3 w-full rounded-lg bg-red-50 px-3 py-2 text-[13px] leading-snug text-red-800">
