@@ -447,11 +447,18 @@ export function VerseQuestHome({
               Verse<span className="text-[#534AB7]">Quest</span>
             </div>
           </div>
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEEDFE] text-sm font-medium text-[#534AB7]"
-            title={m.profileTitle}
-          >
-            {initials(displayName)}
+          <div className="flex items-center gap-2">
+            {state.profile.ranting && (
+              <span className="text-right text-xs font-medium uppercase tracking-wide text-[var(--vq-muted)]">
+                RANTING {state.profile.ranting}
+              </span>
+            )}
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEEDFE] text-sm font-medium text-[#534AB7]"
+              title={m.profileTitle}
+            >
+              {initials(displayName)}
+            </div>
           </div>
         </header>
 
