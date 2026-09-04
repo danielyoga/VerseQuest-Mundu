@@ -74,7 +74,7 @@ export default function CoordinatorPage() {
     if (!authChecked || !profile?.is_coordinator) return;
     const phone = encodeURIComponent(profile.phone);
     const ranting = encodeURIComponent(profile.coordinator_ranting ?? "");
-    void fetch(`/api/coordinator/members?phone=${phone}&ranting=${ranting}`)
+    void fetch(`/api/coordinator/members?phone=${phone}&ranting=${ranting}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d: { ranting?: string; members?: MemberStatus[] }) => {
         setRanting(d.ranting ?? "");
@@ -113,11 +113,9 @@ export default function CoordinatorPage() {
             </button>
           </div>
           <h1 className="text-2xl font-medium text-[var(--vq-text)]">{m.coordinatorTitle}</h1>
-          {ranting && (
-            <p className="mt-1 text-[13px] text-[var(--vq-muted)]">
-              {ranting} · {dateLabel}
-            </p>
-          )}
+          <p className="mt-1 text-[13px] text-[var(--vq-muted)]">
+            {ranting || profile?.coordinator_ranting} · {dateLabel}
+          </p>
         </div>
 
         {loading ? (

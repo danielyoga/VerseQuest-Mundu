@@ -5,6 +5,12 @@ import { getCoordinatorRanting, isCoordinatorForRanting } from "@/lib/coordinato
 import { serverDebugLog } from "@/lib/log";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// This response's body changes daily (which day column is read) even though the
+// request URL (phone + ranting) stays identical — without this, a browser or CDN
+// cache can keep serving a stale "all submitted" snapshot from an earlier day.
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
   const phone = request.nextUrl.searchParams.get("phone") ?? "";
@@ -14,7 +20,10 @@ export async function GET(request: NextRequest) {
     ? (isCoordinatorForRanting(phone, rantingParam) ? rantingParam : null)
     : getCoordinatorRanting(phone);
   if (!ranting) {
-    return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Akses ditolak." },
+      { status: 403, headers: NO_STORE_HEADERS }
+    );
   }
 
   try {
@@ -27,7 +36,9 @@ export async function GET(request: NextRequest) {
     });
 
     const rows = res.data.values ?? [];
-    if (rows.length < 1) return NextResponse.json({ ranting, members: [] });
+    if (rows.length < 1) {
+      return NextResponse.json({ ranting, members: [] }, { headers: NO_STORE_HEADERS });
+    }
 
     // Parse header to find today's day column — handles any extra columns before the day columns.
     const header = rows[0].map((c: unknown) => String(c ?? "").trim());
@@ -53,9 +64,12 @@ export async function GET(request: NextRequest) {
       "coordinator/members",
       `ranting=${ranting} members=${members.length} submitted=${members.filter((m) => m.submitted_today).length}`
     );
-    return NextResponse.json({ ranting, members });
+    return NextResponse.json({ ranting, members }, { headers: NO_STORE_HEADERS });
   } catch (err) {
     console.error("[coordinator/members]", err);
-    return NextResponse.json({ error: "Gagal memuat data." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Gagal memuat data." },
+      { status: 500, headers: NO_STORE_HEADERS }
+    );
   }
 }
