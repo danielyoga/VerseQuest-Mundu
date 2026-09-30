@@ -12,6 +12,7 @@
     "gsheet:try": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/gsheet-try.ts",
     "gsheet:populate-schedule": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts",
     "gsheet:monthly": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/populate-schedule-verses.ts",
+    "gsheet:create-prayers-tab": "GOOGLE_APPLICATION_CREDENTIALS=./secrets/versequest-491302-7f417d7f58bf.json tsx scripts/create-prayers-tab.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -20,6 +21,7 @@
     "@lexical/react": "^0.49.0",
     "@vercel/analytics": "^2.0.1",
     "dompurify": "^3.4.14",
+    "framer-motion": "^13.4.1",
     "googleapis": "^171.4.0",
     "lexical": "^0.49.0",
     "next": "16.2.1",
