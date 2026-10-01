@@ -9,6 +9,7 @@ import { messages, type Locale } from "@/lib/i18n";
 import { toLocalDateString } from "@/lib/date-utils";
 import { PRAYER_MAX_CHARS, sanitizePrayerText, validatePrayerText } from "@/lib/prayer-content";
 import { AdminTabs } from "@/components/admin/AdminTabs";
+import { PrayerPhonePreview } from "@/components/admin/PrayerPhonePreview";
 
 const DAYS_BACK = 7;
 const DAYS_AHEAD = 14;
@@ -222,23 +223,17 @@ export default function AdminPrayerPage() {
               </span>
             </div>
 
-            {/* Preview at the prayer page's size */}
+            {/* Preview: the member prayer page on a phone, with the same font fitting */}
             <p className="mb-2 mt-5 text-[12px] font-medium uppercase tracking-wide text-[var(--vq-muted)]">
               {m.adminPrayerPreview}
             </p>
-            <div className="mx-auto max-w-[390px] rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] px-7 py-8">
-              <div className="flex flex-col items-center gap-5 text-center">
-                <div aria-hidden className="h-[2px] w-10 rounded-sm bg-[#534AB7]" />
-                <p
-                  className={`m-0 whitespace-pre-line text-[24px] font-medium leading-[1.6] [overflow-wrap:anywhere] [text-wrap:pretty] ${
-                    preview ? "text-[var(--vq-text)]" : "text-[var(--vq-muted-2)]"
-                  }`}
-                >
-                  {preview || m.adminPrayerPlaceholder}
-                </p>
-                <div aria-hidden className="h-[2px] w-10 rounded-sm bg-[#534AB7]" />
-              </div>
-            </div>
+            <PrayerPhonePreview
+              text={preview}
+              placeholder={m.adminPrayerPlaceholder}
+              eyebrow={m.prayerEyebrow}
+              hint={m.prayerHint}
+              amenLabel={m.prayerAmen}
+            />
 
             {saveMsg && (
               <p

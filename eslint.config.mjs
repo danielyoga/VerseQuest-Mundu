@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Design handoff folders hold reference copies, not app code.
+    "design_handoff_*/**",
   ]),
 ]);
 
