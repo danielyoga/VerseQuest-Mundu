@@ -1,0 +1,48 @@
+/* Reference values for FruitOfSpiritCard (3c) and the prayer page (4c). Tokens from app/globals.css. */
+@keyframes vqDawn  { 0% { background-color: var(--vq-brand-hover) } 100% { background-color: var(--vq-bg) } }
+@keyframes vqSun   { 0% { opacity: 0; transform: translate(-50%, 40%) scale(.5) } 100% { opacity: 1; transform: translate(-50%, 0) scale(1) } }
+@keyframes vqRise  { from { opacity: 0; transform: translateY(12px); filter: blur(4px) } to { opacity: 1; transform: none; filter: blur(0) } }
+@keyframes vqFade  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes vqWrite { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }
+@keyframes vqPop   { 0% { transform: scale(0) } 70% { transform: scale(1.3) } 100% { transform: scale(1) } }
+
+/* Prayer page (4c) */
+.prayer { min-height: 100dvh; max-width: var(--shell-width); margin: 0 auto; background: var(--vq-bg-2);
+  display: flex; flex-direction: column; gap: 14px; padding: max(24px, env(safe-area-inset-top)) 28px max(24px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+.prayer__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.eyebrow { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .025em; text-transform: uppercase; color: var(--vq-muted); }
+.chip { white-space: nowrap; padding: 6px 12px; border-radius: 9999px; background: var(--vq-brand-tint); color: var(--vq-brand); font-size: 13px; font-weight: 500; }
+.prayer__body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 20px; }
+.rule { width: 40px; height: 2px; border-radius: 2px; background: var(--vq-brand); }
+.prayer__text { margin: 0; font-size: 24px; line-height: 1.6; font-weight: 500; color: var(--vq-text); text-wrap: pretty; }
+.prayer__hint { font-size: 14px; line-height: 1.625; color: var(--vq-muted); }
+.btn { width: 100%; min-height: 56px; border: 0; border-radius: 16px; background: var(--vq-brand); color: var(--vq-on-brand);
+  font: 500 18px/1 var(--font-sans); cursor: pointer; }
+.btn:hover { background: var(--vq-brand-hover); }
+.btn:active { transform: scale(.98); }
+.btn:focus-visible { outline: 2px solid var(--vq-brand); outline-offset: 2px; }
+
+/* Fruit card (3c) */
+.fc { position: fixed; inset: 0; z-index: 50; overflow: hidden; animation: vqDawn 1300ms ease-in-out both; }
+.fc__sun { position: absolute; left: 50%; bottom: -200px; width: 580px; height: 580px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(250,199,117,.95) 0%, rgba(250,199,117,.45) 35%, rgba(238,237,254,0) 68%);
+  animation: vqSun 1400ms cubic-bezier(.2,.7,.2,1) both; }
+.fc__col { position: relative; height: 100%; max-width: var(--shell-width); margin: 0 auto; box-sizing: border-box; padding: 32px 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
+.fc__emoji { font-size: 54px; line-height: 1.2; animation: vqRise 600ms ease 700ms both; }
+.fc__eyebrow { animation: vqFade 400ms ease 900ms both; }
+.fc__name { margin: -6px 0 0; font-size: 38px; line-height: 1.15; font-weight: 500; color: var(--vq-text); animation: vqWrite 650ms linear 950ms both; }
+.fc__line { max-width: 300px; font-size: 19px; line-height: 1.5; color: var(--vq-muted); text-wrap: pretty; animation: vqWrite 800ms linear 1550ms both; }
+.fc__state { max-width: 300px; font-size: 16px; line-height: 1.5; color: var(--vq-text); animation: vqFade 500ms ease 2250ms both; }
+.fc__dots { display: flex; gap: 8px; }
+.dot { width: 26px; height: 26px; border-radius: 9999px; background: var(--vq-bg-2); border: 1px solid var(--vq-border-2); box-sizing: border-box; overflow: hidden; }
+.dot__fill { width: 100%; height: 100%; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; animation: vqPop 380ms ease both; }
+.dot__fill--done  { background: var(--vq-brand); color: #fff; }
+.dot__fill--today { background: var(--vq-today); color: var(--vq-today-ink); }
+.fc__ref { font-size: 13px; color: var(--vq-brand); font-variant-numeric: tabular-nums; animation: vqFade 400ms ease 2550ms both; }
+.fc__close { margin-top: 8px; animation: vqRise 450ms ease 2700ms both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fc, .fc * { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+}

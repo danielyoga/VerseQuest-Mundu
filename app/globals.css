@@ -19,6 +19,11 @@
   --vq-on-brand: #ffffff;
   --vq-on-brand-muted: #e8e4ff;
   --vq-on-brand-subtle: #ddd8fc;
+  /* Buah Roh prayer page + Amen card (named in the VerseQuest design system) */
+  --vq-brand-hover: #3c3489;
+  --vq-brand-tint: #eeedfe;
+  --vq-today: #fac775;
+  --vq-today-ink: #412402;
 }
 
 @theme inline {

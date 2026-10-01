@@ -5,9 +5,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppSettingsButton } from "@/components/AppSettingsButton";
 import { FirmanPollModal } from "@/components/FirmanPollModal";
+import { FruitChip } from "@/components/FruitChip";
 import { GratitudeModal } from "@/components/GratitudeModal";
 import { useDisplayOrder } from "@/contexts/DisplayOrderContext";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useFruitView } from "@/hooks/useFruitView";
 import { scheduleVerseKey, useTodayScheduleWindow } from "@/hooks/useTodayScheduleWindow";
 import { bookDisplayName } from "@/lib/bible/book-names-id";
 import {
@@ -87,6 +89,10 @@ export function VerseQuestHome({
     return () => window.removeEventListener("storage", check);
   }, [devotionKey]);
 
+  const fruitView = useFruitView(state.profile.phone);
+  const fruitFresh = !fruitView || fruitView.isBroken || fruitView.streak === 0;
+  const prayedToday = fruitView?.amenDoneToday ?? false;
+
   const taskDone = submittedToday;
   const displayName = state.profile.name || (locale === "id" ? "Anda" : "there");
 
@@ -105,11 +111,12 @@ export function VerseQuestHome({
     return getMoodMessage(displayStreak, lossStreak);
   }, [displayStreak, state.last_submitted_at]);
 
-  const totalQuests = 3 + (firmanConfig ? 1 : 0);
+  const totalQuests = 4 + (firmanConfig ? 1 : 0);
   const doneQuests =
     (submittedToday ? 1 : 0) +
     (devotionRead ? 1 : 0) +
     (gratitudeQuest.doneForToday ? 1 : 0) +
+    (prayedToday ? 1 : 0) +
     (firmanConfig && firmanPoll.doneForToday ? 1 : 0);
   const progress = totalQuests ? (doneQuests / totalQuests) * 100 : 0;
 
@@ -344,6 +351,57 @@ export function VerseQuestHome({
             }`}
           >
             {gratitudeQuest.doneForToday ? m.gratitudeCtaDone : m.gratitudeCta}
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-5 mb-3 rounded-[var(--vq-radius-lg)] border border-[var(--vq-border)] bg-[var(--vq-bg-2)] p-4">
+        <div className="flex gap-3.5 items-center">
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
+              prayedToday ? "bg-[#EAF3DE]" : "bg-[#FAEEDA]"
+            }`}
+          >
+            {prayedToday ? "✅" : "🙏"}
+          </div>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-medium leading-snug text-[var(--vq-text)]">
+                {m.prayerEntryTitle}
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--vq-muted)]">
+                {prayedToday
+                  ? m.prayerEntryDone
+                  : fruitFresh
+                    ? m.prayerEntryFresh
+                    : m.prayerEntryPending}
+              </p>
+              {fruitView && (
+                <div className="mt-1.5">
+                  <FruitChip view={fruitView} size="sm" />
+                </div>
+              )}
+            </div>
+            <span
+              className={`shrink-0 self-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                prayedToday
+                  ? "bg-[#EAF3DE] text-[#27500A]"
+                  : "bg-[#FAEEDA] text-[#633806]"
+              }`}
+            >
+              {prayedToday ? m.badgeDone : m.badgePending}
+            </span>
+          </div>
+        </div>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => router.push("/doa")}
+            className={`flex w-full min-h-[52px] items-center justify-center gap-2 rounded-2xl py-4 text-base font-medium text-white transition active:scale-[0.98] ${
+              prayedToday ? "bg-[#3B6D11] hover:bg-[#2d5209]" : "bg-[#534AB7] hover:bg-[#3C3489]"
+            }`}
+          >
+            {prayedToday ? m.prayerCtaDone : m.prayerCta}
           </button>
         </div>
       </div>

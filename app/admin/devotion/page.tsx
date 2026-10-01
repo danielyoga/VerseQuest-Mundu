@@ -7,6 +7,7 @@ import { isDevotionAdmin } from "@/lib/constants";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
 import DevotionalEditor from "@/components/admin/DevotionalEditor";
+import { AdminTabs } from "@/components/admin/AdminTabs";
 
 const DEVOTION_MAX_CHARS = 5000;
 
@@ -160,6 +161,8 @@ export default function AdminDevotionPage() {
             )}
           </button>
         </div>
+
+        <AdminTabs />
 
         {/* Devotion section */}
         <div className="mb-5 rounded-[var(--vq-radius-xl)] border border-[var(--vq-border)] bg-[var(--vq-bg)] p-5">

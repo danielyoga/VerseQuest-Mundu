@@ -14,6 +14,7 @@ import {
 import { getTodayString } from "@/lib/sheetName";
 import type { StreakSyncMergedPayload } from "@/lib/streak/sync-merge";
 import { clientDebugLog } from "@/lib/log";
+import { ensurePersistentStorage } from "@/lib/fruitStreak";
 import type { StoredState, VerseSubmission } from "@/types";
 import { CURRENT_SCHEMA_VERSION } from "@/types";
 
@@ -291,6 +292,8 @@ export function useVerseQuest() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("versequest-profile-updated"));
       }
+      // Ask the browser not to evict localStorage (fruit streak lives only on device).
+      void ensurePersistentStorage();
       return { ok: true };
     },
     [locale]

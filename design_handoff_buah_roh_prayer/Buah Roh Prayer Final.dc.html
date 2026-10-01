@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f4f5;font-family:'Geist',system-ui,sans-serif;color:#171717}
+a{color:#534ab7}a:hover{color:#3c3489}
+@keyframes vqFade{from{opacity:0}to{opacity:1}}
+@keyframes vqRise{from{opacity:0;transform:translateY(12px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes vqPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes vqDawn{0%{background-color:#3c3489}100%{background-color:#ffffff}}
+@keyframes vqSun{0%{opacity:0;transform:translate(-50%,40%) scale(.5)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes vqWrite{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion: reduce){[data-anim]{animation-duration:1ms!important;animation-delay:0ms!important}}
+</style>
+</helmet>
+<section style="padding:56px 48px 80px;display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px"><div style="padding:4px 10px;border-radius:9999px;background:#534ab7;color:#fff;font-size:13px;font-weight:600">Final</div><div style="font-size:16px;font-weight:500">Halaman doa 4c + pop-up 3c</div></div>
+    <div data-screen-label="Prayer page" style="width:390px;height:780px;border-radius:52px;border:10px solid #171717;background:#fafafa;position:relative;overflow:hidden;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);display:flex;flex-direction:column;box-sizing:content-box">
+      <div style="padding:52px 28px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="font-size:12px;line-height:16px;font-weight:500;letter-spacing:.025em;text-transform:uppercase;color:#525252">Doa Pagi</div>
+          <div style="white-space:nowrap;padding:6px 12px;border-radius:9999px;background:#eeedfe;color:#534ab7;font-size:13px;font-weight:500">{{ chip }}</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:20px">
+          <div style="width:40px;height:2px;border-radius:2px;background:#534ab7"></div>
+          <p style="margin:0;font-size:24px;line-height:1.6;font-weight:500;color:#171717;text-wrap:pretty">Bapa, terima kasih untuk pagi yang baru. Tuntun setiap langkah dan perkataanku hari ini. Tumbuhkan buah Roh-Mu di dalam hatiku.</p>
+          <div style="width:40px;height:2px;border-radius:2px;background:#534ab7"></div>
+          <div style="font-size:14px;line-height:1.625;color:#525252">Bacalah perlahan, lalu tekan Amen.</div>
+        </div>
+        <button onClick="{{ amen }}" style="min-height:56px;border:none;border-radius:16px;background:#534ab7;color:#fff;font-family:inherit;font-size:18px;font-weight:500;cursor:pointer" style-hover="background:#3c3489" style-active="transform:scale(.98)">Amen 🙏</button>
+      </div>
+      <sc-if value="{{ open }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Fruit card" role="dialog" aria-modal="true" aria-label="{{ name }}" data-anim="" style="position:absolute;inset:0;overflow:hidden;animation:vqDawn 1300ms ease-in-out 0ms both">
+          <div data-anim="" style="position:absolute;left:50%;bottom:-200px;width:580px;height:580px;border-radius:50%;background:radial-gradient(circle,rgba(250,199,117,.95) 0%,rgba(250,199,117,.45) 35%,rgba(238,237,254,0) 68%);animation:vqSun 1400ms cubic-bezier(.2,.7,.2,1) 0ms both"></div>
+          <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 24px;box-sizing:border-box;text-align:center">
+            <div data-anim="" style="font-size:54px;line-height:1.2;animation:vqRise 600ms ease 700ms both">{{ emoji }}</div>
+            <div data-anim="" style="font-size:12px;line-height:16px;font-weight:500;letter-spacing:.025em;text-transform:uppercase;color:#525252;animation:vqFade 400ms ease 900ms both">Buah Roh hari ini</div>
+            <div data-anim="" style="font-size:38px;line-height:1.15;font-weight:500;margin-top:-6px;animation:vqWrite 650ms linear 950ms both">{{ name }}</div>
+            <div data-anim="" style="font-size:19px;line-height:1.5;color:#525252;max-width:300px;text-wrap:pretty;animation:vqWrite 800ms linear 1550ms both">{{ line }}</div>
+            <div data-anim="" style="font-size:16px;line-height:1.5;color:#171717;max-width:300px;animation:vqFade 500ms ease 2250ms both">{{ body }}</div>
+            <div style="display:flex;gap:8px" aria-label="{{ dotsLabel }}">
+              <sc-for list="{{ dots }}" as="d" hint-placeholder-count="7"><div style="width:26px;height:26px;border-radius:9999px;background:#fafafa;border:1px solid #e5e5e5;box-sizing:border-box;overflow:hidden"><div data-anim="" style="width:100%;height:100%;border-radius:9999px;background:{{ d.bg }};color:{{ d.ink }};font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;animation:vqPop 380ms ease {{ d.delay }} both">{{ d.glyph }}</div></div></sc-for>
+            </div>
+            <div data-anim="" style="font-size:13px;color:#534ab7;font-variant-numeric:tabular-nums;animation:vqFade 400ms ease 2550ms both">Galatia 5:22-23</div>
+            <button onClick="{{ close }}" data-anim="" style="margin-top:8px;width:100%;min-height:56px;border:none;border-radius:16px;background:#534ab7;color:#fff;font-family:inherit;font-size:18px;font-weight:500;cursor:pointer;animation:vqRise 450ms ease 2700ms both" style-hover="background:#3c3489" style-active="transform:scale(.98)">Tutup</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onClick="{{ showNormal }}" style="padding:8px 14px;border-radius:9999px;border:1px solid rgba(0,0,0,.12);background:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">▶ Hari biasa</button>
+      <button onClick="{{ showRepeat }}" style="padding:8px 14px;border-radius:9999px;border:1px solid rgba(0,0,0,.12);background:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">▶ Sudah berdoa</button>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:360px;max-width:720px;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font-size:12px;letter-spacing:.025em;text-transform:uppercase;color:#534ab7;font-weight:500">Spesifikasi pengembangan</div>
+      <div style="font-size:28px;line-height:1.25;font-weight:500">Buah Roh · Halaman doa &amp; kartu Amen</div>
+      <div style="font-size:14px;line-height:1.6;color:#525252">Semua nilai adalah px pada lebar shell 390px. Detail lengkap ada di design_handoff_buah_roh_prayer/README.md.</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:15px;font-weight:600">Timeline pop-up (total ±3.15 detik)</div>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:8px 12px;align-items:center">
+        <sc-for list="{{ timeline }}" as="r" hint-placeholder-count="10">
+          <div style="display:flex;flex-direction:column"><div style="font-size:13px;font-weight:500">{{ r.el }}</div><div style="font-family:'Geist Mono',monospace;font-size:11px;color:#6b7280">{{ r.meta }}</div></div>
+          <div style="position:relative;height:18px;background:#fafafa;border-radius:4px"><div style="position:absolute;top:3px;bottom:3px;left:{{ r.left }};width:{{ r.width }};background:#534ab7;border-radius:3px"></div></div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:12px"><div></div><div style="display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:11px;color:#6b7280"><span>0</span><span>1000</span><span>2000</span><span>3000ms</span></div></div>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600">Token yang dipakai</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(0,0,0,.12);background:{{ t.hex }};flex:none"></div><div style="display:flex;flex-direction:column"><div style="font-family:'Geist Mono',monospace;font-size:12px">{{ t.name }}</div><div style="font-size:12px;color:#525252">{{ t.hex }} · {{ t.use }}</div></div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600">Tipografi (Geist)</div>
+      <sc-for list="{{ type }}" as="t" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:6px 0;border-top:1px solid #e5e5e5"><div style="font-size:13px;font-weight:500">{{ t.el }}</div><div style="font-family:'Geist Mono',monospace;font-size:12px;color:#525252">{{ t.spec }}</div></div>
+      </sc-for>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:15px;font-weight:600">Keadaan &amp; teks</div>
+      <sc-for list="{{ states }}" as="s" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:6px 0;border-top:1px solid #e5e5e5"><div style="font-size:13px;font-weight:500">{{ s.k }}</div><div style="font-size:13px;line-height:1.5;color:#525252">{{ s.v }}</div></div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;fruit&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Kelemahlembutan&quot;,&quot;Kasih&quot;,&quot;Sukacita&quot;,&quot;Damai Sejahtera&quot;,&quot;Kesabaran&quot;,&quot;Kemurahan&quot;,&quot;Kebaikan&quot;,&quot;Kesetiaan&quot;,&quot;Penguasaan Diri&quot;],&quot;default&quot;:&quot;Kelemahlembutan&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;day&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;min&quot;:1,&quot;max&quot;:7,&quot;tsType&quot;:&quot;number&quot;}}">
+const FRUITS = [
+  { name: 'Kelemahlembutan', emoji: '🕊️', line: 'Biarlah kata-katamu hari ini lembut seperti embun pagi.' },
+  { name: 'Kasih', emoji: '❤️', line: 'Kamu dikasihi Tuhan. Bagikan kasih itu hari ini.' },
+  { name: 'Sukacita', emoji: '☀️', line: 'Sukacita dari Tuhan adalah kekuatanmu hari ini.' },
+  { name: 'Damai Sejahtera', emoji: '🌿', line: 'Damai-Nya menjaga hati dan pikiranmu.' },
+  { name: 'Kesabaran', emoji: '🌱', line: 'Langkah kecil pun berarti. Tuhan sabar menuntunmu.' },
+  { name: 'Kemurahan', emoji: '🤲', line: 'Satu kebaikan kecil hari ini bisa jadi berkat besar.' },
+  { name: 'Kebaikan', emoji: '🍇', line: 'Lakukan yang baik, sebab Tuhan baik kepadamu.' },
+  { name: 'Kesetiaan', emoji: '🕯️', line: 'Kesetiaanmu berdoa hari ini sangat berharga.' },
+  { name: 'Penguasaan Diri', emoji: '⛰️', line: 'Tuhan memberimu kekuatan untuk menguasai diri.' }
+];
+const TL = [
+  ['Latar (fajar)', 'bg #3c3489→#fff · ease-in-out', 0, 1300],
+  ['Cahaya matahari', 'vqSun · cubic-bezier(.2,.7,.2,1)', 0, 1400],
+  ['Emoji buah', 'vqRise · ease', 700, 600],
+  ['Eyebrow', 'vqFade · ease', 900, 400],
+  ['Nama buah', 'vqWrite (clip-path) · linear', 950, 650],
+  ['Kalimat harian', 'vqWrite (clip-path) · linear', 1550, 800],
+  ['Teks keadaan', 'vqFade · ease', 2250, 500],
+  ['7 titik hari', 'vqPop · ease · +55ms/titik', 2350, 710],
+  ['Galatia 5:22-23', 'vqFade · ease', 2550, 400],
+  ['Tombol Tutup', 'vqRise · ease', 2700, 450]
+];
+class Component extends DCLogic {
+  state = { open: false, kind: 'normal', done: false };
+  show(kind) {
+    this.setState({ open: false });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ open: true, kind, done: true }), 40);
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    const fi = Math.max(0, FRUITS.findIndex(f => f.name === this.props.fruit));
+    const f = FRUITS[fi];
+    const day = Math.min(7, Math.max(1, this.props.day ?? 3));
+    const repeat = this.state.kind === 'repeat';
+    const total = 3200;
+    return {
+      open: this.state.open, emoji: f.emoji, name: f.name, line: f.line,
+      chip: `${f.emoji} ${f.name} • Hari ${day}/7`,
+      body: repeat ? `Kamu sudah berdoa hari ini. Hari ${day} dari 7.` : `Hari ${day} dari 7. Terus setia berdoa ya!`,
+      dotsLabel: `Hari ${day} dari 7`,
+      dots: Array.from({ length: 7 }, (_, j) => {
+        const done = j < day - 1, today = j === day - 1;
+        return { glyph: done ? '✓' : today ? '🙏' : '', bg: done ? '#534ab7' : today ? '#fac775' : 'transparent', ink: done ? '#ffffff' : '#412402', delay: 2350 + j * 55 + 'ms' };
+      }),
+      amen: () => this.show(this.state.done ? 'repeat' : 'normal'),
+      close: () => this.setState({ open: false }),
+      showNormal: () => this.show('normal'),
+      showRepeat: () => this.show('repeat'),
+      timeline: TL.map(([el, meta, d, dur]) => ({ el, meta: `${d}ms +${dur}ms · ${meta}`, left: (d / total * 100) + '%', width: (dur / total * 100) + '%' })),
+      tokens: [
+        { name: '--vq-bg-2', hex: '#fafafa', use: 'latar halaman doa' },
+        { name: '--vq-text', hex: '#171717', use: 'teks doa, nama buah' },
+        { name: '--vq-muted', hex: '#525252', use: 'eyebrow, petunjuk, kalimat' },
+        { name: '--vq-brand', hex: '#534ab7', use: 'tombol, garis, ref, titik selesai' },
+        { name: '--vq-brand-hover', hex: '#3c3489', use: 'hover, awal fajar' },
+        { name: '--vq-brand-tint', hex: '#eeedfe', use: 'chip buah' },
+        { name: '--vq-today', hex: '#fac775', use: 'titik hari ini, cahaya' },
+        { name: '--vq-today-ink', hex: '#412402', use: 'ikon titik hari ini' },
+        { name: '--vq-border-2', hex: '#e5e5e5', use: 'tepi titik kosong' }
+      ],
+      type: [
+        { el: 'Eyebrow', spec: '12/16 · 500 · +0.025em · UPPERCASE · muted' },
+        { el: 'Chip buah', spec: '13 · 500 · nowrap · pad 6×12 · radius full' },
+        { el: 'Teks doa', spec: '24/1.6 · 500 · center · text-wrap: pretty' },
+        { el: 'Petunjuk', spec: '14/1.625 · 400 · muted' },
+        { el: 'Tombol', spec: '18 · 500 · min-h 56 · radius 16' },
+        { el: 'Emoji buah', spec: '54px' },
+        { el: 'Nama buah', spec: '38/1.15 · 500' },
+        { el: 'Kalimat harian', spec: '19/1.5 · 400 · muted · max-w 300' },
+        { el: 'Teks keadaan', spec: '16/1.5 · 400 · text' },
+        { el: 'Referensi', spec: '13 · brand · tabular-nums' }
+      ],
+      states: [
+        { k: 'Amen pertama', v: 'Kartu "Hari biasa": "Hari {d} dari 7. Terus setia berdoa ya!" · streak +1 sebelum kartu dibuka.' },
+        { k: 'Amen lagi (hari sama)', v: 'Animasi sama, teks: "Kamu sudah berdoa hari ini. Hari {d} dari 7." · streak tidak berubah.' },
+        { k: 'Reduced motion', v: 'prefers-reduced-motion: semua durasi 1ms, delay 0 — kartu langsung tampil lengkap.' },
+        { k: 'Tutup', v: 'Tombol Tutup atau tombol Back/Escape menutup kartu; fokus kembali ke tombol Amen.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

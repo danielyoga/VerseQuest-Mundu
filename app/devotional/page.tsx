@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DOMPurify from "dompurify";
+import { SongActionBar } from "@/components/SongActionBar";
+import { usePageSong } from "@/hooks/usePageSong";
 import { fetchDevotionToday } from "@/lib/client/fetch-devotion-today";
 import { getTodayString } from "@/lib/sheetName";
 import { useLocale } from "@/contexts/LocaleContext";
 import { messages } from "@/lib/i18n";
+
+const DEVOTIONAL_SONG_SRC = "/audio/devotional-shout-to-the-lord.mp3";
+/** "off" once the user pauses the song, so it doesn't start by itself on later visits. */
+const MUSIC_PREF_KEY = "vq_devotional_music";
 
 export default function DevotionalPage() {
   const router = useRouter();
@@ -19,6 +25,7 @@ export default function DevotionalPage() {
   const [devotion, setDevotion] = useState<string | null>(null);
   const [devotionTitle, setDevotionTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { audioRef: songRef, playing: songPlaying, toggle: toggleSong } = usePageSong(MUSIC_PREF_KEY);
 
   useEffect(() => {
     void fetchDevotionToday()
@@ -43,17 +50,26 @@ export default function DevotionalPage() {
     day: "numeric",
   }).format(new Date());
 
+  // Same element across loading → loaded, so the song keeps playing (and its listeners stay).
+  const audio = <audio ref={songRef} src={DEVOTIONAL_SONG_SRC} loop preload="auto" />;
+
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--vq-canvas)] text-[var(--vq-muted)]">
-        {m.devotionLoadingText}
-      </div>
+      <>
+        {audio}
+        <div className="flex min-h-screen items-center justify-center bg-[var(--vq-canvas)] text-[var(--vq-muted)]">
+          {m.devotionLoadingText}
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--vq-canvas)] px-4 pb-32 pt-8">
-      <div className="mx-auto max-w-[390px]">
+    <>
+    {audio}
+    <div className="min-h-dvh bg-[var(--vq-canvas)] px-4">
+      {/* Full-height column so the bar sits at the bottom even when the devotion is short */}
+      <div className="mx-auto flex min-h-dvh max-w-[390px] flex-col pt-8">
         {/* Header */}
         <div className="mb-6">
           <div className="mb-1 flex items-center gap-2">
@@ -89,16 +105,16 @@ export default function DevotionalPage() {
           </div>
         )}
 
-        {/* Mark as read button */}
-        <button
-          type="button"
-          onClick={markAsRead}
-          disabled={!devotion}
-          className="w-full min-h-[52px] rounded-2xl bg-[#534AB7] py-4 text-base font-medium text-white transition hover:bg-[#3C3489] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
-        >
-          {m.devotionMarkRead}
-        </button>
+        <SongActionBar
+          songPlaying={songPlaying}
+          onToggleSong={toggleSong}
+          actionLabel={m.devotionMarkRead}
+          onAction={markAsRead}
+          actionDisabled={!devotion}
+          surfaceClassName="mt-auto -mx-4 px-4 bg-[var(--vq-canvas)] before:from-[var(--vq-canvas)]"
+        />
       </div>
     </div>
+    </>
   );
 }

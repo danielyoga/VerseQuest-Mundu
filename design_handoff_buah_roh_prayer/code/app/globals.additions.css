@@ -1,0 +1,27 @@
+/* app/globals.css — ADD these. Existing vq- tokens stay as they are. */
+:root {
+  /* already in globals.css */
+  --vq-bg: #ffffff;
+  --vq-bg-2: #fafafa;
+  --vq-text: #171717;
+  --vq-muted: #525252;
+  --vq-brand: #534ab7;
+
+  /* named by the design system, not yet in globals.css — add */
+  --vq-brand-hover: #3c3489;
+  --vq-brand-tint: #eeedfe;
+  --vq-on-brand: #ffffff;
+  --vq-border-2: #e5e5e5;
+  --vq-today: #fac775;
+  --vq-today-ink: #412402;
+  --vq-sun: rgba(250, 199, 117, 0.95);
+  --vq-sun-soft: rgba(250, 199, 117, 0.45);
+}
+
+/* Only needed if you use the CSS-keyframe version instead of Framer Motion */
+@keyframes vq-dawn  { 0% { background-color: var(--vq-brand-hover) } 100% { background-color: var(--vq-bg) } }
+@keyframes vq-sun   { 0% { opacity: 0; transform: translate(-50%, 40%) scale(.5) } 100% { opacity: 1; transform: translate(-50%, 0) scale(1) } }
+@keyframes vq-rise  { from { opacity: 0; transform: translateY(12px); filter: blur(4px) } to { opacity: 1; transform: none; filter: blur(0) } }
+@keyframes vq-fade  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes vq-write { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }
+@keyframes vq-pop   { 0% { transform: scale(0) } 70% { transform: scale(1.3) } 100% { transform: scale(1) } }
