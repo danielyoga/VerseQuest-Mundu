@@ -22,7 +22,7 @@ describe("fruit streak", () => {
   it("TC01 first Amen", () => {
     const r = recordAmen(A, D(1));
     expect(r.state.streak).toBe(1);
-    expect(r.state.fruit.name).toBe("Kelemahlembutan");
+    expect(r.state.fruit.name).toBe("Kasih");
     expect(r.state.dayInFruit).toBe(1);
   });
 
@@ -45,10 +45,10 @@ describe("fruit streak", () => {
     expect(r.fruitCompleted).toBe(true);
   });
 
-  it("TC05 day 8 → Kasih day 1", () => {
+  it("TC05 day 8 → Sukacita day 1", () => {
     seed(A, 7, 7);
     const r = recordAmen(A, D(8));
-    expect(r.state.fruit.name).toBe("Kasih");
+    expect(r.state.fruit.name).toBe("Sukacita");
     expect(r.state.dayInFruit).toBe(1);
   });
 
@@ -71,7 +71,7 @@ describe("fruit streak", () => {
     seed(A, 63, 20);
     const r = recordAmen(A, D(21));
     expect(r.state.streak).toBe(64);
-    expect(r.state.fruit.name).toBe("Kelemahlembutan");
+    expect(r.state.fruit.name).toBe("Kasih");
     expect(r.state.cyclesCompleted).toBe(1);
   });
 
