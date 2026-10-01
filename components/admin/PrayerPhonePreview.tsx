@@ -21,13 +21,13 @@ type Props = {
  * so admins see the size members will get. Layout mirrors app/doa/page.tsx; keep them in sync.
  */
 export function PrayerPhonePreview({ text, placeholder, eyebrow, hint, amenLabel }: Props) {
-  const screenRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
-  const screenFits = useCallback(() => {
-    const screen = screenRef.current;
-    return !screen || screen.scrollHeight <= screen.clientHeight;
+  const bodyFits = useCallback(() => {
+    const body = bodyRef.current;
+    return !body || body.scrollHeight <= body.clientHeight;
   }, []);
-  useFitFontSize(textRef, screenFits, text);
+  useFitFontSize(textRef, bodyFits, text);
 
   return (
     <div
@@ -36,7 +36,6 @@ export function PrayerPhonePreview({ text, placeholder, eyebrow, hint, amenLabel
       style={{ width: PHONE_W * PREVIEW_SCALE, height: PHONE_H * PREVIEW_SCALE }}
     >
       <div
-        ref={screenRef}
         className="flex origin-top-left flex-col gap-[14px] overflow-hidden bg-[var(--vq-bg-2)] px-7 py-6"
         style={{ width: PHONE_W, height: PHONE_H, transform: `scale(${PREVIEW_SCALE})` }}
       >
@@ -45,11 +44,15 @@ export function PrayerPhonePreview({ text, placeholder, eyebrow, hint, amenLabel
             {eyebrow}
           </span>
         </div>
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+        {/* Like /doa: past the smallest size the text scrolls and Amen stays on screen. */}
+        <div
+          ref={bodyRef}
+          className="flex min-h-0 flex-1 flex-col items-center gap-5 overflow-y-auto text-center [justify-content:safe_center]"
+        >
           <div className="h-[2px] w-10 shrink-0 rounded-sm bg-[var(--vq-brand)]" />
           <p
             ref={textRef}
-            className={`m-0 whitespace-pre-line text-[24px] font-medium leading-[1.6] [overflow-wrap:anywhere] [text-wrap:pretty] ${
+            className={`m-0 whitespace-pre-line text-[24px] font-normal leading-[1.6] [overflow-wrap:anywhere] [text-wrap:pretty] ${
               text ? "text-[var(--vq-text)]" : "text-[var(--vq-muted-2)]"
             }`}
           >
@@ -58,8 +61,11 @@ export function PrayerPhonePreview({ text, placeholder, eyebrow, hint, amenLabel
           <div className="h-[2px] w-10 shrink-0 rounded-sm bg-[var(--vq-brand)]" />
           <p className="m-0 text-[14px] leading-[1.625] text-[var(--vq-muted)]">{hint}</p>
         </div>
-        <div className="flex min-h-[56px] shrink-0 items-center justify-center rounded-2xl bg-[var(--vq-brand)] text-[18px] font-medium text-white">
-          {amenLabel}
+        <div className="flex shrink-0 gap-3">
+          <div className="h-14 w-14 shrink-0 rounded-2xl bg-[var(--vq-brand-tint)]" />
+          <div className="flex min-h-[56px] flex-1 items-center justify-center rounded-2xl bg-[var(--vq-brand)] text-[18px] font-medium text-white">
+            {amenLabel}
+          </div>
         </div>
       </div>
     </div>

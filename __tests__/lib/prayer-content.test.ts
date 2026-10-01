@@ -32,9 +32,9 @@ describe("validatePrayerText", () => {
     expect(validatePrayerText("   \n  ")).toEqual({ ok: false, error: "empty" });
   });
 
-  it("TC24 501 characters → too_long; 500 is fine", () => {
-    expect(validatePrayerText("a".repeat(501))).toEqual({ ok: false, error: "too_long" });
-    expect(validatePrayerText("a".repeat(500)).ok).toBe(true);
+  it("TC24 1001 characters → too_long; 1000 is fine", () => {
+    expect(validatePrayerText("a".repeat(1001))).toEqual({ ok: false, error: "too_long" });
+    expect(validatePrayerText("a".repeat(1000)).ok).toBe(true);
   });
 
   it("strips HTML, keeps line breaks, trims", () => {

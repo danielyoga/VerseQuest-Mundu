@@ -11,7 +11,7 @@ export type PrayerPayload = {
   source: PrayerSource;
 };
 
-export const PRAYER_MAX_CHARS = 500;
+export const PRAYER_MAX_CHARS = 1000;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 

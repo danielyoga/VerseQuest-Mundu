@@ -37,8 +37,8 @@ describe("POST /api/admin/prayer", () => {
     expect(upsertPrayerRow).not.toHaveBeenCalled();
   });
 
-  it("TC24 501 characters or only spaces → 400, nothing written", async () => {
-    for (const text of ["a".repeat(501), "    "]) {
+  it("TC24 1001 characters or only spaces → 400, nothing written", async () => {
+    for (const text of ["a".repeat(1001), "    "]) {
       const res = await post({ phone: DEVOTION_ADMIN_PHONE, date: "2026-10-01", text });
       expect(res.status).toBe(400);
     }
